@@ -1,0 +1,13 @@
+{
+	"reponame":"sample-phonegap-audio",
+	"title":"PhoneGap Audio",
+	"tooltip":"Use a PhoneGap media object to record and playback an audio sound.",
+	"description":"Use a PhoneGap media object to record and playback audio. Also detects if a previous recording exists.",
+	"highlights":["PhoneGap", "Audio Playback", "Audio Recording"],
+	"articleUrl":"http://software.intel.com/en-us/articles/media-sample-using-phonegap",
+	"keywords":["PhoneGap"],
+	"iconUrl":"https://github.com/gomobile/sample-phonegap-audio/blob/master/icon.png",
+	"screenshotUrl":"https://github.com/gomobile/sample-phonegap-audio/blob/master/screenshot.png",
+	"visible" : "false",
+	"zipUrl":""
+}
