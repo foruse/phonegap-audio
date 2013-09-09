@@ -172,6 +172,7 @@ function playMusic() {
             console.log("***test:  Open file:" + mediaRecFile);
             my_audio = new Media(mediaRecFile, onMediaCallSuccess, onMediaCallError);
         }else if (phoneCheck.ios) {
+            console.log(mediaFileFullName)
             my_audio = new Media(mediaFileFullName, onMediaCallSuccess, onMediaCallError);
         }
 
