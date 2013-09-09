@@ -155,6 +155,7 @@ function playMusic() {
 
     // Play audio
     if (my_audio) {
+        console.log(my_audio)
         console.log("second")
         my_audio.play();
         document.getElementById('PlayStatusID').innerHTML = "Status: playing...";
