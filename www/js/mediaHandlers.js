@@ -139,8 +139,8 @@ function stopRecording() {
 // Play audio        
 //
 function playMusic() {
-	if (my_audio === null) { // play existing media recorded from previous session
-		
+    if (my_audio === null) { // play existing media recorded from previous session
+        console.log("first")
 		// the existing medail should be on /sdcard/ for android. 
         if (phoneCheck.android) {
         	my_audio = new Media("/sdcard/" + mediaRecFile, onMediaCallSuccess, onMediaCallError);
@@ -155,6 +155,7 @@ function playMusic() {
 
     // Play audio
     if (my_audio) {
+        console.log("second")
         my_audio.play();
         document.getElementById('PlayStatusID').innerHTML = "Status: playing...";
 
