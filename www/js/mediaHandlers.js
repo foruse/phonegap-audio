@@ -160,7 +160,8 @@ function playMusic() {
     if (my_audio) {
         console.log(my_audio)
         console.log("second")
-        my_audio = new Media("/sdcard/" + "myRecording100.wav", onMediaCallSuccess, onMediaCallError);
+//        my_audio = new Media("/sdcard/" + "myRecording100.wav", onMediaCallSuccess, onMediaCallError);
+        my_audio = new Media("/sdcard/" + "myRecording100.mp3", onMediaCallSuccess, onMediaCallError);
         my_audio.play();
         document.getElementById('PlayStatusID').innerHTML = "Status: playing...";
 
