@@ -149,9 +149,9 @@ function playMusic() {
         	my_audio = new Media("/sdcard/" + mediaRecFile, onMediaCallSuccess, onMediaCallError);
 
             console.log("***test:  Open file:" + mediaRecFile);
-        } else if (phoneCheck.windows7) // windows 7.1 phone
+        } else if (phoneCheck.windows7){ // windows 7.1 phone
             my_audio = new Media(mediaRecFile, onMediaCallSuccess, onMediaCallError);
-        else if (phoneCheck.ios) {
+        }else if (phoneCheck.ios) {
             my_audio = new Media(mediaFileFullName, onMediaCallSuccess, onMediaCallError);
         }
     }
@@ -161,7 +161,20 @@ function playMusic() {
         console.log(my_audio)
         console.log("second")
 //        my_audio = new Media("/sdcard/" + "myRecording100.wav", onMediaCallSuccess, onMediaCallError);
-        my_audio = new Media("/sdcard/" + "myRecording100.mp3", onMediaCallSuccess, onMediaCallError);
+//        my_audio = new Media("/sdcard/" + "myRecording100.mp3", onMediaCallSuccess, onMediaCallError);
+
+
+        if (phoneCheck.android) {
+            console.log("***test:  Open file:" + mediaRecFile);
+        	my_audio = new Media("/sdcard/" + mediaRecFile, onMediaCallSuccess, onMediaCallError);
+
+        } else if (phoneCheck.windows7){ // windows 7.1 phone
+            console.log("***test:  Open file:" + mediaRecFile);
+            my_audio = new Media(mediaRecFile, onMediaCallSuccess, onMediaCallError);
+        }else if (phoneCheck.ios) {
+            my_audio = new Media(mediaFileFullName, onMediaCallSuccess, onMediaCallError);
+        }
+
         my_audio.play();
         document.getElementById('PlayStatusID').innerHTML = "Status: playing...";
 
