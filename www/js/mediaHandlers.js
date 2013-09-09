@@ -99,8 +99,10 @@ function startRecording() {
     	my_audio.release();
 
     if (phoneCheck.android) {
+        console.log(mediaRecFile)
     	my_audio = new Media(mediaRecFile, onMediaCallSuccess, onMediaCallError);
     	console.log("***test: new Media() for android ***");
+        console.log(my_audio)
 
     	recordNow();
     }
