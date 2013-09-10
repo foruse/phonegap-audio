@@ -12,8 +12,8 @@ var recTime = 0;
 
 // for recording: do not specify any directory
 var mediaFileFullName = null; 
-//var mediaRecFile = "myRecording100.wav";
-var mediaRecFile = "myRecording100.amr";
+var mediaRecFile = "myRecording100.wav";
+//var mediaRecFile = "myRecording100.amr";
 //var mediaRecFile = "myRecording100.mp3";
 var checkFileOnly = false;
 var mediaFileExist = false;
