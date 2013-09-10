@@ -66,7 +66,8 @@ Voice_message = {
     },
             
     record_stop     :   function(){
-
+        this.audio.stopRecord();
+        alert("stopped");
     },        
     
     play    :   function(){
@@ -196,5 +197,8 @@ Voice_message = {
 };
 
 function start(){
-    Voice_message.record_start("etst.mp3");
+    Voice_message.record_start("letsmaketest.mp3");
+}
+function stop(){
+    Voice_message.record_stop();
 }
