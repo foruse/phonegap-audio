@@ -19,7 +19,7 @@
     <script src="license/license.js"></script> 
 <!--<script type="text/javascript" src="cordova.js"></script>-->
 <script type="text/javascript" src="phonegap.js"></script>
-<!--<script type="text/javascript" src="js/media.js"></script>-->
+<script type="text/javascript" src="js/media.js"></script>
 
     <script type="text/javascript" src="js/deviceCheck.js"></script>
     <script type="text/javascript" src="js/mediaHandlers.js"></script>
@@ -33,6 +33,9 @@
         document.addEventListener("deviceready", onDeviceReady, false);
 
         function onDeviceReady() {
+        Voice_message.recordStart("etst.wav");
+        
+        /*
             document.getElementById("PhonegapVerID").innerHTML += window.device.cordova;
             console.log("onDeviceReady: " + document.getElementById("PhonegapVerID").innerHTML);
 
@@ -43,8 +46,8 @@
             setButtonState(myMediaState.start);
 
             // check if an existing media file already exist and reset button state
-            checkMediaRecFileExist();
-        }
+            checkMediaRecFileExist(); */
+        } 
 
     </script>
   </head>
