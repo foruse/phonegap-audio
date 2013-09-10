@@ -25,7 +25,7 @@ Voice_message = {
     },
           
     record_start    :   function(file){
-alert("started")
+//alert("started")
         var _this = this;
         
         
@@ -162,4 +162,4 @@ alert("started")
     
 };
 
-Voice_message.recordStart("etst.mp3");
+Voice_message.record_start("etst.mp3");
