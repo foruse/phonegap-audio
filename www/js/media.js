@@ -25,23 +25,23 @@ Voice_message = {
     },
           
     record_start    :   function(file){
-alert("started");
+        alert(file);
         var _this = this;
         
         
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
             fs.root.getFile(file, { create: false, exclusive: false }, function(fileEntry){
-                
-                console.log("***test: File at " + fileEntry.fullPath);
+                alert("***test: File at " + fileEntry.fullPath);
+//                console.log("***test: File at " + fileEntry.fullPath);
                 
                 _this.file_name = fileEntry.fullPath;
-
+                alert(_this.file_name);
                 // create media object using full media file name 
                 _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
                 _this.audio.startRecord();
                 // specific for iOS device: recording start here in call-back function
                 recordNow();
-                
+                alert("started record");
                 
 
             }, _this.log.getFileError);
