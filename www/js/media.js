@@ -205,12 +205,21 @@ Voice_message = {
     
 };
 
-function start(){
+function start_record(){
     Voice_message.record_start("Igor_test1.mp3");
 }
 
-function stop(){
+function stop_record(){
     Voice_message.record_stop();
+}
+function play(){
+    Voice_message.play();
+}
+function pause(){
+    Voice_message.pause();
+}
+function stop(){
+    Voice_message.stop();
 }
 //////////////////
 function setAudioPosition(audioPosID, position) {
