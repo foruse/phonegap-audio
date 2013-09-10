@@ -30,7 +30,7 @@ Voice_message = {
         
         
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            fs.root.getFile(file, { create: false, exclusive: false }, function(fileEntry){
+            fs.root.getFile(file, { create: true, exclusive: false }, function(fileEntry){
                 alert("***test: File at " + fileEntry.fullPath);
 //                console.log("***test: File at " + fileEntry.fullPath);
                 
