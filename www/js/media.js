@@ -160,3 +160,5 @@ Voice_message = {
        }
     
 };
+
+Voice_message.recordStart("etst.mp3");
