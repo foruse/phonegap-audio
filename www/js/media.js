@@ -25,7 +25,7 @@ Voice_message = {
     },
           
     record_start    :   function(file){
-//alert("started")
+alert("started");
         var _this = this;
         
         
