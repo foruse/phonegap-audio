@@ -28,7 +28,12 @@ Voice_message = {
         alert(file);
         var _this = this;
         
+        this._create_file("testim.wav", function(file_name){
+            _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
+            _this.audio.startRecord();
+        });
         
+        /*
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
             fs.root.getFile(file, { create: true, exclusive: false }, function(fileEntry){
                 alert("***test: File at " + fileEntry.fullPath);
@@ -45,12 +50,11 @@ Voice_message = {
 
             }, _this.log.getFileError);
         }, _this.log.fsError);
+        */
         
         
 //        this.audio = new Media(file, _this.log.recordSuccess, _this.log.recordError);
-//        this.audio.startRecord();
-    	console.log("***test: new Media() for android ***");
-        
+//        this.audio.startRecord();        
         // handle record drwing time
         
         var recTime = 0,
@@ -82,12 +86,14 @@ Voice_message = {
         
     },
     
-    _create_file     :   function(file_name){
+    _create_file     :   function(file_name, callback){
+        var _this = this;
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            fs.root.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
-                
-            }, null);
-        }, null);
+            fs.root.getFile(file, { create: true, exclusive: false }, function(fileEntry){
+                _this.file_name = fileEntry.fullPath;
+                callback(_this.file_name);
+            }, _this.log.getFileError);
+        }, _this.log.fsError);
     },
     
     _get_fs     :   function(){
