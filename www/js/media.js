@@ -40,7 +40,6 @@ Voice_message = {
                 _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
                 _this.audio.startRecord();
                 // specific for iOS device: recording start here in call-back function
-                recordNow();
                 alert("started record");
                 
 
@@ -127,39 +126,75 @@ Voice_message = {
     */
        log  :   {
             recordSuccess    :   function(err,err1){
-                console.log(err+" RECORD success");
-                console.log(err1+" RECORD success");
+                alert(err+" RECORD success");
+                alert(err1+" RECORD success");
             },
             recordError      :   function(err,err1){
-                console.log(err+" RECORD error");
-                console.log(err1+" RECORD error");
+                alert(err+" RECORD error");
+                alert(err1+" RECORD error");
             },
             fsError          :   function(err,err1){
-                console.log(err+" FS error");
-                console.log(err1+" FS error");
+                alert(err+" FS error");
+                alert(err1+" FS error");
             },
             fsSuccess        :   function(err,err1){
-                console.log(err+" FS success");
-                console.log(err1+" FS success");
+                alert(err+" FS success");
+                alert(err1+" FS success");
             },
             getFileError     :   function(err,err1){
-                console.log(err+" getFileError error");
-                console.log(err1+" getFileError error");
+                alert(err+" getFileError error");
+                alert(err1+" getFileError error");
             },
             getFileSuccess   :   function(err,err1){
-                console.log(err+" getFileSuccess success");
-                console.log(err1+" getFileSuccess success");
+                alert(err+" getFileSuccess success");
+                alert(err1+" getFileSuccess success");
             },
             MediaSuccess     :   function(err,err1){
-                console.log(err+" MediaSuccess success");
-                console.log(err1+" MediaSuccess success");
+                alert(err+" MediaSuccess success");
+                alert(err1+" MediaSuccess success");
             },
             MediaError   :   function(err,err1){
-                console.log(err+" MediaError error");
-                console.log(err1+" MediaError error");
+                alert(err+" MediaError error");
+                alert(err1+" MediaError error");
             }
        }
+//       log  :   {
+//            recordSuccess    :   function(err,err1){
+//                console.log(err+" RECORD success");
+//                console.log(err1+" RECORD success");
+//            },
+//            recordError      :   function(err,err1){
+//                console.log(err+" RECORD error");
+//                console.log(err1+" RECORD error");
+//            },
+//            fsError          :   function(err,err1){
+//                console.log(err+" FS error");
+//                console.log(err1+" FS error");
+//            },
+//            fsSuccess        :   function(err,err1){
+//                console.log(err+" FS success");
+//                console.log(err1+" FS success");
+//            },
+//            getFileError     :   function(err,err1){
+//                console.log(err+" getFileError error");
+//                console.log(err1+" getFileError error");
+//            },
+//            getFileSuccess   :   function(err,err1){
+//                console.log(err+" getFileSuccess success");
+//                console.log(err1+" getFileSuccess success");
+//            },
+//            MediaSuccess     :   function(err,err1){
+//                console.log(err+" MediaSuccess success");
+//                console.log(err1+" MediaSuccess success");
+//            },
+//            MediaError   :   function(err,err1){
+//                console.log(err+" MediaError error");
+//                console.log(err1+" MediaError error");
+//            }
+//       }
     
 };
 
-Voice_message.record_start("etst.mp3");
+function start(){
+    Voice_message.record_start("etst.mp3");
+}

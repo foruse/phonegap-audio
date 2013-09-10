@@ -35,7 +35,7 @@
         document.addEventListener("deviceready", onDeviceReady, false);
 
         function onDeviceReady() {
-        Voice_message.record_start("etst.wav");
+        //Voice_message.record_start("etst.wav");
         
         /*
             document.getElementById("PhonegapVerID").innerHTML += window.device.cordova;
@@ -53,7 +53,8 @@
 
     </script>
   </head>
-  <body onload="loadLicenseTxt()">
+  <body onload="//loadLicenseTxt()">
+  <body">
     <div id="container">
        <header data-role="header">
           <h1>Media Sample v1.0</h1>  
@@ -64,7 +65,8 @@
        <div id="body">
            <div class="subheader" id="PhonegapVerID">Record with PhoneGap version: </div><br />
            <div style="padding-left:15pt">
-               <button ID="startRecID" data-theme="a" data-inline="true" onclick="startRecording()">Record</button>
+               <button ID="startRecID" data-theme="a" data-inline="true" onclick="//startRecording()">Record</button>
+               <button ID="startRecID" data-theme="a" data-inline="true" onclick="start()">Record</button>
                 <button ID="stopRecID" data-theme="a" data-inline="true" onclick="stopRecording()">Stop</button>
                <div id="RecStatusID">Status: </div>
                <div id="media_rec_pos">Audio position: 0 sec</div>
