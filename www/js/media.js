@@ -29,29 +29,15 @@ Voice_message = {
         this._create_file(file, function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
-            
-            progressTimmer = setInterval(function () {
-                // get my_audio position
-                _this.audio.getCurrentPosition(
-                // success callback
-                function (position) {
-                    if (position >= 0){
-                        setAudioPosition('media_rec_pos', (position) + " sec");
-                        alert(position)
-                    }else {
-                        alert("000")
-                        // reached end of media: same as clicked stop-music 
-                        clearProgressTimmer();
-                        setAudioPosition('media_rec_pos', "0 sec");
-                        document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
-    //                    setButtonState(myMediaState.stopped);
-                    }
-                },
-                // error callback
-                function (e) {
-                    document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
-                    setAudioPosition("Error: " + e);
-                });
+            recTime = 0;
+
+	// Stop recording after 10 sec
+            progressTimmer = setInterval(function() {
+                    recTime = recTime + 1;
+                    setAudioPosition('media_rec_pos', recTime + " sec");
+                    if (recTime >= 10)
+                            stopRecording();
+                    console.log("***test: interval-func()***");
             }, 1000);
         
         });
@@ -74,6 +60,30 @@ Voice_message = {
 //            return false;
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
             this.audio.play();
+            progressTimmer = setInterval(function () {
+                alert("position")
+                // get my_audio position
+                _this.audio.getCurrentPosition(
+                // success callback
+                function (position) {
+                    if (position >= 0){
+                        setAudioPosition('media_pos', (position) + " sec");
+                        alert(position)
+                    }else {
+                        alert("000")
+                        // reached end of media: same as clicked stop-music 
+                        clearProgressTimmer();
+                        setAudioPosition('media_pos', "0 sec");
+                        document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
+    //                    setButtonState(myMediaState.stopped);
+                    }
+                },
+                // error callback
+                function (e) {
+                    document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
+                    setAudioPosition("Error: " + e);
+                });
+            }, 1000);
 //            alert(_this.audio);
         }else{ // else play current audio
         // Play audio
