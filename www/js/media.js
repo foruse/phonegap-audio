@@ -234,6 +234,7 @@ function clearProgressTimmer() {
 
 function init(){
 //    Voice_message.INIT();
+    alert("Window")
     alert(Window)
     alert(window)
 }
