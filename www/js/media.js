@@ -25,36 +25,37 @@ Voice_message = {
     },
           
     record_start    :   function(file){
-        
         var _this = this;
-        
         this._create_file(file, function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
-//            alert(file_name);
+            
+            progressTimmer = setInterval(function () {
+                // get my_audio position
+                _this.audio.getCurrentPosition(
+                // success callback
+                function (position) {
+                    if (position >= 0){
+                        setAudioPosition('media_rec_pos', (position) + " sec");
+                        alert(position)
+                    }else {
+                        alert("000")
+                        // reached end of media: same as clicked stop-music 
+                        clearProgressTimmer();
+                        setAudioPosition('media_rec_pos', "0 sec");
+                        document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
+    //                    setButtonState(myMediaState.stopped);
+                    }
+                },
+                // error callback
+                function (e) {
+                    document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
+                    setAudioPosition("Error: " + e);
+                });
+            }, 1000);
+        
         });
         
-        progressTimmer = setInterval(function () {
-            // get my_audio position
-            _this.audio.getCurrentPosition(
-            // success callback
-            function (position) {
-                if (position >= 0)
-                    setAudioPosition('media_pos', (position) + " sec");
-                else {
-                    // reached end of media: same as clicked stop-music 
-                    clearProgressTimmer();
-                    setAudioPosition('media_pos', "0 sec");
-                    document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
-//                    setButtonState(myMediaState.stopped);
-                }
-            },
-            // error callback
-            function (e) {
-                document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
-                setAudioPosition("Error: " + e);
-            });
-        }, 1000);
     },
             
     record_stop     :   function(){
