@@ -108,7 +108,20 @@ Voice_message = {
 //            
 //        } , null);
 //        var path = 'music/genres/jazz/';
+//        var _this = this;
+        
+//        entry.getDirectory("newDir", {create: true, exclusive: false}, success, fail);
+        
         var _this = this;
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
+            fs.root.getDirectory("newDir", { create: true, exclusive: false }, function(fileEntry){
+//                _this.file_name = fileEntry.fullPath;
+//                callback(_this.file_name);
+                alert(fileEntry);
+            }, _this.log.getFileError);
+        }, _this.log.fsError);
+        
+        /*
         function createDir(rootDirEntry, folders) {
           // Throw out './' or '/' and move on to prevent something like '/foo/.//bar'.
           if (folders[0] == '.' || folders[0] == '') {
@@ -124,13 +137,15 @@ Voice_message = {
 
         function onInitFs(fs) {
           createDir(fs.root, _this.path.split('/')); // fs.root is a DirectoryEntry.
-        }
+        } 
 
         window.requestFileSystem(localFileSystem, 0, onInitFs, function(evt){
             console.log(evt.target.error.code);
         });
         
         setFolderMetadata(LocalFileSystem.PERSISTENT, "Backups", "com.apple.MobileBackup", 1);
+        
+        */
     },
     
     
@@ -233,8 +248,8 @@ function clearProgressTimmer() {
 }
 
 function init(){
-//    Voice_message.INIT();
-    alert("Window")
-    alert(Window)
-    alert(window)
+    Voice_message.INIT();
+//    alert("Window")
+//    alert(Window)
+//    alert(window)
 }
