@@ -8,7 +8,7 @@ Voice_message = {
     
     audio   :   null,
     
-    path    :   "bao/audio/",
+    path    :   "Bao",
     
     file_name   :   null,
 
@@ -91,12 +91,18 @@ Voice_message = {
     
     _create_file     :   function(file_name, callback){
         var _this = this;
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            fs.root.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
+//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
+            _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
                 _this.file_name = fileEntry.fullPath;
                 callback(_this.file_name);
             }, _this.log.getFileError);
-        }, _this.log.fsError);
+//        }, _this.log.fsError);
+//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
+//            fs.root.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
+//                _this.file_name = fileEntry.fullPath;
+//                callback(_this.file_name);
+//            }, _this.log.getFileError);
+//        }, _this.log.fsError);
     },
     
     _get_fs     :   function(){
@@ -114,9 +120,10 @@ Voice_message = {
         
         var _this = this;
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            fs.root.getDirectory("newDir", { create: true, exclusive: false }, function(fileEntry){
+            fs.root.getDirectory(_this.path, { create: true, exclusive: false }, function(fileEntry){
 //                _this.file_name = fileEntry.fullPath;
 //                callback(_this.file_name);
+                _this.fs = fs;
                 alert(fileEntry);
             }, _this.log.getFileError);
         }, _this.log.fsError);
