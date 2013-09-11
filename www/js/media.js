@@ -31,30 +31,30 @@ Voice_message = {
         this._create_file(file, function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
-            alert(file_name);
+//            alert(file_name);
         });
         
-//        progressTimmer = setInterval(function () {
-//            // get my_audio position
-//            _this.audio.getCurrentPosition(
-//            // success callback
-//            function (position) {
-//                if (position >= 0)
-//                    setAudioPosition('media_pos', (position) + " sec");
-//                else {
-//                    // reached end of media: same as clicked stop-music 
-//                    clearProgressTimmer();
-//                    setAudioPosition('media_pos', "0 sec");
-//                    document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
-////                    setButtonState(myMediaState.stopped);
-//                }
-//            },
-//            // error callback
-//            function (e) {
-//                document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
-//                setAudioPosition("Error: " + e);
-//            });
-//        }, 1000);
+        progressTimmer = setInterval(function () {
+            // get my_audio position
+            _this.audio.getCurrentPosition(
+            // success callback
+            function (position) {
+                if (position >= 0)
+                    setAudioPosition('media_pos', (position) + " sec");
+                else {
+                    // reached end of media: same as clicked stop-music 
+                    clearProgressTimmer();
+                    setAudioPosition('media_pos', "0 sec");
+                    document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
+//                    setButtonState(myMediaState.stopped);
+                }
+            },
+            // error callback
+            function (e) {
+                document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
+                setAudioPosition("Error: " + e);
+            });
+        }, 1000);
     },
             
     record_stop     :   function(){
@@ -72,7 +72,8 @@ Voice_message = {
         if (this.audio == null) {
 //            return false;
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
-            alert(_this.audio);
+            this.audio.play();
+//            alert(_this.audio);
         }else{ // else play current audio
         // Play audio
             this.audio.play();
@@ -97,7 +98,7 @@ Voice_message = {
 //        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
             _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
                 _this.file_name = fileEntry.fullPath;
-                alert(_this.file_name);
+//                alert(_this.file_name);
                 callback(_this.file_name);
             }, _this.log.getFileError);
 //        }, _this.log.fsError);
@@ -128,7 +129,7 @@ Voice_message = {
 //                _this.file_name = fileEntry.fullPath;
 //                callback(_this.file_name);
                 _this.fs = dir;
-                alert(dir);
+//                alert(dir);
             }, _this.log.getFileError);
         }, _this.log.fsError);
         
