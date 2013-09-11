@@ -8,7 +8,7 @@ Voice_message = {
     
     audio   :   null,
     
-    path    :   "music/genres/jazz/",
+    path    :   "bao/audio/",
     
     file_name   :   null,
 
@@ -101,7 +101,7 @@ Voice_message = {
     
     _get_fs     :   function(){
         
-    },   /* 
+    },   
            
     INIT    : function(){
 //        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
@@ -131,9 +131,9 @@ Voice_message = {
         });
         
         setFolderMetadata(LocalFileSystem.PERSISTENT, "Backups", "com.apple.MobileBackup", 1);
-    } 
+    },
     
-    */
+    
        log  :   {
             recordSuccess    :   function(err,err1){
                 alert(err+" RECORD success");
@@ -230,4 +230,8 @@ function clearProgressTimmer() {
         clearInterval(progressTimmer);
         progressTimmer = null;
     } 
+}
+
+function init(){
+    Voice_message.INIT()
 }
