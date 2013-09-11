@@ -233,5 +233,5 @@ function clearProgressTimmer() {
 }
 
 function init(){
-    Voice_message.INIT()
+    Voice_message.INIT();
 }
