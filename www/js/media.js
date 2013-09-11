@@ -28,7 +28,7 @@ Voice_message = {
         
         var _this = this;
         
-        this._create_file("testim.wav", function(file_name){
+        this._create_file(file, function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
             alert(file_name);
@@ -94,6 +94,7 @@ Voice_message = {
 //        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
             _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
                 _this.file_name = fileEntry.fullPath;
+                alert(_this.file_name);
                 callback(_this.file_name);
             }, _this.log.getFileError);
 //        }, _this.log.fsError);
@@ -120,11 +121,11 @@ Voice_message = {
         
         var _this = this;
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            fs.root.getDirectory(_this.path, { create: true, exclusive: false }, function(fileEntry){
+            fs.root.getDirectory(_this.path, { create: true, exclusive: false }, function(dir){
 //                _this.file_name = fileEntry.fullPath;
 //                callback(_this.file_name);
-                _this.fs = fs;
-                alert(fileEntry);
+                _this.fs = dir;
+                alert(dir);
             }, _this.log.getFileError);
         }, _this.log.fsError);
         
