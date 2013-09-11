@@ -11,6 +11,8 @@ Voice_message = {
     path    :   "Bao",
     
     file_name   :   null,
+    
+    timer   : null,
 
     _phoneCheck : function(){
         if(this.ua.match(/(iphone|ipod|ipad)/i)){
@@ -29,28 +31,56 @@ Voice_message = {
         this._create_file(file, function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
-            recTime = 0;
-
-	// Stop recording after 10 sec
-            progressTimmer = setInterval(function() {
-                    recTime = recTime + 1;
-                    setAudioPosition('media_rec_pos', recTime + " sec");
-                    if (recTime >= 10)
-                            stopRecording();
-                    console.log("***test: interval-func()***");
-            }, 1000);
-        
+            _this._draw_record_time();
         });
         
+    },
+    
+    _draw_record_time   : function(){
+        var time = 0;
+        this.timer = setInterval(function() {
+            ++time;
+            document.getElementById("media_rec_pos").innerHTML = "Audio position: "+time+" sec";
+        }, 1000);
+    },
+            
+    _draw_play_time   : function(){
+        var _this = this;
+        this.timer = setInterval(function () {
+            // get my_audio position
+            _this.audio.getCurrentPosition(
+                // success callback
+                function (position) {
+                    if (position >= 0){
+                        document.getElementById("media_pos").innerHTML = "Audio position: "+position+" sec";
+                    }else {
+                        // reached end of media: same as clicked stop-music 
+                        _this._stop_timer();
+                        document.getElementById("media_pos").innerHTML = "Audio position: 0 sec";
+                        document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
+                    }
+                },
+                // error callback
+                function (e) {
+                    document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
+                    setAudioPosition("Error: " + e);
+                });
+        }, 1000);
+    },
+            
+    _stop_timer : function(){
+        var _this = this;
+        if (this.timer !== null) {
+            clearInterval(_this.timer);
+            _this.timer = null;
+        } 
     },
             
     record_stop     :   function(){
         if(this.audio){
             this.audio.stopRecord();
             this.audio = null;
-            clearProgressTimmer();
-
-            alert("stopped");
+            this._stop_timer();
         }
     },        
     
@@ -60,34 +90,11 @@ Voice_message = {
 //            return false;
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
             this.audio.play();
-            progressTimmer = setInterval(function () {
-                alert("position")
-                // get my_audio position
-                _this.audio.getCurrentPosition(
-                // success callback
-                function (position) {
-                    if (position >= 0){
-                        setAudioPosition('media_pos', (position) + " sec");
-                        alert(position)
-                    }else {
-                        alert("000")
-                        // reached end of media: same as clicked stop-music 
-                        clearProgressTimmer();
-                        setAudioPosition('media_pos', "0 sec");
-                        document.getElementById('PlayStatusID').innerHTML = "Status: stopped";
-    //                    setButtonState(myMediaState.stopped);
-                    }
-                },
-                // error callback
-                function (e) {
-                    document.getElementById('PlayStatusID').innerHTML = "Status: Error on getting position - " + e;
-                    setAudioPosition("Error: " + e);
-                });
-            }, 1000);
-//            alert(_this.audio);
+            this._draw_play_time();
         }else{ // else play current audio
         // Play audio
             this.audio.play();
+            this._draw_play_time();
         }
         // Update my_media position every second
     },
@@ -101,24 +108,16 @@ Voice_message = {
     stop    :   function(){
         if (this.audio) {
             this.audio.stop();
+            this._stop_timer();
         }
     },
     
     _create_file     :   function(file_name, callback){
         var _this = this;
-//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-            _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
-                _this.file_name = fileEntry.fullPath;
-//                alert(_this.file_name);
-                callback(_this.file_name);
-            }, _this.log.getFileError);
-//        }, _this.log.fsError);
-//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-//            fs.root.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
-//                _this.file_name = fileEntry.fullPath;
-//                callback(_this.file_name);
-//            }, _this.log.getFileError);
-//        }, _this.log.fsError);
+        _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
+            _this.file_name = fileEntry.fullPath;
+            callback(_this.file_name);
+        }, _this.log.getFileError);
     },
     
     _get_fs     :   function(){
@@ -260,15 +259,7 @@ function stop(){
     Voice_message.stop();
 }
 //////////////////
-function setAudioPosition(audioPosID, position) {
-    document.getElementById(audioPosID).innerHTML = "Audio position: "+position;
-}
-function clearProgressTimmer() {
-    if (progressTimmer) {
-        clearInterval(progressTimmer);
-        progressTimmer = null;
-    } 
-}
+
 
 function init(){
     Voice_message.INIT();
