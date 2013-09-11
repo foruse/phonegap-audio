@@ -68,6 +68,8 @@ Voice_message = {
     },        
     
     play    :   function(){
+        var _this =this;
+        alert(_this.audio);
         if (this.audio == null) {
             return false;
         } // else play current audio
@@ -229,7 +231,7 @@ Voice_message = {
 };
 
 function start_record(){
-    Voice_message.record_start("Igor_test1.mp3");
+    Voice_message.record_start("Igor_test1.wav");
 }
 
 function stop_record(){
