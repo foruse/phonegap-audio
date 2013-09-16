@@ -87,6 +87,7 @@ Voice_message = {
     play    :   function(){
         var _this =this;
         console.log(_this.audio);
+        console.log("_this.audio");
         if (this.audio == null) {
 //            return false;
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
