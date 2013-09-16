@@ -85,7 +85,8 @@ Voice_message = {
     },        
     
     play    :   function(){
-        var _this =this;
+        console.log("test");
+        var _this = this;
         console.log(_this.audio);
         console.log("_this.audio");
         if (this.audio == null) {
@@ -252,6 +253,7 @@ function stop_record(){
     Voice_message.record_stop();
 }
 function play(){
+    console.log("pushed");
     Voice_message.play();
 }
 function pause(){
