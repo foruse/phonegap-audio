@@ -88,7 +88,7 @@ Voice_message = {
     play    :   function(){
         console.log("before-play");
         var _this = this;
-        console.log(_this.audio);
+       
         console.log("_this.audio");
         if (this.audio === null) {
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
@@ -96,6 +96,7 @@ Voice_message = {
             this._draw_play_time();
         }else{ // else play current audio
         // Play audio
+            console.log(_this.audio);
             this.audio.play();
             this._draw_play_time();
         }
