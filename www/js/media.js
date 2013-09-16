@@ -263,6 +263,7 @@ function stop(){
 
 function init(){
     Voice_message.INIT();
+    console.log("heeeell");
 //    alert("Window")
 //    alert(Window)
 //    alert(window)
