@@ -45,6 +45,7 @@ Voice_message = {
     },
             
     _draw_play_time   : function(){
+        console.log("_draw_play_time");
         var _this = this;
         this.timer = setInterval(function () {
             // get my_audio position
@@ -85,12 +86,11 @@ Voice_message = {
     },        
     
     play    :   function(){
-        console.log("test");
+        console.log("before-play");
         var _this = this;
         console.log(_this.audio);
         console.log("_this.audio");
-        if (this.audio == null) {
-//            return false;
+        if (this.audio === null) {
             _this.audio = new Media(_this.file_name, _this.recordSuccess, _this.recordError);
             this.audio.play();
             this._draw_play_time();
@@ -118,7 +118,9 @@ Voice_message = {
     _create_file     :   function(file_name, callback){
         var _this = this;
         _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
+            
             _this.file_name = fileEntry.fullPath;
+            console.log(_this.file_name);
             callback(_this.file_name);
         }, _this.log.getFileError);
     },
@@ -267,7 +269,7 @@ function stop(){
 
 function init(){
     Voice_message.INIT();
-    console.log("heeeell");
+    console.log("inited");
 //    alert("Window")
 //    alert(Window)
 //    alert(window)
