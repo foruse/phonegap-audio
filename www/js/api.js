@@ -1372,8 +1372,8 @@ data.append('user', 'person');
                 
             };
             
-            document.addEventListener("deviceready", onDeviceReady, false);
-            function onDeviceReady() {
+//            document.addEventListener("deviceready", onDeviceReady, false);
+//            function onDeviceReady() {
 
                 return {
 
@@ -1391,7 +1391,7 @@ data.append('user', 'person');
                 };
                 
                 init_main_html();
-           };
+//           };
     
         }()
 
