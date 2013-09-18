@@ -330,8 +330,9 @@
                     _last_play_path    : null,
                     
                     record_start    :   function(callback){
-                        PHONE.VoiceMessage.record_start(function(name){
-                            callback(name);
+                        // we need to return record path
+                        PHONE.VoiceMessage.record_start(function(path){
+                            callback(path);
                         });
                     },
                             
@@ -416,7 +417,7 @@
                         SOCKET.connect("project", id, function(message){ // message we need to display
                             console.log(message);
                             // sync DB and display query new message from DB
-                            API._sync(['xiao_project_comments','xiao_users']);
+                            API._sync(['xiao_project_comments','xiao_users','xiao_project_comment_adds']);
                             callback(message);
 //                            DB.select();
 //                            DB.from("xiao_project_comments AS pc ");
@@ -745,7 +746,9 @@
                             return _random(8, table+"_");
                         },
 
-                        _init_tables : ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners', 'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments'],
+                        _init_tables : ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
+                                        'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments',
+                                        'xiao_project_comment_adds'],
                         
                         _init_db : function(clear){
                             var _this = this;
@@ -833,11 +836,20 @@
                                                 server_id VARCHAR(255) NULL,\n\
                                                 id varchar(255) NOT NULL,\n\
                                                 content TEXT NULL,\n\
-                                                type varchar(255) NULL,\n\
-                                                server_path TEXT NULL,\n\
-                                                local_path TEXT NULL,\n\
                                                 project_id VARCHAR(255) NOT NULL,\n\
                                                 user_id VARCHAR(255) NOT NULL,\n\
+                                                update_time DATETIME,\n\
+                                                company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
+                                                UNIQUE(id))'
+                                );
+                                    
+                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
+                                                server_id VARCHAR(255) NULL,\n\
+                                                id varchar(255) NOT NULL,\n\
+                                                comment_id` VARCHAR(255) NULL ,\n\
+                                                type VARCHAR(255) NULL,\n\
+                                                server_path TEXT NULL,\n\
+                                                local_path TEXT NULL,\n\
                                                 update_time DATETIME,\n\
                                                 company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
                                                 UNIQUE(id))'
@@ -1113,6 +1125,13 @@ data.append('user', 'person');
                                 project_id  :   storage.getItem("project_id"),
                                 todo_id     :   storage.getItem("todo_id")
                             };
+                            var data = {};
+                            for(var i in storage){
+                                if(i != "length"){   
+                                    data[i] = storage[i];
+                                }
+                            }
+                            return data;
                         },
                                 
 //                        push_message : function(id){
@@ -1191,34 +1210,16 @@ data.append('user', 'person');
                             return device;
                         }();
                         
-                        this.fs = inited_fs;
-                        
-//                        this.get_fs = function(){
-//                            var _this = this;
-//                            var local_fs = (typeof(LocalFileSystem) !== "undefined" ? LocalFileSystem.PERSISTENT : window.TEMPORARY); // test for browser not throught error
-//                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
-//                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-//                            window.requestFileSystem(local_fs, 0, function(fs){
-
-//                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-//                                fs.root.getDirectory(CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
-//                                    console.log(dir);
-//                                    console.log("dir");
-//                                    console.log(_this);
-//                                    _this.fs =  dir;
-////                                    return dir;
-////                                    _this.fs = dir;
-//                                }, _this.log_error);
-//                            }, _this.log_error);
-//                        }();
-                        
+                        this.fs = inited_fs; // see the start of this file
+                        this.file_path = null;
+                        this.short_name = null;
                         
                         this._create_file = function(pre, callback){
                             var _this = this;
                             this.fs.getFile(_random(pre, 5), { create: true, exclusive: false }, function(fileEntry){
-                                _this.file_name = fileEntry.fullPath;
+                                _this.file_path = fileEntry.fullPath;
                                 _this.short_name = fileEntry;
-                                callback(_this.file_name);
+                                callback(_this.file_path);
                             }, _this.log_error);
                         };
                         
@@ -1285,7 +1286,6 @@ data.append('user', 'person');
                             }
                             options.params = {type:type};
 
-                            
                             ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
                             
                             function fail(error) {
@@ -1299,25 +1299,18 @@ data.append('user', 'person');
                     
                     /* Voice_message */
                     function VoiceMessage(){
-                        console.log("rrrrrrrrrrrrr")
                         VoiceMessage.superclass.constructor.call(this);
                         
                         this.audio = null;
-                        this.file_name = null;
-                        this.short_name = null;
-                        
-                        this.test = function(){
-                            console.log(this.fs);
-                            console.log(this.ua);
-                        };
                         
                         this.record_start    =   function(callback){
                             var _this = this;
-                            this._create_file(SERVER.SESSION.get("user_name"), function(file_name){ // callback
-                                _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
+                            this._create_file(SERVER.SESSION.get("user_name"), function(file_path){ // callback
+                                _this.audio = new Media(file_path, _this.recordSuccess, _this.recordError);
                                 _this.audio.startRecord();
 //                                _this._draw_record_time();
-                                callback(file_name);
+                                console.log(file_path);
+                                callback(file_path);
                             });
 
                         };
@@ -1326,7 +1319,7 @@ data.append('user', 'person');
                             if(this.audio){
                                 var _this = this;
                                 this.audio.stopRecord();
-                                this.upload(this.file_name, "audio", function(data){
+                                this.upload(this.file_path, "audio", function(data){
                                     console.log(data);
                                     _this.audio = null;
                                 });
@@ -1337,7 +1330,7 @@ data.append('user', 'person');
                         this.play    =   function(file){
                             if(!file){return false;}
                             var _this = this;
-                            if (this.audio === null || this.file_name != file) {
+                            if (this.audio === null || this.file_path != file) {
                     //            return false;
                                 this.audio = new Media(file, _this.recordSuccess, _this.recordError);
                                 this.audio.play();

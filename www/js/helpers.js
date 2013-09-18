@@ -1,7 +1,9 @@
-function _random(len, pre){
+function _random(len, after){
+    // later
+    // generate id in following way
+    // date + random + user_id
     var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-    var string_length = len ? len :10;
-    var randomstring = pre ? pre : '';
+    var string_length = len ? len :10, randomstring;
 
     for (var x=0;x<string_length;x++) {
 
@@ -15,8 +17,10 @@ function _random(len, pre){
         }
 
     }
+//    randomstring = after ? (randomstring + after) : randomstring;
     
-    return randomstring+"_"+get_date();
+//    return get_date()+"_"+ (after ? (randomstring + after) : randomstring);
+    return get_date()+ (after ? (randomstring + after) : randomstring);
 }
 
 function get_date(){
