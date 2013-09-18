@@ -26,9 +26,11 @@ Voice_message = {
         }
     },
           
-    record_start    :   function(file){
+//    record_start    :   function(file){
+    record_start    :   function(){
         var _this = this;
-        this._create_file(file, function(file_name){
+//        this._create_file(file, function(file_name){
+        this._create_file(function(file_name){
             _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
             _this.audio.startRecord();
             _this._draw_record_time();
@@ -117,8 +119,26 @@ Voice_message = {
     },
     
     _create_file     :   function(file_name, callback){
+        function make_file_name(){
+            function get_date(){
+                function formatdate(dd){
+                    if(parseInt(dd,10)<10){return "0"+dd;}
+                    return dd;
+                }
+                var dd = new Date(), date="";
+                date+= dd.getFullYear();
+                date+= formatdate(dd.getMonth()+1);
+                date+= formatdate(dd.getDate());
+                date+= formatdate(dd.getHours());
+                date+= formatdate(dd.getMinutes());
+                date+= formatdate(dd.getSeconds());
+                return date;
+            }
+            return "Igor_testProject_"+get_date();
+        }
+        
         var _this = this;
-        _this.fs.getFile(file_name, { create: true, exclusive: false }, function(fileEntry){
+        _this.fs.getFile(make_file_name(), { create: true, exclusive: true }, function(fileEntry){
             
             _this.file_name = fileEntry.fullPath;
             console.log(_this.file_name);
@@ -249,7 +269,8 @@ Voice_message = {
 };
 
 function start_record(){
-    Voice_message.record_start("Igor_test1.wav");
+//    Voice_message.record_start("Igor_test1.wav");
+    Voice_message.record_start();
 }
 
 function stop_record(){
