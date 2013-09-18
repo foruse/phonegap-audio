@@ -13,7 +13,8 @@
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
 
-
+ document.addEventListener("deviceready", onDeviceReady, false);
+    function onDeviceReady() {
 
         App_model = function(SERVER){
             /* Private */
@@ -1159,11 +1160,13 @@ data.append('user', 'person');
 //                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
 //                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
 //                            window.requestFileSystem(local_fs, 0, function(fs){
+
                             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
                                 fs.root.getDirectory(SERVER.CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
                                     console.log(dir);
                                     console.log("dir");
-                                    return dir;
+//                                    return dir;
+                                    _this.fs =  dir;
 //                                    _this.fs = dir;
                                 }, _this.log_error);
                             }, _this.log_error);
@@ -1179,6 +1182,7 @@ data.append('user', 'person');
                         };
                         
                         this.log_error = function(err, err1){
+                            console.log("Phone_error");
                             console.log(err+ " "+ err1);
                             alert(err+ " "+ err1);
                         };
@@ -1254,6 +1258,7 @@ data.append('user', 'person');
                     
                     /* Voice_message */
                     function VoiceMessage(){
+                        console.log("rrrrrrrrrrrrr")
                         VoiceMessage.superclass.constructor.call(this);
                         
                         this.audio = null;
@@ -1399,4 +1404,4 @@ data.append('user', 'person');
  
     );
 
-        
+    }
