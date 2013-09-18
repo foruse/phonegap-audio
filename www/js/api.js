@@ -249,6 +249,20 @@
                     },
                             
                     create  : function(data){
+                
+                data = {
+                            name            :   _random(4, "new_user"),
+                            avatar          :   _random(4, "avatar_"),
+                            pinyin          :   "x",
+                            password        :   _random(4, "password"),
+                            email           :   _random(4, "email"),
+                            QRCode          :   _random(4, "QRCOEDE"),
+                            adress          :   "testuser_123",
+                            phoneNum        :   "testuser_123",
+                            position        :   "testuser_123",
+                            company_id      :   1
+                        };
+                
                         API.insert('xiao_users', data, function(insert_id){
                             SESSION.set("user_id", insert_id);
                         });
@@ -336,24 +350,24 @@
                     
                 },   
                  
-                TEST : function(user){
-                    DB._init_db(1);
-                    SESSION._init_storage();
-                    if(user){
-                        Models.User.create({
-                            name            :   _random(4, "new_user"),
-                            avatar          :   _random(4, "avatar_"),
-                            pinyin          :   "x",
-                            password        :   _random(4, "password"),
-                            email           :   _random(4, "email"),
-                            QRCode          :   _random(4, "QRCOEDE"),
-                            adress          :   "testuser_123",
-                            phoneNum        :   "testuser_123",
-                            position        :   "testuser_123",
-                            company_id      :   1
-                        });
-                    }
-                },
+//                TEST : function(user){
+//                    DB._init_db(1);
+//                    SESSION._init_storage();
+//                    if(user){
+//                        Models.User.create({
+//                            name            :   _random(4, "new_user"),
+//                            avatar          :   _random(4, "avatar_"),
+//                            pinyin          :   "x",
+//                            password        :   _random(4, "password"),
+//                            email           :   _random(4, "email"),
+//                            QRCode          :   _random(4, "QRCOEDE"),
+//                            adress          :   "testuser_123",
+//                            phoneNum        :   "testuser_123",
+//                            position        :   "testuser_123",
+//                            company_id      :   1
+//                        });
+//                    }
+//                },
                         
                 ProjectChat     :   {
                     
@@ -424,7 +438,7 @@
           // PRIVATE
           // PRIVATE
         function(){
-
+            console.log("hello");
 //            var SERVER = {
              SERVER = {
 
@@ -1084,7 +1098,7 @@ data.append('user', 'person');
                             storage.clear();
                         },
 
-                        _init_storage : function(){
+                        _init_storage : function(clear){
                             var _this = this, test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
                             this.clear();
                             this.set("user_id", test_user_id);
@@ -1095,13 +1109,13 @@ data.append('user', 'person');
                                 _this._update_sync_time(cur, 1);
                             });
                             
-                            SERVER.DB.select("u.name");
-                            SERVER.DB.from('xiao_users as u');
-                            SERVER.DB.where('u.id = "'+test_user_id+'" ');
-                            SERVER.DB.col(function(user_name){
-                                console.log(user_name);
-                                _this.set("user_name", user_name);
-                            });
+//                            SERVER.DB.select("u.name");
+//                            SERVER.DB.from('xiao_users as u');
+//                            SERVER.DB.where('u.id = "'+test_user_id+'" ');
+//                            SERVER.DB.col(function(user_name){
+//                                console.log(user_name);
+//                                _this.set("user_name", user_name);
+//                            });
                             
                             return this;
                         }
@@ -1141,10 +1155,11 @@ data.append('user', 'person');
                         }();
                         this.fs = function(){
                             var _this = this;
-                            var local_fs = (typeof(LocalFileSystem) !== "undefined" ? LocalFileSystem.PERSISTENT : window.TEMPORARY); // test for browser not throught error
-                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
+//                            var local_fs = (typeof(LocalFileSystem) !== "undefined" ? LocalFileSystem.PERSISTENT : window.TEMPORARY); // test for browser not throught error
+//                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
 //                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-                            window.requestFileSystem(local_fs, 0, function(fs){
+//                            window.requestFileSystem(local_fs, 0, function(fs){
+                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
                                 fs.root.getDirectory(SERVER.CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
                                     console.log(dir);
                                     console.log("dir");
@@ -1361,16 +1376,16 @@ data.append('user', 'person');
 
            return {
 
-                API     : SERVER.API,
-                DB      : SERVER.DB,
-                SESSION : SERVER.SESSION,
-                PHONE   : SERVER.PHONE,
-                SOCKET  : SERVER.SOCKET
-//                API: SERVER.API,
-//                DB: SERVER.DB._init_db(),
-//                SESSION: SERVER.SESSION._init_storage(),
-//                PHONE: SERVER.PHONE,
+//                API     : SERVER.API,
+//                DB      : SERVER.DB,
+//                SESSION : SERVER.SESSION,
+//                PHONE   : SERVER.PHONE,
 //                SOCKET  : SERVER.SOCKET
+                API: SERVER.API,
+                DB: SERVER.DB._init_db(1),
+                SESSION: SERVER.SESSION._init_storage(1),
+                PHONE: SERVER.PHONE,
+                SOCKET  : SERVER.SOCKET
 
            };
     

@@ -60,7 +60,7 @@ function extend(Child, Parent) {
     Child.prototype.constructor = Child;
     Child.superclass = Parent.prototype;
 }
-
-function init(user){
-    Models.TEST(user);
-}
+//
+//function init(user){
+//    Models.TEST(user);
+//}
