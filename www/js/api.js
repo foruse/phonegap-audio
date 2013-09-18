@@ -1154,7 +1154,10 @@ data.append('user', 'person');
                             }
                             return device;
                         }();
-                        this.fs = function(){
+                        
+                        this.fs = null;
+                        
+                        this.get_fs = function(){
                             var _this = this;
 //                            var local_fs = (typeof(LocalFileSystem) !== "undefined" ? LocalFileSystem.PERSISTENT : window.TEMPORARY); // test for browser not throught error
 //                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
@@ -1165,12 +1168,13 @@ data.append('user', 'person');
                                 fs.root.getDirectory(SERVER.CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
                                     console.log(dir);
                                     console.log("dir");
-//                                    return dir;
                                     _this.fs =  dir;
+                                    return dir;
 //                                    _this.fs = dir;
                                 }, _this.log_error);
                             }, _this.log_error);
                         }();
+                        
                         
                         this._create_file = function(pre, callback){
                             var _this = this;
@@ -1387,15 +1391,15 @@ data.append('user', 'person');
      //                SESSION : SERVER.SESSION,
      //                PHONE   : SERVER.PHONE,
      //                SOCKET  : SERVER.SOCKET
-                     API: SERVER.API,
-                     DB: SERVER.DB._init_db(1),
-                     SESSION: SERVER.SESSION._init_storage(1),
-                     PHONE: SERVER.PHONE,
-                     SOCKET  : SERVER.SOCKET
+                     API        : SERVER.API,
+                     DB         : SERVER.DB._init_db(1),
+                     SESSION    : SERVER.SESSION._init_storage(1),
+                     PHONE      : SERVER.PHONE,
+                     SOCKET     : SERVER.SOCKET
 
                 };
                 
-                init_main_html();
+                
 //           };
     
         }()
@@ -1404,4 +1408,10 @@ data.append('user', 'person');
  
     );
 
+
+
+
+        init_main_html();
+        
+        
     }

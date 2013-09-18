@@ -65,7 +65,8 @@
 //        $(document).ready(function(){
             
 //          init(1);
-            console.log("init_main_html");
+            console.log("init_main_html FIRED!!!");
+            
             var id = "xiao_projects_8w4bk484&20130916170458";
             Models.Project.read(id, function(data){
                 // asynchronous method which have several events (project info and chat messages)
@@ -124,7 +125,7 @@
             Models.VoiceMessage.record_stop();
         }
         function play(){
-            console.log("pushed");
+            console.log("play pushed");
             Models.VoiceMessage.play();
         }
         function pause(){
