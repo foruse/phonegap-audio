@@ -1371,22 +1371,26 @@ data.append('user', 'person');
                 
                 
             };
-           
+            
+            document.addEventListener("deviceready", onDeviceReady, false);
+            function onDeviceReady() {
 
+                return {
 
-           return {
+     //                API     : SERVER.API,
+     //                DB      : SERVER.DB,
+     //                SESSION : SERVER.SESSION,
+     //                PHONE   : SERVER.PHONE,
+     //                SOCKET  : SERVER.SOCKET
+                     API: SERVER.API,
+                     DB: SERVER.DB._init_db(1),
+                     SESSION: SERVER.SESSION._init_storage(1),
+                     PHONE: SERVER.PHONE,
+                     SOCKET  : SERVER.SOCKET
 
-//                API     : SERVER.API,
-//                DB      : SERVER.DB,
-//                SESSION : SERVER.SESSION,
-//                PHONE   : SERVER.PHONE,
-//                SOCKET  : SERVER.SOCKET
-                API: SERVER.API,
-                DB: SERVER.DB._init_db(1),
-                SESSION: SERVER.SESSION._init_storage(1),
-                PHONE: SERVER.PHONE,
-                SOCKET  : SERVER.SOCKET
-
+                };
+                
+                init_main_html();
            };
     
         }()
