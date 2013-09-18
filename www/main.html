@@ -3,7 +3,7 @@
   <head>
 <!--server:port/socket.io/socket.io.js-->
     <script src="http://212.8.40.254:5959/socket.io/socket.io.js"></script>
-    <!--<script type="text/javascript" src="phonegap.js"></script>-->
+    <script type="text/javascript" src="phonegap.js"></script>
     <script type="text/javascript" src="js/helpers.js"></script>
     <script type="text/javascript" src="js/api.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -58,8 +58,16 @@
    
       
       <script>
-          
-        $(document).ready(function(){
+          document.addEventListener("deviceready", onDeviceReady, false);
+
+    // device APIs are available
+    //
+    function onDeviceReady() {
+//    }
+//        $(document).ready(function(){
+            
+          init(1);
+            
             var id = "xiao_projects_8w4bk484&20130916170458";
             Models.Project.read(id, function(data){
                 // asynchronous method which have several events (project info and chat messages)
@@ -86,7 +94,7 @@
                     );
                 }
             });
-        });
+//        });
         
         $(document).on("click", "#send", function(){
             var mess = $("#message-text").val();
@@ -111,31 +119,33 @@
           
         function start_record(){
         //    Voice_message.record_start("Igor_test1.wav");
-            Voice_message.record_start();
+            Models.VoiceMessage.record_start();
         }
 
         function stop_record(){
-            Voice_message.record_stop();
+            Models.VoiceMessage.record_stop();
         }
         function play(){
             console.log("pushed");
-            Voice_message.play();
+            Models.VoiceMessage.play();
         }
         function pause(){
-            Voice_message.pause();
+            Models.VoiceMessage.pause();
         }
         function stop(){
-            Voice_message.stop();
+            Models.VoiceMessage.stop();
         }
         //////////////////
 
 
-        function init(){
-            Voice_message.INIT();
-            console.log("inited");
-        //    alert("Window")
-        //    alert(Window)
-        //    alert(window)
+//        function init(){
+//            Voice_message.INIT();
+//            console.log("inited");
+//        //    alert("Window")
+//        //    alert(Window)
+//        //    alert(window)
+//        }
+        
         }
       </script>
       
