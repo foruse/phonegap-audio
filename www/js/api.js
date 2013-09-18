@@ -14,8 +14,44 @@
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
 
  document.addEventListener("deviceready", onDeviceReady, false);
+ 
     function onDeviceReady() {
+        
+        var inited_fs = null;
+        
+        var CONFIG =    {
+            server_url       : "http://212.8.40.254:5959/",
+            file_upload_url  : "http://212.8.40.254:5959/upload",
+            project_chat_url : "http://212.8.40.254:5959/",
+            todo_chat_url    : "http://212.8.40.254:5959/todo",
 
+            route  : function(url){ return  this.server_url+this.routes[url];},
+
+            routes  :   {
+                sync    :   "sync"
+            },                    
+            root_dir    :   "BAO"
+        };
+        
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
+            fs.root.getDirectory(CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
+
+                inited_fs =  dir;
+                
+                server_start();
+//                                    return dir;
+//                                    _this.fs = dir;
+            }, function(err1, err2){
+                console.log(err1);
+                console.log(err2);
+            });
+            }, function(err1, err2){
+                console.log(err1);
+                console.log(err2);
+        });
+
+        function server_start(){
+            
         App_model = function(SERVER){
             /* Private */
 //            console.log(SERVER)
@@ -454,7 +490,7 @@
                         var _this = this, url;
                         
                         if(!this.socket || !this.type || this.type != type || this.id != id){
-                            url = SERVER.CONFIG[type+'_chat_url'];
+                            url = CONFIG[type+'_chat_url'];
                             if(typeof(url) === "undefined"){console.log("ERROR");return false;}
                             this.socket = io.connect(url);
                             this.id = id;
@@ -938,7 +974,7 @@
                                 if(table_num == (tables.length-1)){
                                     _this._tables_to_sync = []; // new // for now here
                                     // if this is the last table needed to be synced
-                                    _this._request( SERVER.CONFIG.route("sync"),
+                                    _this._request( CONFIG.route("sync"),
                                     {
                                         tables  :   sync_data,
                                         info    :   user_data
@@ -1155,25 +1191,26 @@ data.append('user', 'person');
                             return device;
                         }();
                         
-                        this.fs = null;
+                        this.fs = inited_fs;
                         
-                        this.get_fs = function(){
-                            var _this = this;
+//                        this.get_fs = function(){
+//                            var _this = this;
 //                            var local_fs = (typeof(LocalFileSystem) !== "undefined" ? LocalFileSystem.PERSISTENT : window.TEMPORARY); // test for browser not throught error
 //                            window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem; // test for browser not throught error
 //                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
 //                            window.requestFileSystem(local_fs, 0, function(fs){
 
-                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
-                                fs.root.getDirectory(SERVER.CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
-                                    console.log(dir);
-                                    console.log("dir");
-                                    _this.fs =  dir;
-                                    return dir;
-//                                    _this.fs = dir;
-                                }, _this.log_error);
-                            }, _this.log_error);
-                        }();
+//                            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
+//                                fs.root.getDirectory(CONFIG.root_dir, { create: true, exclusive: false }, function(dir){
+//                                    console.log(dir);
+//                                    console.log("dir");
+//                                    console.log(_this);
+//                                    _this.fs =  dir;
+////                                    return dir;
+////                                    _this.fs = dir;
+//                                }, _this.log_error);
+//                            }, _this.log_error);
+//                        }();
                         
                         
                         this._create_file = function(pre, callback){
@@ -1249,7 +1286,7 @@ data.append('user', 'person');
                             options.params = {type:type};
 
                             
-                            ft.upload(local_path, encodeURI(SERVER.CONFIG.file_upload_url), callback, fail, options);
+                            ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
                             
                             function fail(error) {
                                 alert("An error has occurred: Code = " + error.code);
@@ -1415,3 +1452,4 @@ data.append('user', 'person');
         
         
     }
+}
