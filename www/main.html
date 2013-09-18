@@ -34,9 +34,9 @@
             </div>
             <div id="adds">
                 <div> adds<br />
-                    <button onclick="init()">init</button>
                     <button id="start_record">Record</button>
                     <button id="stop_record">Stop</button>
+                    <button id="play_record">Play_record</button>
                     <div id="RecStatusID">Status: </div>
                     <div id="media_rec_pos">Audio position: 0 sec</div>
                 </div><br />
@@ -112,30 +112,34 @@
         
         
         $(document).on("click", "#start_record", function(){
-
-//        function start_record(){
-        //    Voice_message.record_start("Igor_test1.wav");
-            Models.VoiceMessage.record_start();
+            console.log("start_record pushed");
+            Models.VoiceMessage.record_start(function(file_path){
+                console.log(file_path);
+            });
+        });
+        
+        $(document).on("click", "#play_record", function(){
+            console.log("play_record pushed");
+            Models.VoiceMessage.record_play();
         });
 
         $(document).on("click", "#stop_record", function(){
-//        function stop_record(){
+            console.log("stop_record pushed");
             Models.VoiceMessage.record_stop();
         });
 
         $(document).on("click", "#play", function(){
-//        function play(){
             console.log("play pushed");
             Models.VoiceMessage.play();
         });
 
         $(document).on("click", "#pause", function(){
-//        function pause(){
+            console.log("pause pushed");
             Models.VoiceMessage.pause();
         });
 
         $(document).on("click", "#stop", function(){
-//        function stop(){
+            console.log("stop pushed");
             Models.VoiceMessage.stop();
         });
         //////////////////

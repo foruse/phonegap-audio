@@ -325,19 +325,28 @@
                         
                 VoiceMessage    :   {
                     
-                    _last_play_id    : null,
+                    _last_play_id     : null,
                             
-                    _last_play_path    : null,
+                    _last_play_path   : null,
+                    
+                    _last_record_path : null,
                     
                     record_start    :   function(callback){
                         // we need to return record path
+                        var _this = this;
                         PHONE.VoiceMessage.record_start(function(path){
+                            _this._last_record_path = path;
                             callback(path);
                         });
                     },
                             
                     record_stop    :   function(){
                         PHONE.VoiceMessage.record_stop();
+                    },
+                            
+                    record_play    : function(){
+                        if(this._last_record_path === null){return false;}
+                        PHONE.VoiceMessage.play(this._last_record_path);
                     },
                             
                     play    : function(id){
@@ -846,7 +855,7 @@
                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
                                                 server_id VARCHAR(255) NULL,\n\
                                                 id varchar(255) NOT NULL,\n\
-                                                comment_id` VARCHAR(255) NULL ,\n\
+                                                comment_id VARCHAR(255) NULL,\n\
                                                 type VARCHAR(255) NULL,\n\
                                                 server_path TEXT NULL,\n\
                                                 local_path TEXT NULL,\n\
@@ -1389,24 +1398,24 @@ data.append('user', 'person');
                     
 
                     
-                }()  ,
+                }() // ,
                 // PHONEGAP
                 // PHONEGAP
                 // PHONEGAP
                 
-                CONFIG  :   {
-                    server_url       : "http://212.8.40.254:5959/",
-                    file_upload_url  : "http://212.8.40.254:5959/upload",
-                    project_chat_url : "http://212.8.40.254:5959/",
-                    todo_chat_url    : "http://212.8.40.254:5959/todo",
-
-                    route  : function(url){ return  this.server_url+this.routes[url];},
-
-                    routes  :   {
-                        sync    :   "sync"
-                    },                    
-                    root_dir    :   "BAO"
-                }
+//                CONFIG  :   {
+//                    server_url       : "http://212.8.40.254:5959/",
+//                    file_upload_url  : "http://212.8.40.254:5959/upload",
+//                    project_chat_url : "http://212.8.40.254:5959/",
+//                    todo_chat_url    : "http://212.8.40.254:5959/todo",
+//
+//                    route  : function(url){ return  this.server_url+this.routes[url];},
+//
+//                    routes  :   {
+//                        sync    :   "sync"
+//                    },                    
+//                    root_dir    :   "BAO"
+//                }
                 
                 
             };
