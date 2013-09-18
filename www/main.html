@@ -35,16 +35,16 @@
             <div id="adds">
                 <div> adds<br />
                     <button onclick="init()">init</button>
-                    <button ID="startRecID" onclick="start_record()">Record</button>
-                    <button ID="stopRecID" data-theme="a" data-inline="true" onclick="stop_record()">Stop</button>
+                    <button id="start_record">Record</button>
+                    <button id="stop_record">Stop</button>
                     <div id="RecStatusID">Status: </div>
                     <div id="media_rec_pos">Audio position: 0 sec</div>
                 </div><br />
                 <div class="subheader" id="PhonegapVerID">Playback Using PhoneGap</div><br />
                 <div>
-                    <button ID="startPlayID" onclick="play()">Play</button>
-                    <button ID="pausePlayID" onclick="pause()">Pause</button>
-                    <button ID="stopPlayID" onclick="stop()">Stop</button>
+                    <button id="play">Play</button>
+                    <button id="pause">Pause</button>
+                    <button id="stop">Stop</button>
 
                     <div id="PlayStatusID">Status: </div>
                     <div id="media_pos">Audio position: 0 sec</div>
@@ -55,49 +55,45 @@
     </div>
    
       
-      <script>
+    <script>
 //          document.addEventListener("deviceready", onDeviceReady, false);
 
     // device APIs are available
     //
     function init_main_html() {
-//    }
-//        $(document).ready(function(){
+        console.log("init_main_html FIRED!!!");
             
-//          init(1);
-            console.log("init_main_html FIRED!!!");
-            
-            var id = "xiao_projects_8w4bk484&20130916170458";
-            Models.Project.read(id, function(data){
-                // asynchronous method which have several events (project info and chat messages)
-                
-                console.log(data);
-                if(data.partners){
-                    data.partners.forEach(function(el, i){
-                        i === 0 ? $("#project-info").append('<div>'+el.name+" "+ el.description +'</div>') : "";
-                        $("#project-partners").append(el.name);
-                    });
-                }
-                if(data.chat){
-                    data.chat.forEach(function(el, i){
-                        $("#chat").append('<p>'+el.content+' <b>DB message</b> </p>');
-                    });
-                    Models.ProjectChat.update_chat(
-                        id, // project_id
-                        /* get message event*/
-                        function(message){
-                           console.log(message); 
-                           $("#chat").append('<p>'+message.content+'  <b>  NOT MY</b>  </p>');
-                           console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--"); 
-                        }
-                    );
-                }
-            });
+        var id = "xiao_projects_8w4bk484&20130916170458";
+        Models.Project.read(id, function(data){
+            // asynchronous method which have several events (project info and chat messages)
+
+            console.log(data);
+            if(data.partners){
+                data.partners.forEach(function(el, i){
+                    i === 0 ? $("#project-info").append('<div>'+el.name+" "+ el.description +'</div>') : "";
+                    $("#project-partners").append(el.name);
+                });
+            }
+            if(data.chat){
+                data.chat.forEach(function(el, i){
+                    $("#chat").append('<p>'+el.content+' <b>DB message</b> </p>');
+                });
+                Models.ProjectChat.update_chat(
+                    id, // project_id
+                    /* get message event*/
+                    function(message){
+                       console.log(message); 
+                       $("#chat").append('<p>'+message.content+'  <b>  NOT MY</b>  </p>');
+                       console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--"); 
+                    }
+                );
+            }
+        });
 //        });
         
         $(document).on("click", "#send", function(){
             var mess = $("#message-text").val();
-            
+
             var data = {
 //                content     :   "hello world",
                 content     :   mess,
@@ -106,7 +102,7 @@
 //                            user_id     :   "dsadasdas1212312"
 //                user_id     :   SESSION.get("user_id")
             };
-            
+
             Models.ProjectChat.send_message(data, function(message){
                 $("#message-text").val("");
                 $("#chat").append('<p>'+message.content+' <b> MY Message</b> </p>');
@@ -115,25 +111,33 @@
         });
         
         
-          
-        function start_record(){
+        $(document).on("click", "#start_record", function(){
+
+//        function start_record(){
         //    Voice_message.record_start("Igor_test1.wav");
             Models.VoiceMessage.record_start();
-        }
+        });
 
-        function stop_record(){
+        $(document).on("click", "#stop_record", function(){
+//        function stop_record(){
             Models.VoiceMessage.record_stop();
-        }
-        function play(){
+        });
+
+        $(document).on("click", "#play", function(){
+//        function play(){
             console.log("play pushed");
             Models.VoiceMessage.play();
-        }
-        function pause(){
+        });
+
+        $(document).on("click", "#pause", function(){
+//        function pause(){
             Models.VoiceMessage.pause();
-        }
-        function stop(){
+        });
+
+        $(document).on("click", "#stop", function(){
+//        function stop(){
             Models.VoiceMessage.stop();
-        }
+        });
         //////////////////
 
 
@@ -145,8 +149,8 @@
 //        //    alert(window)
 //        }
         
-        }
-      </script>
+    }
+    </script>
       
       
   </body>

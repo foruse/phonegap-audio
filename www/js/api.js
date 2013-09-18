@@ -1317,7 +1317,7 @@ data.append('user', 'person');
                                 _this.audio = new Media(file_name, _this.recordSuccess, _this.recordError);
                                 _this.audio.startRecord();
 //                                _this._draw_record_time();
-                                callback();
+                                callback(file_name);
                             });
 
                         };
