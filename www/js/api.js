@@ -1225,7 +1225,7 @@ data.append('user', 'person');
                         
                         this._create_file = function(after, callback){
                             var _this = this;
-                            this.fs.getFile( _random(5, after) , { create: true, exclusive: false }, function(fileEntry){
+                            this.fs.getFile( _random(5, after)+".wav" , { create: true, exclusive: false }, function(fileEntry){
                                 _this.file_path = fileEntry.fullPath;
                                 _this.short_name = fileEntry;
 //                                callback(_this.file_path);
