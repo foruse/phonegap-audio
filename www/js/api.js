@@ -346,12 +346,8 @@
                     },
                             
                     record_play    : function(){
-//                        if(this._last_record_path === null){return false;}
-                        console.log("test before");
-                        console.log(this._last_record_path);
-//                        PHONE.VoiceMessage.play(this._last_record_path);
+                        if(this._last_record_path === null){return false;}
                         PHONE.VoiceMessage.record_play(this._last_record_path);
-                        console.log("test after");
                     },
                             
                     play    : function(id){
@@ -1316,11 +1312,14 @@ data.append('user', 'person');
                         
                         this.audio = null;
                         
+                        this.last_record_path = null;
+                        
                         this.record_start    =   function(callback){
                             var _this = this;
                             this._create_file(SERVER.SESSION.get("user_name"), function(file_path){ // callback
                                 _this.audio = new Media(file_path, _this.log_success, _this.log_error);
                                 _this.audio.startRecord();
+                                _this.last_record_path = file_path;
 //                                _this._draw_record_time();
                                 console.log(file_path);
                                 callback(file_path);
@@ -1335,17 +1334,17 @@ data.append('user', 'person');
                                 this.upload(this.file_path, "audio", function(data){
                                     console.log(data);
                                     _this.audio = null;
+                                    _this.last_record_path = null;
                                 });
 //                                this._stop_timer();
                             }
                         };
                         
                         this.record_play    =   function(file){
-                            console.log("record_play first")
-
-                            this.audio = new Media(file, this.log_success, this.log_error);
+                            if(this.last_record_path != file){
+                                this.audio = new Media(file, this.log_success, this.log_error);
+                            }
                             this.audio.play();
-                            console.log("record_play good")
                         };
                         
                         this.play    =   function(file){
