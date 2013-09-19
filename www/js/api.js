@@ -335,6 +335,7 @@
                         // we need to return record path
                         var _this = this;
                         PHONE.VoiceMessage.record_start(function(path){
+                            console.log(path);
                             _this._last_record_path = path;
                             callback(path);
                         });
@@ -346,7 +347,10 @@
                             
                     record_play    : function(){
 //                        if(this._last_record_path === null){return false;}
+                        console.log("test before");
+                        console.log(this._last_record_path);
                         PHONE.VoiceMessage.play(this._last_record_path);
+                        console.log("test after");
                     },
                             
                     play    : function(id){
