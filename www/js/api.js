@@ -429,7 +429,8 @@
                         SOCKET.connect("project", id, function(message){ // message we need to display
                             console.log(message);
                             // sync DB and display query new message from DB
-                            API._sync(['xiao_project_comments','xiao_users','xiao_project_comment_adds']);
+//                            API._sync(['xiao_project_comments','xiao_users','xiao_project_comment_adds']);
+                            API._sync(['xiao_project_comments','xiao_users']);
                             callback(message);
 //                            DB.select();
 //                            DB.from("xiao_project_comments AS pc ");
@@ -784,8 +785,7 @@
                         },
 
                         _init_tables : ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
-                                        'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments',
-                                        'xiao_project_comment_adds'],
+                                        'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments'],
                         
                         _init_db : function(clear){
                             var _this = this;
@@ -872,7 +872,7 @@
                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
                                                 server_id VARCHAR(255) NULL,\n\
                                                 id varchar(255) NOT NULL,\n\
-                                                content TEXT NULL,\n\\n\
+                                                content TEXT NULL,\n\
                                                 type VARCHAR(255) NULL,\n\
                                                 server_path TEXT NULL,\n\
                                                 local_path TEXT NULL,\n\

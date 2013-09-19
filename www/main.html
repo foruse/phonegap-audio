@@ -31,6 +31,7 @@
             <div id="send-message">
                 <input type="text" id="message-text" />
                 <button id="send">send message</button>
+                <button id="send-record">send record</button>
             </div>
             <div id="adds">
                 <div> adds<br />
@@ -135,7 +136,7 @@
             Models.VoiceMessage.record_stop();
         });
         
-        $(document).on("click", "#send_record", function(){
+        $(document).on("click", "#send-record", function(){
             console.log("stop_record pushed");
             Models.VoiceMessage.send_message(message, function(message){
                 $("#message-text").val("");
