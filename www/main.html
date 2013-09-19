@@ -137,11 +137,12 @@
         });
         
         $(document).on("click", "#send-record", function(){
-            console.log("stop_record pushed");
-            Models.VoiceMessage.send_message(message, function(message){
+            console.log("send_record pushed");
+            console.log(message);
+            Models.ProjectChat.send_message(message, function(data){
                 $("#message-text").val("");
-                $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="'+message.id+'">PLAY</button> </p>');
-                console.log(message);
+                $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="'+data.id+'">PLAY</button> </p>');
+                console.log(data);
                 message = {};
             });
         });
