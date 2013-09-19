@@ -349,7 +349,8 @@
 //                        if(this._last_record_path === null){return false;}
                         console.log("test before");
                         console.log(this._last_record_path);
-                        PHONE.VoiceMessage.play(this._last_record_path);
+//                        PHONE.VoiceMessage.play(this._last_record_path);
+                        PHONE.VoiceMessage.record_play(this._last_record_path);
                         console.log("test after");
                     },
                             
@@ -1337,6 +1338,14 @@ data.append('user', 'person');
                                 });
 //                                this._stop_timer();
                             }
+                        };
+                        
+                        this.record_play    =   function(file){
+                            console.log("record_play first")
+
+                            this.audio = new Media(file, this.log_success, this.log_error);
+                            this.audio.play();
+                            console.log("record_play good")
                         };
                         
                         this.play    =   function(file){
