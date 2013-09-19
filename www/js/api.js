@@ -1167,13 +1167,12 @@ data.append('user', 'person');
                             var _this = this, test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
                             this.clear();
                             this.set("user_id", test_user_id);
-                            
+                            this.set("user_name", "Igor");
                             this.set("company_id", 1);
                             SERVER.DB._init_tables.forEach(function(cur){
 //                                console.log(cur)
                                 _this._update_sync_time(cur, 1);
                             });
-                            
 //                            SERVER.DB.select("u.name");
 //                            SERVER.DB.from('xiao_users as u');
 //                            SERVER.DB.where('u.id = "'+test_user_id+'" ');
@@ -1225,7 +1224,7 @@ data.append('user', 'person');
                         
                         this._create_file = function(after, callback){
                             var _this = this;
-                            this.fs.getFile(_random(5, after), { create: true, exclusive: false }, function(fileEntry){
+                            this.fs.getFile( _random(5, after) , { create: true, exclusive: false }, function(fileEntry){
                                 _this.file_path = fileEntry.fullPath;
                                 _this.short_name = fileEntry;
 //                                callback(_this.file_path);
