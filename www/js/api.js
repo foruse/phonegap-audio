@@ -345,7 +345,7 @@
                     },
                             
                     record_play    : function(){
-                        if(this._last_record_path === null){return false;}
+//                        if(this._last_record_path === null){return false;}
                         PHONE.VoiceMessage.play(this._last_record_path);
                     },
                             
@@ -1237,9 +1237,8 @@ data.append('user', 'person');
                             console.log(err+ " "+ err1);
                             alert(err+ " "+ err1);
                         };
-                        this.log_success = function(err, err1){
-                            console.log(err+ " success "+ err1);
-                            alert(err+ "  success  "+ err1);
+                        this.log_success = function(){
+                            console.log(" success ");
                         };
                         
                         this.download = function(server_path, callback){
