@@ -1340,14 +1340,18 @@ data.append('user', 'person');
                         };
                         
                         this.play    =   function(file){
-                            if(!file){return false;}
+//                            if(!file){return false;}
                             var _this = this;
                             if (this.audio === null || this.file_path != file) {
+                                console.log("first")
+                                console.log(file)
                     //            return false;
-                                this.audio = new Media(file, _this.recordSuccess, _this.recordError);
+//                                this.audio = new Media(file, _this.recordSuccess, _this.recordError);
+                                this.audio = new Media(file, this.log_success, this.log_error);
                                 this.audio.play();
 //                                this._draw_play_time();
                             }else{ // else play current audio
+                                console.log("second")
                             // Play audio
                                 this.audio.play();
 //                                this._draw_play_time();
