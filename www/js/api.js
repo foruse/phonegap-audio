@@ -457,18 +457,43 @@
 //                            project_id  :   "xiao_projects_8w4bk484&20130916170458"
 ////                            user_id     :   "dsadasdas1212312"
 //                        };
+//                        var data = {
+//                            content     :   "",
+//                            type        :   "audio",
+//                            local_path  :   "file://sdas/dsdas/test.wav",
+//                            project_id  :   "xiao_projects_8w4bk484&20130916170458"
+////                            user_id   :   "dsadasdas1212312"
+//                        };
                         // 1. save message to db
                         // 2. sync db
                         data['user_id'] = SESSION.get("user_id");
-
-                        API.insert("xiao_project_comments", data, function(insert_id){
-                            // 3. send socket message to all users to sync db
-                            data['id'] = insert_id;
-//                            SESSION.push_message(insert_id);
-                            SOCKET.sendchat(data);
-                            console.log(data);
-                            callback(data);
-                        });
+                        
+                        if(data.type == "audio"){
+                            PHONE.VoiceMessage.upload(data.local_path, "audio", function(server_path){
+                                console.log("upload");
+                                console.log(server_path);
+                                data['server_path'] = server_path;
+                                API.insert("xiao_project_comments", data, function(insert_id){
+                                    // 3. send socket message to all users to sync db
+                                    data['id'] = insert_id;
+        //                            SESSION.push_message(insert_id);
+                                    SOCKET.sendchat(data);
+                                    console.log(data);
+                                    callback(data);
+                                });
+                            });
+                        }else{
+                            
+                            API.insert("xiao_project_comments", data, function(insert_id){
+                                // 3. send socket message to all users to sync db
+                                data['id'] = insert_id;
+    //                            SESSION.push_message(insert_id);
+                                SOCKET.sendchat(data);
+                                console.log(data);
+                                callback(data);
+                            });
+                        }
+                        
                         
                     }
                     
@@ -847,7 +872,10 @@
                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
                                                 server_id VARCHAR(255) NULL,\n\
                                                 id varchar(255) NOT NULL,\n\
-                                                content TEXT NULL,\n\
+                                                content TEXT NULL,\n\\n\
+                                                type VARCHAR(255) NULL,\n\
+                                                server_path TEXT NULL,\n\
+                                                local_path TEXT NULL,\n\
                                                 project_id VARCHAR(255) NOT NULL,\n\
                                                 user_id VARCHAR(255) NOT NULL,\n\
                                                 update_time DATETIME,\n\
@@ -855,17 +883,17 @@
                                                 UNIQUE(id))'
                                 );
                                     
-                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
-                                                server_id VARCHAR(255) NULL,\n\
-                                                id varchar(255) NOT NULL,\n\
-                                                comment_id VARCHAR(255) NULL,\n\
-                                                type VARCHAR(255) NULL,\n\
-                                                server_path TEXT NULL,\n\
-                                                local_path TEXT NULL,\n\
-                                                update_time DATETIME,\n\
-                                                company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
-                                                UNIQUE(id))'
-                                );
+//                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
+//                                                server_id VARCHAR(255) NULL,\n\
+//                                                id varchar(255) NOT NULL,\n\
+//                                                comment_id VARCHAR(255) NULL,\n\
+//                                                type VARCHAR(255) NULL,\n\
+//                                                server_path TEXT NULL,\n\
+//                                                local_path TEXT NULL,\n\
+//                                                update_time DATETIME,\n\
+//                                                company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
+//                                                UNIQUE(id))'
+//                                );
                                 
                                 tx.executeSql('CREATE TABLE IF NOT EXISTS sync_delete (\n\
                                                 `sid` INTEGER NOT NULL PRIMARY KEY,\n\
@@ -1333,11 +1361,11 @@ data.append('user', 'person');
                             if(this.audio){
                                 var _this = this;
                                 this.audio.stopRecord();
-                                this.upload(this.file_path, "audio", function(data){
-                                    console.log(data);
+//                                this.upload(this.file_path, "audio", function(data){
+//                                    console.log(data);
                                     _this.audio = null;
                                     _this.last_record_path = null;
-                                });
+//                                });
 //                                this._stop_timer();
                             }
                         };
