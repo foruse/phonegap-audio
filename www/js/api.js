@@ -1223,9 +1223,9 @@ data.append('user', 'person');
                         this.file_path = null;
                         this.short_name = null;
                         
-                        this._create_file = function(pre, callback){
+                        this._create_file = function(after, callback){
                             var _this = this;
-                            this.fs.getFile(_random(pre, 5), { create: true, exclusive: false }, function(fileEntry){
+                            this.fs.getFile(_random(5, after), { create: true, exclusive: false }, function(fileEntry){
                                 _this.file_path = fileEntry.fullPath;
                                 _this.short_name = fileEntry;
 //                                callback(_this.file_path);
