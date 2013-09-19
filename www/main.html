@@ -110,11 +110,18 @@
             });
         });
         
+        var message = {};
         
         $(document).on("click", "#start_record", function(){
             console.log("start_record pushed");
             Models.VoiceMessage.record_start(function(file_path){
                 console.log(file_path);
+                message = {
+                    content     : "",
+                    type        : "audio",
+                    project_id  : "xiao_projects_8w4bk484&20130916170458",
+                    local_path  : file_path
+                };
             });
         });
         
@@ -126,6 +133,23 @@
         $(document).on("click", "#stop_record", function(){
             console.log("stop_record pushed");
             Models.VoiceMessage.record_stop();
+        });
+        
+        $(document).on("click", "#send_record", function(){
+            console.log("stop_record pushed");
+            Models.VoiceMessage.send_message(message, function(message){
+                $("#message-text").val("");
+                $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="'+message.id+'">PLAY</button> </p>');
+                console.log(message);
+                message = {};
+            });
+        });
+        
+        $(document).on("click", ".play-send-voice", function(){
+            console.log("play pushed");
+            var id  = $(this).attr("vo-id");
+            console.log(id);
+            Models.VoiceMessage.play(id);
         });
 
         $(document).on("click", "#play", function(){
