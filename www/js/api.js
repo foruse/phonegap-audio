@@ -1228,7 +1228,8 @@ data.append('user', 'person');
                             this.fs.getFile(_random(pre, 5), { create: true, exclusive: false }, function(fileEntry){
                                 _this.file_path = fileEntry.fullPath;
                                 _this.short_name = fileEntry;
-                                callback(_this.file_path);
+//                                callback(_this.file_path);
+                                callback(fileEntry.fullPath);
                             }, _this.log_error);
                         };
                         
@@ -1315,7 +1316,7 @@ data.append('user', 'person');
                         this.record_start    =   function(callback){
                             var _this = this;
                             this._create_file(SERVER.SESSION.get("user_name"), function(file_path){ // callback
-                                _this.audio = new Media(file_path, _this.recordSuccess, _this.recordError);
+                                _this.audio = new Media(file_path, _this.log_success, _this.log_error);
                                 _this.audio.startRecord();
 //                                _this._draw_record_time();
                                 console.log(file_path);
