@@ -380,6 +380,7 @@
                                 // if continue to play current media file
                                 PHONE.VoiceMessage.play(this._last_play_path);
                             }else{
+                                        console.log("SECOND");
                                 // if new media file
                                 // we check db if this file exists in local fs
                                 DB.select('pc.id, pc.local_path, pc.server_path');
