@@ -383,7 +383,7 @@
                                 DB.select('pc.id, pc.local_path, pc.server_path');
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'" ');
-                                API.read(function(data){
+                                DB.query(function(data){
                                     console.log(data);
                                     if(data.local_path != ""){
                                         // if this file exists in local db then there is a local path in the db
@@ -395,6 +395,19 @@
                                         PHONE.VoiceMessage.play(_this._last_play_path);
                                     }
                                 });
+                                /*
+                                API.read(function(data){
+                                    console.log(data);
+                                    if(data.local_path != ""){
+                                        // if this file exists in local db then there is a local path in the db
+                                        _this._last_play_path = data.local_path;
+                                        PHONE.VoiceMessage.play(_this._last_play_path);
+                                    }else{
+                                        // if local_path is empty we need to download file from server
+                                        // and then play
+                                        PHONE.VoiceMessage.play(_this._last_play_path);
+                                    }
+                                }); */
                                 //       Models.Voice.play(path)
                                 //    }else{
                                 //      Models.File.download(id, function(path){
