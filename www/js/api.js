@@ -384,21 +384,17 @@
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'"');
                                 DB.row(function(data){
-//                                    console.log(data);
                                     if(data['local_path'] != ""){
-                                        console.log("local");
-                                        console.log(data['local_path']);
-                                        console.log("local_path");
-                                        console.log(data.local_path);
-                                        console.log("local_path");
-//                                        var a = new Media(data.local_path);
-//                                        a.play();
-                                        console.log("played");
                                         // if this file exists in local db then there is a local path in the db
                                         PHONE.VoiceMessage.play(data['local_path']);
                                         _this._last_play_path = data.local_path;
                                     }else{
                                         console.log("no file");
+                                        PHONE.VoiceMessage.download(data['server_path'], function(new_local_path){
+                                            PHONE.VoiceMessage.play(new_local_path);
+                                            _this._last_play_path = new_local_path;
+                                            DB.update("xiao_project_comments", {local_path:new_local_path}, 'id="'+id+'"');
+                                        });
                                         // if local_path is empty we need to download file from server
                                         // and then play
 //                                        PHONE.VoiceMessage.play(_this._last_play_path);
@@ -1378,8 +1374,9 @@
                             this.short_name = null;
 
                             this._create_file = function(after, callback){
-                                var _this = this;
-                                this.fs.getFile( _random(5, after)+"."+CONFIG.audio_format , { create: true, exclusive: false }, function(fileEntry){
+                                var _this = this, new_file_name = _random(5, after);
+                                new_file_name += (/\.[A-Za-z0-9]+$/.test(after) ? "" : "."+CONFIG.audio_format); // if file name dpn't have format we specify it
+                                this.fs.getFile( new_file_name , { create: true, exclusive: false }, function(fileEntry){
                                     _this.file_path = fileEntry.fullPath;
                                     _this.short_name = fileEntry;
     //                                callback(_this.file_path);
@@ -1400,7 +1397,8 @@
 
                                 var fileTransfer = new FileTransfer();
                                 var uri = encodeURI(server_path);
-                                this._create_file( server_path.substring(server_path.lastIndexOf('/')+1) , function(local_path){
+                                
+                                this._create_file(server_path.substring(server_path.lastIndexOf('/')+1) , function(local_path){
 
                                     fileTransfer.download(
                                         uri,
@@ -1505,10 +1503,10 @@
                             };
 
                             this.play    =   function(file){
-                                this.audio = null;
-                                this.audio = new Media(file, this.log_success, this.log_error);
-                                this.audio.play();
-                                /*
+//                                this.audio = null;
+//                                this.audio = new Media(file, this.log_success, this.log_error);
+//                                this.audio.play();
+                                
                                 var _this = this;
                                 if (this.audio === null || this.file_path != file) {
                                     this.audio = new Media(file, this.log_success, this.log_error);
@@ -1517,7 +1515,7 @@
                                     // Play audio
                                     this.audio.play();
                                 }
-                                */
+                                
                             };
 
                             this.pause   =   function(){
