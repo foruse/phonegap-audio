@@ -388,6 +388,7 @@
                                     if(data['local_path'] != ""){
                                         console.log("local");
                                         console.log(data['local_path']);
+                                        console.log(data.local_path);
                                         // if this file exists in local db then there is a local path in the db
                                         PHONE.VoiceMessage.play(data['local_path']);
 //                                        _this._last_play_path = data.local_path;
@@ -1496,6 +1497,7 @@
                             };
 
                             this.play    =   function(file){
+                                this.audio = null;
                                 this.audio = new Media(file, this.log_success, this.log_error);
                                 this.audio.play();
                                 /*
