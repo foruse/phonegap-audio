@@ -799,9 +799,26 @@
                                     }) : this._executeSQL(sql)
                                 );
                             },
+                            
+                            insert_batch_on_duplicate_update : function(table, data, callback){
+                                console.log("insert_batch_on_duplicate_update");
+                                console.log("insert_batch_on_duplicate_update");
+                                console.log("insert_batch_on_duplicate_update");
+                                console.log(data);
+                                console.log(table);
+                                console.log("insert_batch_on_duplicate_update");
+                                console.log("insert_batch_on_duplicate_update");
+                                console.log("insert_batch_on_duplicate_update");
+                                
+//                                return (
+//                                    callback ? this._executeSQL(sql, function(){
+//                                        callback();
+//                                    }) : this._executeSQL(sql)
+//                                );
+                            },
 
                             _make_id :   function(table){
-                                return _random(8, table+"_");
+                                return _random(8, "_"+table);
                             },
 
                             _init_tables : ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
@@ -1063,7 +1080,8 @@
                                                     ){
                                                         //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
                                                         if(ij.updated.length > 0){
-                                                            SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+//                                                            SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+                                                            SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
                                                                 _this._sync_clear(ij.table,  server.info.time);
                                                                 if( num == (changes.length-1) ){
                                                                     return (callback ? callback() : true);
