@@ -309,7 +309,7 @@
 
                         create  : function(data){
 
-                    data = {
+                            data = {
                                 name            :   _random(4, "new_user"),
                                 avatar          :   _random(4, "avatar_"),
                                 pinyin          :   "x",
@@ -324,6 +324,7 @@
 
                             API.insert('xiao_users', data, function(insert_id){
                                 SESSION.set("user_id", insert_id);
+                                SESSION.set("user_name", "new_test_user");
                             });
                         }
 
