@@ -493,7 +493,7 @@
                                 PHONE.VoiceMessage.upload(data.local_path, "audio", function(server_path){
                                     console.log("upload");
                                     console.log(server_path);
-                                    data['server_path'] = server_path;
+                                    data['server_path'] = server_path.response;
                                     API.insert("xiao_project_comments", data, function(insert_id){
                                         // 3. send socket message to all users to sync db
                                         data['id'] = insert_id;
