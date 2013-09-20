@@ -728,6 +728,35 @@
                                     }) : this._executeSQL(sql)
                                 );
                             },
+                            
+                            batch_insert_or_ignore   : function(table, data, callback){
+                                if(typeof table != "string") return false; // table is a string not an array
+                                if(data instanceof Array === false) return false; // data is array here
+                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
+                                for(var key in data[0]){
+                                    sql+=","+key;
+                                }
+                                sql+=')';
+                                for(var j in data){
+                                    for(var ij in data[j]){
+                                        if(i == 0){
+                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
+                                        }
+                                        if(j == 0){
+                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
+                                        }else{
+                                            sql+=', "'+data[j][ij]+'"';
+                                        }
+                                        ++i;
+                                    }
+                                    i=0;
+                                }
+                                return (
+                                    callback ? this._executeSQL(sql, function(){
+                                        callback();
+                                    }) : this._executeSQL(sql)
+                                );
+                            },
 
                             update :   function(table, data, where, callback){
                                 var i = 0, j = 0, sql="", sql = "UPDATE "+table+" SET ";
@@ -801,6 +830,16 @@
                             },
                             
                             insert_batch_on_duplicate_update : function(table, data, callback){
+                                var _this = this, len = data.length;
+                                this.batch_insert_or_ignore(table, data, function(){
+                                    data.forEach(function(row, i){
+                                        if(i == len-1){
+                                            _this.update(table, row, 'id = "'+row.id+'"', callback);
+                                        }else{
+                                            _this.update(table, row, 'id = "'+row.id+'"');
+                                        }
+                                    });
+                                });
                                 console.log("insert_batch_on_duplicate_update");
                                 console.log("insert_batch_on_duplicate_update");
                                 console.log("insert_batch_on_duplicate_update");
