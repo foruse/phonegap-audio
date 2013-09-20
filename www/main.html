@@ -43,7 +43,7 @@
                 </div><br />
                 <div class="subheader" id="PhonegapVerID">Playback Using PhoneGap</div><br />
                 <div>
-                    <button id="play">Play</button>
+                    <!--<button id="play">Play</button>-->
                     <button id="pause">Pause</button>
                     <button id="stop">Stop</button>
 
@@ -61,7 +61,7 @@
 
     // device APIs are available
     //
-    function init_main_html() { //wrapper
+    function init_app() { //wrapper
         console.log("init_main_html FIRED!!!");
             
         var id = "xiao_projects_8w4bk484&20130916170458";
@@ -154,10 +154,10 @@
             Models.VoiceMessage.play(id);
         });
 
-        $(document).on("click", "#play", function(){
-            console.log("play pushed");
-            Models.VoiceMessage.play();
-        });
+//        $(document).on("click", "#play", function(){
+//            console.log("play pushed");
+//            Models.VoiceMessage.play();
+//        });
 
         $(document).on("click", "#pause", function(){
             console.log("pause pushed");
