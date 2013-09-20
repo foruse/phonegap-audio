@@ -1378,9 +1378,12 @@
                             this._create_file = function(after, callback){
                                 var _this = this, new_file_name = _random(5, after);
                                 new_file_name += (/\.[A-Za-z0-9]+$/.test(after) ? "" : "."+CONFIG.audio_format); // if file name dpn't have format we specify it
+                                console.log(new_file_name);
                                 this.fs.getFile( new_file_name , { create: true, exclusive: false }, function(fileEntry){
                                     _this.file_path = fileEntry.fullPath;
                                     _this.short_name = fileEntry;
+                                    console.log("fileEntry.fullPath");
+                                    console.log(fileEntry.fullPath);
     //                                callback(_this.file_path);
                                     callback(fileEntry.fullPath);
                                 }, _this.log_error);
@@ -1401,7 +1404,7 @@
                                 var uri = encodeURI(server_path);
                                 
                                 this._create_file(server_path.substring(server_path.lastIndexOf('/')+1) , function(local_path){
-
+                                    console.log("crete callback");
                                     fileTransfer.download(
                                         uri,
                                         local_path,
