@@ -740,7 +740,7 @@
                                     sql+=key;
                                     ++ij;
                                 }
-                                ij= 0;
+                                var ijk= 0;
                                 sql+=')';
                                 for(var j in data){
                                     for(var ij in data[j]){
@@ -749,17 +749,21 @@
                                             j == 0 ? sql+= ' SELECT ' : sql+= ' UNION SELECT ';
                                         }
                                         if(j == 0){
-                                            if(ij!=0){sql+=",";}
+                                            if(ijk!=0){sql+=",";}
 //                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
                                             sql+='"'+data[j][ij]+'" as '+ ij + ''
                                         }else{
-                                            if(ij!=0){sql+=",";}
+                                            if(ijk!=0){sql+=",";}
 //                                            sql+=', "'+data[j][ij]+'"';
                                             sql+='"'+data[j][ij]+'"';
                                         }
-                                        ++i;++ij;
+                                        console.log(ijk)
+                                        console.log(sql);
+                                        ++i;
+                                        ++ijk;
                                     }
-                                    i=0;ij=0;
+                                    i=0;
+                                    ijk=0;
                                 }
                                 return (
                                     callback ? this._executeSQL(sql, function(){
