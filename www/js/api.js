@@ -382,23 +382,29 @@
                                 // we check db if this file exists in local fs
                                 DB.select('pc.id, pc.local_path, pc.server_path');
                                 DB.from('xiao_project_comments AS pc');
-                                DB.where('pc.id="'+id+'" ');
+                                DB.where('pc.id="'+id+'"');
                                 DB.query(function(data){
 //                                    console.log(data);
                                     if(data['local_path'] != ""){
                                         console.log("local");
                                         console.log(data['local_path']);
+                                        console.log("local_path");
                                         console.log(data.local_path);
+                                        console.log("local_path");
+                                        var a = new Media(data.local_path);
+                                        a.play();
+                                        console.log("played")
                                         // if this file exists in local db then there is a local path in the db
-                                        PHONE.VoiceMessage.play(data['local_path']);
+//                                        PHONE.VoiceMessage.play(data['local_path']);
 //                                        _this._last_play_path = data.local_path;
                                     }else{
-                                        console.log("no file")
+                                        console.log("no file");
                                         // if local_path is empty we need to download file from server
                                         // and then play
 //                                        PHONE.VoiceMessage.play(_this._last_play_path);
                                     }
                                 });
+                                API._clear_tables_to_sync();
                                 /*
                                 API.read(function(data){
                                     console.log(data);
@@ -687,7 +693,9 @@
                                     for (var i=0; i<len; i++){
                                         db_result[i] = results.rows.item(i);
                                     }
+                                    console.log("db_result");
                                     console.log(db_result);
+                                    console.log("db_result");
                                     return (callback ? callback(db_result) : true);
                                 }
                                 function errorCB(err) {
