@@ -78,20 +78,29 @@
                             });
                         }
                         if (data.chat) {
-                            data.chat.forEach(function(el, i) {
-                                $("#chat").append('<p>' + el.content + ' <b>DB message</b> </p>');
+                            data.chat.forEach(function(message, i) {
+//                                $("#chat").append('<p>' + el.content + ' <b>DB message</b> </p>');
+                                if(message.type == "text"){
+                                                    
+                                    console.log(message);
+                                    $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
+                                    console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
+                                }
+                                if(message.type == "audio"){
+                                    $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+                                }
                             });
                             Models.ProjectChat.update_chat(
                                     id, // project_id
                                     /* get message event*/
                                             function(message) {
-                                                if(type == "text"){
+                                                if(message.type == "text"){
                                                     
                                                 console.log(message);
                                                 $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
                                                 console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
                                                 }
-                                                if(type == "audio"){
+                                                if(message.type == "audio"){
                                                     $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
                                                 }
                                             }
