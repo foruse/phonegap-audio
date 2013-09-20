@@ -1119,13 +1119,21 @@
                                                     ){
                                                         //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
                                                         if(ij.updated.length > 0){
-//                                                            SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
-                                                            SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
-                                                                _this._sync_clear(ij.table,  server.info.time);
-                                                                if( num == (changes.length-1) ){
-                                                                    return (callback ? callback() : true);
-                                                                }
-                                                            });
+                                                            if(ij.table == "xiao_project_comments"){
+                                                                SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
+                                                                    _this._sync_clear(ij.table,  server.info.time);
+                                                                    if( num == (changes.length-1) ){
+                                                                        return (callback ? callback() : true);
+                                                                    }
+                                                                });
+                                                            }else{
+                                                                SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+                                                                    _this._sync_clear(ij.table,  server.info.time);
+                                                                    if( num == (changes.length-1) ){
+                                                                        return (callback ? callback() : true);
+                                                                    }
+                                                                });
+                                                            }
                                                         }
                                                     }else{
                                                         if(num == (changes.length-1)){
