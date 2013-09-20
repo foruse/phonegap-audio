@@ -307,7 +307,7 @@
 
                         },
 
-                        create  : function(data){
+                        create  : function(data, callback){
 
                             data = {
                                 name            :   _random(4, "new_user"),
@@ -325,6 +325,7 @@
                             API.insert('xiao_users', data, function(insert_id){
                                 SESSION.set("user_id", insert_id);
                                 SESSION.set("user_name", "new_test_user");
+                                callback(data);
                             });
                         }
 
