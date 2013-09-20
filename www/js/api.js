@@ -732,24 +732,34 @@
                             batch_insert_or_ignore   : function(table, data, callback){
                                 if(typeof table != "string") return false; // table is a string not an array
                                 if(data instanceof Array === false) return false; // data is array here
-                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
+//                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
+                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (', ij = 0;
                                 for(var key in data[0]){
-                                    sql+=","+key;
+                                    if(ij != 0){sql+=",";}
+//                                    sql+=","+key;
+                                    sql+=key;
+                                    ++ij;
                                 }
+                                ij= 0;
                                 sql+=')';
                                 for(var j in data){
                                     for(var ij in data[j]){
                                         if(i == 0){
-                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
+//                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
+                                            j == 0 ? sql+= ' SELECT ' : sql+= ' UNION SELECT ';
                                         }
                                         if(j == 0){
-                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
+                                            if(ij!=0){sql+=",";}
+//                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
+                                            sql+='"'+data[j][ij]+'" as '+ ij + ''
                                         }else{
-                                            sql+=', "'+data[j][ij]+'"';
+                                            if(ij!=0){sql+=",";}
+//                                            sql+=', "'+data[j][ij]+'"';
+                                            sql+='"'+data[j][ij]+'"';
                                         }
-                                        ++i;
+                                        ++i;++ij;
                                     }
-                                    i=0;
+                                    i=0;ij=0;
                                 }
                                 return (
                                     callback ? this._executeSQL(sql, function(){
