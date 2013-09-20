@@ -386,9 +386,10 @@
                                 DB.query(function(data){
                                     console.log(data);
                                     if(data.local_path != ""){
+                                        console.log("local")
                                         // if this file exists in local db then there is a local path in the db
+                                        PHONE.VoiceMessage.play(data.local_path);
                                         _this._last_play_path = data.local_path;
-                                        PHONE.VoiceMessage.play(_this._last_play_path);
                                     }else{
                                         // if local_path is empty we need to download file from server
                                         // and then play
