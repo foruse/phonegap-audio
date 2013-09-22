@@ -199,7 +199,7 @@
                                 SESSION.set("project_id", id);
                                 API._sync(["xiao_projects","xiao_project_partners","xiao_users", "xiao_project_comments"], function(){
 
-                                    DB.select();
+                                    DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
                                     DB.from("xiao_projects AS p");
                                     DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
                                     // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
@@ -210,7 +210,7 @@
                                         callback({partners:partners});
                                     });
 
-                                    DB.select();
+                                    DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
                                     DB.from("xiao_projects AS p");
                                     DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
                                     DB.where('p.id ="'+ id +'"');
@@ -238,7 +238,7 @@
                                 });
                             }else{
                                 callback = id;
-                                DB.select();
+                                DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
                                 DB.from("xiao_projects AS p");
                                 DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
                                 // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
