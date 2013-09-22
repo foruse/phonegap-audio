@@ -91,21 +91,20 @@
                                 }
                             });
                             Models.ProjectChat.update_chat(
-                                    id, // project_id
-                                    /* get message event*/
-                                            function(message) {
-                                                if(message.type == "text"){
-                                                    
-                                                console.log(message);
-                                                $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
-                                                console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
-                                                }
-                                                if(message.type == "audio"){
-                                                    $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
-                                                }
-                                            }
-                                    );
+                                id, // project_id
+                                /* get message event*/
+                                function(message) {
+                                    if(message.type == "text"){
+                                        console.log(message);
+                                        $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
+                                        console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
+                                    }
+                                    if(message.type == "audio"){
+                                        $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+                                    }
                                 }
+                            );
+                        }
                     });
                     //        });
 

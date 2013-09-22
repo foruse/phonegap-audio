@@ -569,10 +569,13 @@
 //                        id      : null,
 
                         connect : function(connect_data, callback){ // in data we specify id and type
+                            console.log(connect_data);
                             // type is project or todo
                             var _this = this, url = CONFIG[connect_data.type+'_chat_url'];
-                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
+                            console.log(url);
+//                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
                             this.socket = io.connect(url);
+                            console.log("connect");
                             this.socket.on('connect', function(){
                                 // call the server-side and make room with id or add to existing one
                                 console.log("CONNECT");
