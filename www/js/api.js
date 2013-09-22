@@ -380,14 +380,15 @@
                                 // if continue to play current media file
                                 PHONE.VoiceMessage.play(this._last_play_path);
                             }else{
-                                        console.log("SECOND");
+                                console.log("SECOND");
                                 // if new media file
                                 // we check db if this file exists in local fs
                                 DB.select('pc.id, pc.local_path, pc.server_path');
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'"');
                                 DB.row(function(data){
-                                    if(data['local_path'] != ""){
+                                    console.log(data['local_path']);
+                                    if(data['local_path'] != "" && data['local_path'] != null && data['local_path'] != "null"){
                                         // if this file exists in local db then there is a local path in the db
                                         PHONE.VoiceMessage.play(data['local_path']);
                                         _this._last_play_path = data.local_path;
