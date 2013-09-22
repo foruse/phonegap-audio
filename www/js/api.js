@@ -1338,7 +1338,9 @@
                             },
 
                             _init_storage : function(clear){
-                                var _this = this, test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
+                                var _this = this, 
+//                                    test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
+                                    test_user_id = "dsadasdas1212312";
                                 this.clear();
                                 this.set("user_id", test_user_id);
                                 this.set("user_name", "Igor");
@@ -1628,8 +1630,8 @@
          //                PHONE   : SERVER.PHONE,
          //                SOCKET  : SERVER.SOCKET
                          API        : SERVER.API,
-                         DB         : SERVER.DB._init_db(1),
                          SESSION    : SERVER.SESSION._init_storage(1),
+                         DB         : SERVER.DB._init_db(1),
                          PHONE      : SERVER.PHONE,
                          SOCKET     : SERVER.SOCKET
 
