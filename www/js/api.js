@@ -393,6 +393,8 @@
                                         _this._last_play_path = data.local_path;
                                     }else{
                                         console.log("no file");
+                                        console.log(data.server_path);
+                                        console.log(data['server_path']);
                                         PHONE.VoiceMessage.download(data['server_path'], function(new_local_path){
                                             PHONE.VoiceMessage.play(new_local_path);
                                             _this._last_play_path = new_local_path;
@@ -468,7 +470,8 @@
                             SESSION.set("project_id", id);
                             // we use it to start socket.io session with server
                             // callback fires up when room get message
-                            SOCKET.connect("project", id, function(message){ // message we need to display
+//                            SOCKET.connect("project", id, function(message){ // message we need to display
+                            SOCKET.connect({type:"project", id: id}, function(message){ // message we need to display
                                 console.log(message);
                                 // sync DB and display query new message from DB
     //                            API._sync(['xiao_project_comments','xiao_users','xiao_project_comment_adds']);
@@ -556,16 +559,33 @@
               // PRIVATE
               // PRIVATE
             function(){
-                console.log("hello");
     //            var SERVER = {
                  SERVER = {
 
                     SOCKET  : {
 
                         socket : null,
-                        type    : null,
-                        id      : null,
+//                        type    : null,
+//                        id      : null,
 
+                        connect : function(connect_data, callback){ // in data we specify id and type
+                            // type is project or todo
+                            var _this = this, url = CONFIG[connect_data.type+'_chat_url'];
+                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
+                            this.socket = io.connect(url);
+                            this.socket.on('connect', function(){
+                                // call the server-side and make room with id or add to existing one
+                                console.log("CONNECT");
+                                _this.socket.emit('addroom', connect_data);
+                            });
+                            this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
+                                // fires when new message arrive
+                                console.log("upDATE");
+                                console.log(data);
+                                callback(data);
+                            });
+                        },
+                                /*
                         connect : function(type, id, callback){
                             // type is project or todo
                             var _this = this, url;
@@ -588,7 +608,7 @@
                                     callback(data);
                                 }); 
                             }// else same connection
-                        },
+                        }, */
 
                         sendchat    :   function(message){
                             this.socket.emit("sendchat", message);
@@ -1401,25 +1421,30 @@
 
                             this.download = function(server_path, callback){
 
-                                var fileTransfer = new FileTransfer();
-                                var uri = encodeURI(server_path);
+//                                var fileTransfer = new FileTransfer(),
+//                                    uri = encodeURI(server_path),
+                                var uri = server_path,
+                                    new_file_name = server_path.substring(server_path.lastIndexOf('/')+1);
+                                console.log(new_file_name);
+                                console.log(server_path);
                                 
-                                this._create_file(server_path.substring(server_path.lastIndexOf('/')+1) , function(local_path){
+                                this._create_file(new_file_name , function(local_path){
                                     console.log("crete callback");
+                                    var fileTransfer = new FileTransfer();
                                     fileTransfer.download(
                                         uri,
                                         local_path,
-                                        function(entry) {
-                                            console.log("download complete: " + entry.fullPath);
-                                            callback(entry.fullPath);
+                                        function(download_entry) {
+                                            console.log("download complete: " + download_entry.fullPath);
+                                            callback(download_entry.fullPath);
                                         },
                                         function(error) {
                                             console.log("download error source " + error.source);
                                             console.log("download error target " + error.target);
                                             console.log("upload error code" + error.code);
-                                            return false;
-                                        },
-                                        true//,
+//                                            return false;
+                                        }
+//                                        true//,
         //                                {
         //                                    headers: {
         //                                        "Authorization": "Basic dGVzdHVzZXJuYW1lOnRlc3RwYXNzd29yZA=="
