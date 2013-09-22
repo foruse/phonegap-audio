@@ -387,8 +387,9 @@
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'"');
                                 DB.row(function(data){
-                                    console.log(data['local_path']);
-                                    if(data['local_path'] != "" && data['local_path'] != null && data['local_path'] != "null"){
+                                    console.log(data.local_path == undefined);
+                                    if(data.local_path != "" && data.local_path != undefined){
+                                        console.log("file exists");
                                         // if this file exists in local db then there is a local path in the db
                                         PHONE.VoiceMessage.play(data['local_path']);
                                         _this._last_play_path = data.local_path;
