@@ -1750,8 +1750,9 @@
                                 options.params = {type:type};
 
 //                                ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
-                                ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(server){
-                                    callback(server.responce);
+                                ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(node_obj){
+                                    console.log(node_obj);
+                                    callback(node_obj.response);
                                 }, fail, options);
 
                                 function fail(error) {
