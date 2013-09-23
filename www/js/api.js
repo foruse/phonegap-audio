@@ -334,6 +334,32 @@
                                 SESSION.set("user_name", "new_test_user");
                                 callback(data);
                             });
+                        },
+                                
+                        test_create  : function(data, callback){
+                            var name = _random(4, "new_user");
+                            data = {
+                                name            :   name,
+                                avatar          :   _random(4, "avatar_"),
+                                pinyin          :   "x",
+                                password        :   _random(4, "password"),
+                                email           :   _random(4, "email"),
+                                QRCode          :   _random(4, "QRCOEDE"),
+                                adress          :   "testuser_123",
+                                phoneNum        :   "testuser_123",
+                                position        :   "testuser_123",
+                                company_id      :   1
+                            };
+
+                            API.insert('xiao_users', data, function(insert_id){
+                                SESSION.set("user_id", insert_id);
+                                SESSION.set("user_name", name);
+                                API.insert('xiao_project_partners', {
+                                    project_id  : "xiao_projects_8w4bk484&20130916170458",
+                                    user_id     : insert_id
+                                }, callback);
+//                                callback(data);
+                            });
                         }
 
                     },
