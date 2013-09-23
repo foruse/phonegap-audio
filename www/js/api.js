@@ -472,20 +472,36 @@
 
                         chat_init    :   function(project_id, callback){ 
                             
-
-                            API._sync_chat('xiao_project_comments', function(){
-                                console.log("sync chat callback");
-                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-                                DB.from("xiao_projects AS p");
-                                DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-                                DB.where('p.id ="'+ project_id +'"');
-                                DB.order_by('pc.update_time');
-                                API._clear_tables_to_sync();
+                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
+                            DB.from("xiao_projects AS p");
+                            DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
+                            DB.where('p.id ="'+ project_id +'"');
+                            DB.order_by('pc.update_time');
+//                            API._remove_from_sync("xiao_projects");
+                            API.read(function(data){
+                                callback(data); // draw data from DB
+                                console.log(data);
                                 SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
                                     console.log(messages);
                                     callback(messages);
                                 });
-                            }); // 1. When init chat sync DB first
+                            });
+
+//                            API._sync_chat('xiao_project_comments', function(){
+                             // 1. When init chat sync DB first
+//                            API._sync('xiao_project_comments', function(){
+//                                console.log("sync chat callback");
+//                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
+//                                DB.from("xiao_projects AS p");
+//                                DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
+//                                DB.where('p.id ="'+ project_id +'"');
+//                                DB.order_by('pc.update_time');
+//                                API._clear_tables_to_sync();
+//                                SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+//                                    console.log(messages);
+//                                    callback(messages);
+//                                });
+//                            }); // 1. When init chat sync DB first
                             
 //                            SOCKET.connect({type:"project", id: project_id}, function(messages){ // new messages ARRAY
                         },
@@ -599,6 +615,14 @@
                         init : function(){
                             this.socket = io.connect(ROUTE("sockets"));
                             return this;
+                        },
+                                
+                        sync    : function(data, callback){
+                            this.socket.emit("sync", data);
+                            this.socket.on("sync_result", function(callback_data){
+                                console.log("sync_result CALBACK RECEIVED");
+                                callback(callback_data);
+                            });
                         },
                         
                         sync_chat : function(data, callback){
@@ -1206,82 +1230,178 @@
                         /* END methods to make queries to DB object */
                         /* END methods to make queries to DB object */
                         
-                        _sync    :   function(tables, callback){
-                            var sync_data = [], _this = this, user_data = SERVER.SESSION.local_data();
-                            tables.forEach(function(table_name, table_num){
+//                        _sync    :   function(tables, callback){
+//                            var sync_data = [], _this = this, user_data = SERVER.SESSION.local_data();
+//                            tables.forEach(function(table_name, table_num){
+//                                if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
+//                                    _this._sync_chat(table_name);
+//                                }else{
+//                                    var sql= 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
+//                                    SERVER.DB._executeSQL(sql, function(data){
+//                                        sync_data.push({
+//                                            name        :   table_name,
+//                                            last_sync   :   SERVER.SESSION._get_sync_time(table_name),
+//                                            updated     :   data, // move here
+//                                            deleted     :   []
+//                                        });
+//                                        if(table_num == (tables.length-1)){
+//                                            _this._tables_to_sync = []; // new // for now here
+//                                            // if this is the last table needed to be synced
+//                                            _this._request( CONFIG.route("sync"),
+//                                            {
+//                                                tables  :   sync_data,
+//                                                info    :   user_data
+//                                            },
+//                                            function(server){
+//                                                console.log(server);
+//                                                if(server){
+//                                                    console.log("server");
+//                                                    var changes = server.response;
+//                                                    changes.forEach(function(ij, num){
+//                                                         // apply changes
+//                                                        if( (ij.updated && ij.updated.length > 0) ||
+//                                                            (ij.deleted && ij.deleted.length > 0)
+//                                                        ){
+//                                                            //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
+//                                                            if(ij.updated.length > 0){
+//                                                                // need remove
+//                                                                // need remove
+//                                                                // need remove
+//                                                        /*        if(ij.table == "xiao_project_comments"){
+//                                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
+//                                                                        _this._sync_clear(ij.table,  server.info.time);
+//                                                                        if( num == (changes.length-1) ){
+//                                                                            return (callback ? callback() : true);
+//                                                                        }
+//                                                                    });
+//                                                                // need remove
+//                                                                // need remove
+//                                                                // need remove
+//                                                                }else{ */
+//                                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+//                                                                        _this._sync_clear(ij.table,  server.info.time);
+//                                                                        if( num == (changes.length-1) ){
+//                                                                            return (callback ? callback() : true);
+//                                                                        }
+//                                                                    });
+////                                                                }
+//                                                            }
+//                                                        }else{
+//                                                            if(num == (changes.length-1)){
+//                                                                console.log(tables);
+//                                                                _this._sync_clear(ij.table,  server.info.time);
+//                                                                return (callback ? callback() : true);
+//                                                            }
+//                                                        }
+//                                                    });
+//                                                }else{
+//                                                    console.log("no server");
+//                                                    return (callback ? callback() : false);
+//                                                }
+//                                            });
+//                                        }
+//                                    });
+//                                }
+//                            });
+//                        },
+
+
+                        _check_local_DB_and_fs : function (table_name, callback){
+                            var sql = 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
+                            SERVER.DB._executeSQL(sql, function(data){
                                 if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
-                                    _this._sync_chat(table_name);
-                                }else{
-                                    var sql= 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
-                                    SERVER.DB._executeSQL(sql, function(data){
-                                        sync_data.push({
-                                            name        :   table_name,
-                                            last_sync   :   SERVER.SESSION._get_sync_time(table_name),
-                                            updated     :   data, // move here
-                                            deleted     :   []
-                                        });
-                                        if(table_num == (tables.length-1)){
-                                            _this._tables_to_sync = []; // new // for now here
-                                            // if this is the last table needed to be synced
-                                            _this._request( CONFIG.route("sync"),
-                                            {
-                                                tables  :   sync_data,
-                                                info    :   user_data
-                                            },
-                                            function(server){
-                                                console.log(server);
-                                                if(server){
-                                                    console.log("server");
-                                                    var changes = server.response;
-                                                    changes.forEach(function(ij, num){
-                                                         // apply changes
-                                                        if( (ij.updated && ij.updated.length > 0) ||
-                                                            (ij.deleted && ij.deleted.length > 0)
-                                                        ){
-                                                            //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
-                                                            if(ij.updated.length > 0){
-                                                                // need remove
-                                                                // need remove
-                                                                // need remove
-                                                        /*        if(ij.table == "xiao_project_comments"){
-                                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
-                                                                        _this._sync_clear(ij.table,  server.info.time);
-                                                                        if( num == (changes.length-1) ){
-                                                                            return (callback ? callback() : true);
-                                                                        }
-                                                                    });
-                                                                // need remove
-                                                                // need remove
-                                                                // need remove
-                                                                }else{ */
-                                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
-                                                                        _this._sync_clear(ij.table,  server.info.time);
-                                                                        if( num == (changes.length-1) ){
-                                                                            return (callback ? callback() : true);
-                                                                        }
-                                                                    });
-//                                                                }
-                                                            }
-                                                        }else{
-                                                            if(num == (changes.length-1)){
-                                                                console.log(tables);
-                                                                _this._sync_clear(ij.table,  server.info.time);
-                                                                return (callback ? callback() : true);
-                                                            }
-                                                        }
-                                                    });
-                                                }else{
-                                                    console.log("no server");
-                                                    return (callback ? callback() : false);
+                                    data.length > 0 ? data.forEach(function(el, i){
+                                        // if audio we need to proceed uload 
+                                        if(el.type == "audio"){
+                                            SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
+                                                data[i].server_path = server_path;
+                                                delete data[i].local_path;
+                                                if(i == (data.length-1)){
+                                                    make_callback(data);
                                                 }
                                             });
+                                        }else if(el.type == "text"){
+                                            if(i == (data.length-1)){
+                                                make_callback(data);
+                                            }
                                         }
+                                        // filter removing local_path from array
+
+                                    }) : make_callback(data);
+                                }else{
+                                    make_callback(data);
+                                }
+                                
+                                function make_callback(data){
+                                    callback({
+                                        name        :   table_name,
+                                        last_sync   :   SERVER.SESSION._get_sync_time(table_name),
+                                        updated     :   data, // move here
+                                        deleted     :   []
                                     });
                                 }
                             });
                         },
+
+                        _sync    :   function(tables, callback){
+                            var sync_data = [], _this = this;
+                            tables.forEach(function(table_name, table_num){
+                                _check_local_DB_and_fs(table_name, function(data){
+                                    sync_data.push(data);
+                                    if(table_num == (tables.length-1)){
+                                        _this._make_socket_request(sync_data, callback);
+                                    }
+                                });
+                            });
+                        },
                         
-                        _sync_chat  : function(table, callback){
+                        _make_socket_request : function (sync_data, callback){
+                            var _this = this;
+                            this._tables_to_sync = [];
+                            SERVER.SOCKET.sync({
+                                tables  :   sync_data,
+                                info    :   SERVER.SESSION.local_data()
+                            }, function(server){
+                                console.log(server);
+                                if(server){
+                                    console.log("server");
+                                    var changes = server.response;
+                                    changes.forEach(function(ij, num){
+                                         // apply changes
+                                        if( (ij.updated && ij.updated.length > 0) ||
+                                            (ij.deleted && ij.deleted.length > 0)
+                                        ){
+                                            //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
+                                            if(ij.updated.length > 0){
+                                                if(ij.table == "xiao_project_comments" || ij.table == "xiao_todo_comments" ){
+                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
+                                                        make_callback();
+                                                    });
+                                                }else{ 
+                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+                                                        make_callback();
+                                                    });
+                                                }
+                                            }
+                                        }else{
+                                            make_callback();
+                                        }
+                                        
+                                        function make_callback(){
+                                            _this._sync_clear(ij.table,  server.info.time);
+                                            if(num == (changes.length-1)){
+                                                return (callback ? callback() : true);
+                                            }
+                                        }
+                                    });
+                                }else{
+                                    console.log("no server");
+                                    return (callback ? callback() : false);
+                                }
+                            });
+                        },
+                        
+               /*         _sync_chat  : function(table, callback){
                             console.log("_sync_chat");
                             // this method is used to send new data to server
                             // and to pull new data from server_db to local_db
@@ -1338,14 +1458,14 @@
                                 });
                             });
 //                            this._clear_tables_to_sync(table);
-                        },
+                        }, */
 
                         _sync_clear  : function(table, time){
                             SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "'+table+'"');
                             SERVER.SESSION._update_sync_time(table, time);
-                        },
+                        }
 
-                        _request : function(url, params, callback){
+           /*             _request : function(url, params, callback){
 
                             $.post(url, params, function(data){
                                 if(data){
@@ -1396,7 +1516,7 @@
 
                             XHR.send(data);
     */
-                        }
+               /*         } */
 
     //                    _config: {
     //
