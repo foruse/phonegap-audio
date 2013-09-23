@@ -1315,12 +1315,16 @@
 
 
                         _check_local_DB_and_fs : function (table_name, callback){
+                            console.log("_check_local_DB_and_fs");
                             var sql = 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
                             SERVER.DB._executeSQL(sql, function(data){
                                 if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
+                                    console.log("inside xiao_project_comments");
                                     data.length > 0 ? data.forEach(function(el, i){
+                                        console.log("FOR EACH _check_local_DB_and_fs");
                                         // if audio we need to proceed uload 
                                         if(el.type == "audio"){
+                                            console.log("audio inside FOR EACH _check_local_DB_and_fs");
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
                                                 data[i].server_path = server_path;
                                                 delete data[i].local_path;
@@ -1329,6 +1333,7 @@
                                                 }
                                             });
                                         }else if(el.type == "text"){
+                                            console.log("text inside FOR EACH _check_local_DB_and_fs");
                                             if(i == (data.length-1)){
                                                 make_callback(data);
                                             }
@@ -1337,10 +1342,13 @@
 
                                     }) : make_callback(data);
                                 }else{
+                                    console.log("NOT  xiao_project_comments");
                                     make_callback(data);
                                 }
                                 
                                 function make_callback(data){
+                                    console.log("make_callback _check_local_DB_and_fs");
+                                    console.log(data);
                                     callback({
                                         name        :   table_name,
                                         last_sync   :   SERVER.SESSION._get_sync_time(table_name),
