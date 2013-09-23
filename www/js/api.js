@@ -1326,11 +1326,15 @@
                                         if(el.type == "audio"){
                                             console.log("audio inside FOR EACH _check_local_DB_and_fs");
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
+                                                console.log(data);
+                                                console.log(el);
+                                                console.log(i);
+                                                console.log(data[i]);
                                                 console.log("server_path");
                                                 console.log("server_path");
+                                                console.log(server_path);
                                                 data[i].server_path = server_path;
                                                 delete data[i].local_path;
-                                                console.log(data);
                                                 if(i == (data.length-1)){
                                                     make_callback(data);
                                                 }
