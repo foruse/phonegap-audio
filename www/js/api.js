@@ -1328,11 +1328,6 @@
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
                                                 console.log("server_path");
                                                 console.log("server_path");
-                                                console.log("server_path");
-                                                console.log(server_path);
-                                                console.log("server_path");
-                                                console.log("server_path");
-                                                console.log("server_path");
                                                 data[i].server_path = server_path;
                                                 delete data[i].local_path;
                                                 console.log(data);
