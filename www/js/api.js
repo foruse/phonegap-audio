@@ -1327,17 +1327,21 @@
                                             console.log("audio inside FOR EACH _check_local_DB_and_fs");
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
                                                 data[i].server_path = server_path;
-                                                console.log(data);
-                                                console.log(el);
-                                                console.log(i);
-                                                console.log(data[i]);
-                                                console.log("server_path");
-                                                console.log("server_path");
-                                                console.log(server_path);
-                                                delete data[i].local_path;
-                                                if(i == (data.length-1)){
-                                                    make_callback(data);
-                                                }
+                                                var new_data = data[i];
+                                                    new_data['server_path'] = server_path;
+                                                    console.log(new_data);
+                                                make_callback([new_data]);
+//                                                console.log(data);
+//                                                console.log(el);
+//                                                console.log(i);
+//                                                console.log(data[i]);
+//                                                console.log("server_path");
+//                                                console.log("server_path");
+//                                                console.log(server_path);
+//                                                delete data[i].local_path;
+//                                                if(i == (data.length-1)){
+//                                                    make_callback(data);
+//                                                }
                                             });
                                         }else if(el.type == "text"){
                                             console.log("text inside FOR EACH _check_local_DB_and_fs");
