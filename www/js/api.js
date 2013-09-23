@@ -617,7 +617,7 @@
 //                        id      : null,
                         
                         init : function(){
-                            this.socket = io.connect(ROUTE("sockets"));
+                            this.socket = new io.connect(ROUTE("sockets"));
                             return this;
                         },
                                 
