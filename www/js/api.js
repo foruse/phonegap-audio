@@ -216,7 +216,11 @@
 //                                DB.query(function(partners){
 //                                    callback({partners:partners});
 //                                });
-                                API.read(callback);
+//                                API.read(callback);
+                                API.read(function(data){
+                                    console.log(data);
+                                    callback(data);
+                                });
                                 /*
                                 API._sync(["xiao_projects","xiao_project_partners","xiao_users", "xiao_project_comments"], function(){
 
@@ -619,7 +623,7 @@
                                 
                         sync    : function(data, callback){
                             this.socket.emit("sync", data);
-                            this.socket.removeEventListener("sync_result");
+//                            this.socket.removeEventListener("sync_result");
                             this.socket.on("sync_result", function(callback_data){
                                 console.log("sync_result CALBACK RECEIVED");
                                 callback(callback_data);
@@ -641,7 +645,7 @@
                         updatechat : function(connect_data, callback){ // in data we specify id and type
                             console.log(connect_data);
                             this.socket.emit('addroom', connect_data);
-                            this.socket.removeEventListener("updatechat");
+//                            this.socket.removeEventListener("updatechat");
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
                                 console.log("upDATE");
@@ -1158,8 +1162,10 @@
     //                        console.log(SERVER.DB);
                             // WHEN READ sync first then EXECUTE SQL
                             // this._sync(SERVER.DB._tables_to_sync, function(data){
-                            this._sync(this._tables_to_sync, function(data){
+                            this._sync(this._tables_to_sync, function(){
+                                console.log("sync callback in read");
                                 SERVER.DB.query(function(result){
+                                    console.log(result);
                                     callback(result);
                                 });
                             });
@@ -1167,7 +1173,7 @@
 
                         row    :   function(callback){
     //                      // return one row
-                            this._sync(this._tables_to_sync, function(data){
+                            this._sync(this._tables_to_sync, function(){
                                 SERVER.DB.row(function(result){
                                     callback(result);
                                 });
@@ -1176,7 +1182,7 @@
 
                         col    :   function(callback){
     //                      // return one row
-                            this._sync(this._tables_to_sync, function(data){
+                            this._sync(this._tables_to_sync, function(){
                                 SERVER.DB.col(function(result){
                                     callback(result);
                                 });
@@ -1351,6 +1357,7 @@
                                 _this._check_local_DB_and_fs(table_name, function(data){
                                     sync_data.push(data);
                                     if(table_num == (tables.length-1)){
+                                        console.log("_this._make_socket_request");
                                         _this._make_socket_request(sync_data, callback);
                                     }
                                 });
@@ -1376,11 +1383,11 @@
                                             //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
                                             if(ij.updated.length > 0){
                                                 if(ij.table == "xiao_project_comments" || ij.table == "xiao_todo_comments" ){
-                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
+                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(){
                                                         make_callback();
                                                     });
                                                 }else{ 
-                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(){
                                                         make_callback();
                                                     });
                                                 }
@@ -1390,6 +1397,7 @@
                                         }
                                         
                                         function make_callback(){
+                                            console.log("call back in _make_socket_request");
                                             _this._sync_clear(ij.table,  server.info.time);
                                             if(num == (changes.length-1)){
                                                 return (callback ? callback() : true);
