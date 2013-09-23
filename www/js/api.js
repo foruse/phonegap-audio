@@ -619,27 +619,29 @@
                                 
                         sync    : function(data, callback){
                             this.socket.emit("sync", data);
+                            this.socket.removeEventListener("sync_result");
                             this.socket.on("sync_result", function(callback_data){
                                 console.log("sync_result CALBACK RECEIVED");
                                 callback(callback_data);
                             });
                         },
                         
-                        sync_chat : function(data, callback){
-                            this.socket.emit("syncchat", data);
-                            console.log(callback);
-//                            if(callback){this.socket.on("syncchat_result", callback)};
-                            if(callback){
-                                this.socket.on("syncchat_result", function(callback_data){
-                                    console.log("CALBACK RECEIVED");
-                                    callback(callback_data);
-                                });
-                            }
-                        },
+//                        sync_chat : function(data, callback){
+//                            this.socket.emit("syncchat", data);
+//                            console.log(callback);
+////                            if(callback){this.socket.on("syncchat_result", callback)};
+//                            if(callback){
+//                                this.socket.on("syncchat_result", function(callback_data){
+//                                    console.log("CALBACK RECEIVED");
+//                                    callback(callback_data);
+//                                });
+//                            }
+//                        },
                         
                         updatechat : function(connect_data, callback){ // in data we specify id and type
                             console.log(connect_data);
                             this.socket.emit('addroom', connect_data);
+                            this.socket.removeEventListener("updatechat");
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
                                 console.log("upDATE");
