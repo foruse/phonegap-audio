@@ -1346,7 +1346,7 @@
                         _sync    :   function(tables, callback){
                             var sync_data = [], _this = this;
                             tables.forEach(function(table_name, table_num){
-                                _check_local_DB_and_fs(table_name, function(data){
+                                _this._check_local_DB_and_fs(table_name, function(data){
                                     sync_data.push(data);
                                     if(table_num == (tables.length-1)){
                                         _this._make_socket_request(sync_data, callback);
