@@ -413,14 +413,12 @@
                                 // if continue to play current media file
                                 PHONE.VoiceMessage.play(this._last_play_path);
                             }else{
-                                console.log("SECOND");
                                 // if new media file
                                 // we check db if this file exists in local fs
                                 DB.select('pc.id, pc.local_path, pc.server_path');
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'"');
                                 DB.row(function(data){
-                                    console.log(data.local_path == undefined);
                                     if(data.local_path != "" && data.local_path != undefined){
                                         console.log("file exists");
                                         // if this file exists in local db then there is a local path in the db
@@ -428,8 +426,6 @@
                                         _this._last_play_path = data.local_path;
                                     }else{
                                         console.log("no file");
-                                        console.log(data.server_path);
-                                        console.log(data['server_path']);
                                         PHONE.VoiceMessage.download(data['server_path'], function(new_local_path){
                                             PHONE.VoiceMessage.play(new_local_path);
                                             _this._last_play_path = new_local_path;
@@ -510,9 +506,7 @@
 //                            API._remove_from_sync("xiao_projects");
                             API.read(function(data){
                                 callback(data); // draw data from DB
-                                console.log(data);
                                 SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
-                                    console.log(messages);
                                     callback(messages);
                                 });
                             });
@@ -651,7 +645,6 @@
                             this.socket.emit("sync", data);
 //                            this.socket.removeEventListener("sync_result");
                             this.socket.on("sync_result", function(callback_data){
-                                console.log("sync_result CALBACK RECEIVED");
                                 callback(callback_data);
                             });
                         },
@@ -669,13 +662,10 @@
 //                        },
                         
                         updatechat : function(connect_data, callback){ // in data we specify id and type
-                            console.log(connect_data);
                             this.socket.emit('addroom', connect_data);
 //                            this.socket.removeEventListener("updatechat");
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
-                                console.log("upDATE");
-                                console.log(data);
                                 callback(data);
                             });
 //                            console.log(connect_data);
@@ -824,9 +814,6 @@
                                     for (var i=0; i<len; i++){
                                         db_result[i] = results.rows.item(i);
                                     }
-                                    console.log("db_result");
-                                    console.log(db_result);
-                                    console.log("db_result");
                                     return (callback ? callback(db_result) : true);
                                 }
                                 function errorCB(err) {
@@ -1008,14 +995,6 @@
                                         }
                                     });
                                 });
-                                console.log("insert_batch_on_duplicate_update");
-                                console.log("insert_batch_on_duplicate_update");
-                                console.log("insert_batch_on_duplicate_update");
-                                console.log(data);
-                                console.log(table);
-                                console.log("insert_batch_on_duplicate_update");
-                                console.log("insert_batch_on_duplicate_update");
-                                console.log("insert_batch_on_duplicate_update");
                                 
 //                                return (
 //                                    callback ? this._executeSQL(sql, function(){
@@ -1189,9 +1168,7 @@
                             // WHEN READ sync first then EXECUTE SQL
                             // this._sync(SERVER.DB._tables_to_sync, function(data){
                             this._sync(this._tables_to_sync, function(){
-                                console.log("sync callback in read");
                                 SERVER.DB.query(function(result){
-                                    console.log(result);
                                     callback(result);
                                 });
                             });
@@ -1341,16 +1318,12 @@
 
 
                         _check_local_DB_and_fs : function (table_name, callback){
-                            console.log("_check_local_DB_and_fs");
                             var sql = 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
                             SERVER.DB._executeSQL(sql, function(data){
                                 if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
-                                    console.log("inside xiao_project_comments");
                                     data.length > 0 ? data.forEach(function(el, i){
-                                        console.log("FOR EACH _check_local_DB_and_fs");
                                         // if audio we need to proceed uload 
                                         if(el.type == "audio"){
-                                            console.log("audio inside FOR EACH _check_local_DB_and_fs");
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
                                                 data[i].server_path = server_path;
                                                 var new_data = data[i];
@@ -1359,11 +1332,6 @@
                                                     datadata[ijk] = new_data[ijk];
                                                 }
                                                 datadata['server_path'] = server_path;
-                                                    console.log("new_data server_path");
-                                                    console.log("new_data server_path");
-                                                    console.log("new_data server_path");
-                                                    console.log(datadata);
-                                                    console.log("new_data server_path");
                                                 make_callback([datadata]);
 //                                                console.log(data);
 //                                                console.log(el);
@@ -1378,7 +1346,6 @@
 //                                                }
                                             });
                                         }else if(el.type == "text"){
-                                            console.log("text inside FOR EACH _check_local_DB_and_fs");
                                             if(i == (data.length-1)){
                                                 make_callback(data);
                                             }
@@ -1387,13 +1354,10 @@
 
                                     }) : make_callback(data);
                                 }else{
-                                    console.log("NOT  xiao_project_comments");
                                     make_callback(data);
                                 }
                                 
                                 function make_callback(data){
-                                    console.log("make_callback _check_local_DB_and_fs");
-                                    console.log(data);
                                     callback({
                                         name        :   table_name,
                                         last_sync   :   SERVER.SESSION._get_sync_time(table_name),
@@ -1410,7 +1374,6 @@
                                 _this._check_local_DB_and_fs(table_name, function(data){
                                     sync_data.push(data);
                                     if(table_num == (tables.length-1)){
-                                        console.log("_this._make_socket_request");
                                         _this._make_socket_request(sync_data, callback);
                                     }
                                 });
@@ -1424,7 +1387,6 @@
                                 tables  :   sync_data,
                                 info    :   SERVER.SESSION.local_data()
                             }, function(server){
-                                console.log(server);
                                 if(server){
                                     console.log("server");
                                     var changes = server.response;
@@ -1450,7 +1412,6 @@
                                         }
                                         
                                         function make_callback(){
-                                            console.log("call back in _make_socket_request");
                                             _this._sync_clear(ij.table,  server.info.time);
                                             if(num == (changes.length-1)){
                                                 return (callback ? callback() : true);
@@ -1716,7 +1677,6 @@
                                 this.fs.getFile( new_file_name , { create: true, exclusive: false }, function(fileEntry){
                                     _this.file_path = fileEntry.fullPath;
                                     _this.short_name = fileEntry;
-                                    console.log("fileEntry.fullPath");
                                     console.log(fileEntry.fullPath);
     //                                callback(_this.file_path);
                                     callback(fileEntry.fullPath);
@@ -1738,11 +1698,7 @@
 //                                    uri = encodeURI(server_path),
                                 var uri = server_path,
                                     new_file_name = server_path.substring(server_path.lastIndexOf('/')+1);
-                                console.log(new_file_name);
-                                console.log(server_path);
-                                
                                 this._create_file(new_file_name , function(local_path){
-                                    console.log("crete callback");
                                     var fileTransfer = new FileTransfer();
                                     fileTransfer.download(
                                         uri,
@@ -1793,7 +1749,6 @@
 
 //                                ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
                                 ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(node_obj){
-                                    console.log(node_obj);
                                     callback(node_obj.response);
                                 }, fail, options);
 
@@ -1824,7 +1779,6 @@
                                     _this.audio.startRecord();
                                     _this.last_record_path = file_path;
     //                                _this._draw_record_time();
-                                    console.log(file_path);
                                     callback(file_path);
                                 });
 
