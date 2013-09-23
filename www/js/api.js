@@ -596,8 +596,11 @@
 //                        id      : null,
                         
                         init : function(){
+                            console.log(ROUTE("sockets"));
+                            console.log('ROUTE("sockets")');
                             this.socket = io.connect(ROUTE("sockets"));
-                        }(),
+                            return this;
+                        },
                         
                         sync_chat : function(data, callback){
                             this.socket.emit("syncchat", data);
@@ -1275,6 +1278,7 @@
                         },
                         
                         _sync_chat  : function(table, callback){
+                            console.log("_sync_chat");
                             // this method is used to send new data to server
                             // and to pull new data from server_db to local_db
 //                            SERVER.DB.select('pc.id, pc.content, pc.type, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id');
@@ -1722,7 +1726,7 @@
 
     //            document.addEventListener("deviceready", onDeviceReady, false);
     //            function onDeviceReady() {
-
+//                SERVER.SOCKET.init()
                     return {
 
          //                API     : SERVER.API,
@@ -1730,11 +1734,11 @@
          //                SESSION : SERVER.SESSION,
          //                PHONE   : SERVER.PHONE,
          //                SOCKET  : SERVER.SOCKET
+                         SOCKET     : SERVER.SOCKET.init(),
                          API        : SERVER.API,
                          SESSION    : SERVER.SESSION._init_storage(1),
                          DB         : SERVER.DB._init_db(1),
-                         PHONE      : SERVER.PHONE,
-                         SOCKET     : SERVER.SOCKET
+                         PHONE      : SERVER.PHONE
 
                     };
 
