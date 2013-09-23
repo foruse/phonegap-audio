@@ -473,7 +473,8 @@
                         chat_init    :   function(project_id, callback){ 
                             
 
-                            API._sync_chat(['xiao_project_comments'], function(){
+                            API._sync_chat('xiao_project_comments', function(){
+                                console.log("sync chat callback");
                                 DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
                                 DB.from("xiao_projects AS p");
                                 DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
@@ -596,15 +597,20 @@
 //                        id      : null,
                         
                         init : function(){
-                            console.log(ROUTE("sockets"));
-                            console.log('ROUTE("sockets")');
                             this.socket = io.connect(ROUTE("sockets"));
                             return this;
                         },
                         
                         sync_chat : function(data, callback){
                             this.socket.emit("syncchat", data);
-                            if(callback)this.socket.on("syncchat_result", callback);
+                            console.log(callback);
+//                            if(callback){this.socket.on("syncchat_result", callback)};
+                            if(callback){
+                                this.socket.on("syncchat_result", function(callback_data){
+                                    console.log("CALBACK RECEIVED");
+                                    callback(callback_data);
+                                });
+                            }
                         },
                         
                         updatechat : function(connect_data, callback){ // in data we specify id and type
@@ -851,8 +857,6 @@
 //                                            sql+=', "'+data[j][ij]+'"';
                                             sql+='"'+data[j][ij]+'"';
                                         }
-                                        console.log(ijk)
-                                        console.log(sql);
                                         ++i;
                                         ++ijk;
                                     }
@@ -1205,10 +1209,10 @@
                         _sync    :   function(tables, callback){
                             var sync_data = [], _this = this, user_data = SERVER.SESSION.local_data();
                             tables.forEach(function(table_name, table_num){
-                                if(table_name  === "xiao_project_comments" || table_name === "xiao_todo_comments" ){
+                                if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
                                     _this._sync_chat(table_name);
                                 }else{
-                                    var sql= 'SELECT * FROM sync as s  INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE table_name ="'+table_name+'"';
+                                    var sql= 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
                                     SERVER.DB._executeSQL(sql, function(data){
                                         sync_data.push({
                                             name        :   table_name,
@@ -1286,13 +1290,16 @@
                                 table_name  :   table,
                                 last_sync   :   SERVER.SESSION._get_sync_time(table),
                                 user_data   :   SERVER.SESSION.local_data()
-                            }, _this = this;
-                            SERVER.DB.select();
-                            SERVER.DB.from("sync as s");
-                            SERVER.DB.join(table+" as pc", "pc.id = s.row_id");
-                            SERVER.DB.where('s.table_name = "'+table+'"');
-                            SERVER.DB.query(function(data){
-                                data.forEach(function(el, i){
+                            }, _this = this,
+//                            SERVER.DB.select();
+//                            SERVER.DB.from("sync as s");
+//                            SERVER.DB.join(table+" as pc", "pc.id = s.row_id");
+//                            SERVER.DB.where('s.table_name = "'+table+'"');
+//                            SERVER.DB.query(function(data){
+                            sql = 'SELECT * FROM sync as s INNER JOIN '+table+' as pc ON s.row_id = pc.id WHERE s.table_name ="'+table+'"';
+                            SERVER.DB._executeSQL(sql, function(data){
+                                console.log("inside sync_chat callback");
+                                data.length > 0 ? data.forEach(function(el, i){
                                     // if audio we need to proceed uload 
                                     if(el.type == "audio"){
                                         SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
@@ -1302,19 +1309,35 @@
 //                                            delete el.local_path;
                                             if(i == (data.length-1)){
                                                 SERVER.SOCKET.sync_chat({messages:data, info: info}, function(server){
-                                                    SERVER.DB.insert_batch_on_duplicate_update(table, server.responce, function(data){
+                                                    SERVER.DB.insert_batch_on_duplicate_update(table, server.responce, function(){
                                                         _this._sync_clear(table,  server.info.time);
                                                         return (callback ? callback() : true);
                                                     });
                                                 }); 
                                             }
                                         });
+                                    }else if(el.type == "text"){
+                                        if(i == (data.length-1)){
+                                            SERVER.SOCKET.sync_chat({messages:data, info: info}, function(server){
+                                                SERVER.DB.insert_batch_on_duplicate_update(table, server.responce, function(){
+                                                    _this._sync_clear(table,  server.info.time);
+                                                    return (callback ? callback() : true);
+                                                });
+                                            }); 
+                                        }
                                     }
                                     // filter removing local_path from array
 
+                                }) : SERVER.SOCKET.sync_chat({messages:data, info: info}, function(server){
+                                    console.log("empty sync chat callback");
+                                    console.log(server);
+                                    SERVER.DB.insert_batch_on_duplicate_update(table, server.responce, function(){
+                                        _this._sync_clear(table,  server.info.time);
+                                        return (callback ? callback() : true);
+                                    });
                                 });
                             });
-                            this._clear_tables_to_sync(table);
+//                            this._clear_tables_to_sync(table);
                         },
 
                         _sync_clear  : function(table, time){
