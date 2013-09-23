@@ -1328,9 +1328,17 @@
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
                                                 data[i].server_path = server_path;
                                                 var new_data = data[i];
-                                                    new_data['server_path'] = server_path;
-                                                    console.log(new_data);
-                                                make_callback([new_data]);
+                                                var datadata = {};
+                                                for(var ijk in new_data){
+                                                    datadata[ijk] = new_data[ijk];
+                                                }
+                                                datadata['server_path'] = server_path;
+                                                    console.log("new_data server_path");
+                                                    console.log("new_data server_path");
+                                                    console.log("new_data server_path");
+                                                    console.log(datadata);
+                                                    console.log("new_data server_path");
+                                                make_callback([datadata]);
 //                                                console.log(data);
 //                                                console.log(el);
 //                                                console.log(i);
