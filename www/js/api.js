@@ -506,9 +506,9 @@
 //                            API._remove_from_sync("xiao_projects");
                             API.read(function(data){
                                 callback(data); // draw data from DB
-                                SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
-                                    callback(messages);
-                                });
+                            });
+                            SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+                                callback(messages);
                             });
 
 //                            API._sync_chat('xiao_project_comments', function(){
