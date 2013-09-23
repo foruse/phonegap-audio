@@ -1326,8 +1326,16 @@
                                         if(el.type == "audio"){
                                             console.log("audio inside FOR EACH _check_local_DB_and_fs");
                                             SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
+                                                console.log("server_path");
+                                                console.log("server_path");
+                                                console.log("server_path");
+                                                console.log(server_path);
+                                                console.log("server_path");
+                                                console.log("server_path");
+                                                console.log("server_path");
                                                 data[i].server_path = server_path;
                                                 delete data[i].local_path;
+                                                console.log(data);
                                                 if(i == (data.length-1)){
                                                     make_callback(data);
                                                 }
@@ -1746,7 +1754,10 @@
                                 }
                                 options.params = {type:type};
 
-                                ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
+//                                ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
+                                ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(server){
+                                    callback(server.responce);
+                                }, fail, options);
 
                                 function fail(error) {
     //                                alert("An error has occurred: Code = " + error.code);
