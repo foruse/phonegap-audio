@@ -67,33 +67,18 @@
 
 
                     var id = "xiao_projects_8w4bk484&20130916170458";
-                    Models.Project.read(id, function(data) {
-                        // asynchronous method which have several events (project info and chat messages)
-
-                        console.log(data);
-                        if (data.partners) {
-                            data.partners.forEach(function(el, i) {
-                                i === 0 ? $("#project-info").append('<div>' + el.name + " " + el.description + '</div>') : "";
-                                $("#project-partners").append(el.name);
-                            });
-                        }
-                        if (data.chat) {
-                            data.chat.forEach(function(message, i) {
-//                                $("#chat").append('<p>' + el.content + ' <b>DB message</b> </p>');
-                                if(message.type == "text"){
-                                                    
-                                    console.log(message);
-                                    $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
-                                    console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
-                                }
-                                if(message.type == "audio"){
-                                    $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
-                                }
-                            });
-                            Models.ProjectChat.update_chat(
-                                id, // project_id
-                                /* get message event*/
-                                function(message) {
+                    Models.Project.read(id, function(partners) {
+                        
+                        partners.forEach(function(el, i) {
+                            i === 0 ? $("#project-info").append('<div>' + el.name + " " + el.description + '</div>') : "";
+                            $("#project-partners").append(el.name);
+                        });
+                        
+                        Models.ProjectChat.chat_init(
+                            id, // project_id
+                            /* get message event*/
+                            function(messages) {
+                                messages.forEach(function(message){
                                     if(message.type == "text"){
                                         console.log(message);
                                         $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
@@ -102,10 +87,52 @@
                                     if(message.type == "audio"){
                                         $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
                                     }
-                                }
-                            );
-                        }
+                                });
+                            }
+                        );
+                        
                     });
+//                    Models.Project.read(id, function(data) {
+//                        // asynchronous method which have several events (project info and chat messages)
+//
+//                        console.log(data);
+//                        if (data.partners) {
+//                            data.partners.forEach(function(el, i) {
+//                                i === 0 ? $("#project-info").append('<div>' + el.name + " " + el.description + '</div>') : "";
+//                                $("#project-partners").append(el.name);
+//                            });
+//                        }
+//                        if (data.chat) {
+//                            data.chat.forEach(function(message, i) {
+////                                $("#chat").append('<p>' + el.content + ' <b>DB message</b> </p>');
+//                                if(message.type == "text"){
+//                                                    
+//                                    console.log(message);
+//                                    $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
+//                                    console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
+//                                }
+//                                if(message.type == "audio"){
+//                                    $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+//                                }
+//                            });
+//                            Models.ProjectChat.update_chat(
+//                                id, // project_id
+//                                /* get message event*/
+//                                function(messages) {
+//                                    messages.forEach(function(message){
+//                                        if(message.type == "text"){
+//                                            console.log(message);
+//                                            $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
+//                                            console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
+//                                        }
+//                                        if(message.type == "audio"){
+//                                            $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+//                                        }
+//                                    });
+//                                }
+//                            );
+//                        }
+//                    });
                     //        });
 
                     $(document).on("click", "#send", function() {

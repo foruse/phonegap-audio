@@ -21,7 +21,17 @@
         // APPLICATION CONFIGS
         // APPLICATION CONFIGS
         var CONFIG =    {
+            
+            routes  :   {
+                sync            :   "sync",
+                sync_chat       :   "syncchat",
+                file_upload_url :   "upload",
+                sockets         :   ""
+            },
+                    
+                    
             server_url       : "http://212.8.40.254:5959/",
+            
             file_upload_url  : "http://212.8.40.254:5959/upload",
             project_chat_url : "http://212.8.40.254:5959/",
             todo_chat_url    : "http://212.8.40.254:5959/todo",
@@ -30,11 +40,10 @@
 
             route  : function(url){ return  this.server_url+this.routes[url];},
 
-            routes  :   {
-                sync    :   "sync"
-            },                    
             root_dir    :   "BAO"
         };
+        
+        var ROUTE = function(url){ return  CONFIG.server_url+CONFIG.routes[url];};
         // APPLICATION CONFIGS
         // APPLICATION CONFIGS
         // APPLICATION CONFIGS
@@ -197,6 +206,18 @@
                             if(typeof(id) !== "function"){ // get inside project page
                             // if id is set we need to get a project page with all comments
                                 SESSION.set("project_id", id);
+                                DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
+                                DB.from("xiao_projects AS p");
+                                DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
+                                // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
+                                DB.join("xiao_users AS u", "u.id = pp.user_id");
+                                DB.where('p.id ="'+ id +'"');
+
+//                                DB.query(function(partners){
+//                                    callback({partners:partners});
+//                                });
+                                API.read(callback);
+                                /*
                                 API._sync(["xiao_projects","xiao_project_partners","xiao_users", "xiao_project_comments"], function(){
 
                                     DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
@@ -220,22 +241,7 @@
                                         callback({chat:chat});
                                     });
                                     API._clear_tables_to_sync();
-                                    /*
-                                    DB.query(function(partners){
-                                        var result = {};
-                                        result.partners = partners;
-                                        DB.select();
-                                        DB.from("xiao_projects AS p");
-                                        DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-                                        DB.where('p.id ="'+ id +'"');
-                                        DB.query(function(chat){
-                                            result.chat = chat;
-                                            console.log(result);
-                                            callback(result);
-                                        });
-                                    });
-                                    */
-                                });
+                                }); */
                             }else{
                                 callback = id;
                                 DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
@@ -243,10 +249,7 @@
                                 DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
                                 // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
                                 DB.join("xiao_users AS u", "u.id = pp.user_id");
-                                API.read(function(data){
-                                    console.log(data);
-                                    callback(data);
-                                });
+                                API.read(callback);
                             }
 
 
@@ -467,34 +470,56 @@
 
                     ProjectChat     :   {
 
-                        update_chat    :   function(id, callback){ // id - projectId    
-                            //store project_id in Session
-                            SESSION.set("project_id", id);
-                            // we use it to start socket.io session with server
-                            // callback fires up when room get message
-//                            SOCKET.connect("project", id, function(message){ // message we need to display
-                            SOCKET.connect({type:"project", id: id}, function(message){ // message we need to display
-                                console.log(message);
-                                // sync DB and display query new message from DB
-    //                            API._sync(['xiao_project_comments','xiao_users','xiao_project_comment_adds']);
-                                API._sync(['xiao_project_comments','xiao_users']);
-                                callback(message);
-    //                            DB.select();
-    //                            DB.from("xiao_project_comments AS pc ");
-    //                            DB.join("xiao_users AS u", "pc.user_id = u.id");
-    //                            DB.where('pc.id IN('+messages+')');
-    //                            DB.where('DATETIME(pc.update_time, "+3 hour") > "'+ date_to_string(SESSION.get('xiao_project_comments')) +'"');
-    //SELECT DATETIME(update_time) FROM xiao_project_comments WHERE DATETIME(update_time) > '2013-09-17 13:20:42'
-    //                            API.read(function(data){
-    //                                console.log(data);
-    //                                // in callback we define actions which need to be proceeded when message arrives
-    //                                callback(data);
-    //                            });
-                                // this.init(id,callback); // do not need
-                            });
+                        chat_init    :   function(project_id, callback){ 
+                            
+
+                            API._sync_chat(['xiao_project_comments'], function(){
+                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
+                                DB.from("xiao_projects AS p");
+                                DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
+                                DB.where('p.id ="'+ project_id +'"');
+                                DB.order_by('pc.update_time');
+                                API._clear_tables_to_sync();
+                                SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+                                    console.log(messages);
+                                    callback(messages);
+                                });
+                            }); // 1. When init chat sync DB first
+                            
+//                            SOCKET.connect({type:"project", id: project_id}, function(messages){ // new messages ARRAY
                         },
 
-                        send_message    :   function(data, callback){
+//                        send_message    :   function(data, callback){
+                        send_message    :   function(message, callback){
+                            message['user_id'] = SESSION.get("user_id"); // push user_id to message data
+
+                            API.insert("xiao_project_comments", message, function(insert_id){
+                                message['id'] = insert_id;
+                                callback(message);
+                            });
+                            // 1. save message to local_db
+                   /*         DB.insert('xiao_project_comments', message, function(insert_id){
+                                message['id'] = insert_id; // push id to message data
+                                DB.select('pc.id, pc.content, pc.type, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id');
+                                DB.from("sync as s");
+                                DB.join("xiao_project_comments as pc", "pc.id = s.row_id");
+                                DB.where('s.table_name = "xiao_project_comments"');
+                                DB.query(function(data){
+                                    data.forEach(function(el){
+                                        // if audio we need to proceed uload 
+                                        if(el.type == "audio"){
+                                            PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
+                                                
+                                            });
+                                        }
+                                        // filter removing local_path from array
+                                        
+                                    });
+                                });
+                                API._clear_tables_to_sync();
+                            }); */
+                    
+                    
                             // 1. save message to db
                             // 2. sync db
                             // 3. send socket message to all users to sync db
@@ -514,33 +539,33 @@
     //                        };
                             // 1. save message to db
                             // 2. sync db
-                            data['user_id'] = SESSION.get("user_id");
-
-                            if(data.type == "audio"){
-                                PHONE.VoiceMessage.upload(data.local_path, "audio", function(server_path){
-                                    console.log("upload");
-                                    console.log(server_path);
-                                    data['server_path'] = server_path.response;
-                                    API.insert("xiao_project_comments", data, function(insert_id){
-                                        // 3. send socket message to all users to sync db
-                                        data['id'] = insert_id;
-            //                            SESSION.push_message(insert_id);
-                                        SOCKET.sendchat(data);
-                                        console.log(data);
-                                        callback(data);
-                                    });
-                                });
-                            }else{
-
-                                API.insert("xiao_project_comments", data, function(insert_id){
-                                    // 3. send socket message to all users to sync db
-                                    data['id'] = insert_id;
-        //                            SESSION.push_message(insert_id);
-                                    SOCKET.sendchat(data);
-                                    console.log(data);
-                                    callback(data);
-                                });
-                            }
+//                            data['user_id'] = SESSION.get("user_id");
+//
+//                            if(data.type == "audio"){
+//                                PHONE.VoiceMessage.upload(data.local_path, "audio", function(server_path){
+//                                    console.log("upload");
+//                                    console.log(server_path);
+//                                    data['server_path'] = server_path.response;
+//                                    API.insert("xiao_project_comments", data, function(insert_id){
+//                                        // 3. send socket message to all users to sync db
+//                                        data['id'] = insert_id;
+//            //                            SESSION.push_message(insert_id);
+//                                        SOCKET.sendchat(data);
+//                                        console.log(data);
+//                                        callback(data);
+//                                    });
+//                                });
+//                            }else{
+//
+//                                API.insert("xiao_project_comments", data, function(insert_id){
+//                                    // 3. send socket message to all users to sync db
+//                                    data['id'] = insert_id;
+//        //                            SESSION.push_message(insert_id);
+//                                    SOCKET.sendchat(data);
+//                                    console.log(data);
+//                                    callback(data);
+//                                });
+//                            }
 
 
                         }
@@ -569,26 +594,43 @@
                         socket : null,
 //                        type    : null,
 //                        id      : null,
-
-                        connect : function(connect_data, callback){ // in data we specify id and type
+                        
+                        init : function(){
+                            this.socket = io.connect(ROUTE("sockets"));
+                        }(),
+                        
+                        sync_chat : function(data, callback){
+                            this.socket.emit("syncchat", data);
+                            if(callback)this.socket.on("syncchat_result", callback);
+                        },
+                        
+                        updatechat : function(connect_data, callback){ // in data we specify id and type
                             console.log(connect_data);
-                            // type is project or todo
-                            var _this = this, url = CONFIG[connect_data.type+'_chat_url'];
-                            console.log(url);
-//                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
-                            this.socket = io.connect(url);
-                            console.log("connect");
-                            this.socket.on('connect', function(){
-                                // call the server-side and make room with id or add to existing one
-                                console.log("CONNECT");
-                                _this.socket.emit('addroom', connect_data);
-                            });
+                            this.socket.emit('addroom', connect_data);
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
                                 console.log("upDATE");
                                 console.log(data);
                                 callback(data);
                             });
+//                            console.log(connect_data);
+//                            // type is project or todo
+//                            var _this = this, url = CONFIG[connect_data.type+'_chat_url'];
+//                            console.log(url);
+////                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
+//                            this.socket = io.connect(url);
+//                            console.log("connect");
+//                            this.socket.on('connect', function(){
+//                                // call the server-side and make room with id or add to existing one
+//                                console.log("CONNECT");
+//                                _this.socket.emit('addroom', connect_data);
+//                            });
+//                            this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
+//                                // fires when new message arrive
+//                                console.log("upDATE");
+//                                console.log(data);
+//                                callback(data);
+//                            });
                         },
                                 /*
                         connect : function(type, id, callback){
@@ -1071,10 +1113,14 @@
 
                         _tables_to_sync :   [],
 
-                        _clear_tables_to_sync: function(){
-                            this._tables_to_sync = [];
+                        _clear_tables_to_sync: function(table){
+                            table ? delete this._tables_to_sync[table] : this._tables_to_sync = [];
                         },
-
+                        
+                        /* methods to make queries to DB object */
+                        /* methods to make queries to DB object */
+                        /* methods to make queries to DB object */
+                        
                         read    :   function(callback){
     //                        console.log(SERVER.DB);
                             // WHEN READ sync first then EXECUTE SQL
@@ -1138,8 +1184,6 @@
 
                         update  :  function(table, data, where, callback){
                             if(typeof where == "function"){ callback = where; where=false;}
-                            console.log(callback);
-                            console.log(where);
                             var _this = this;
                             SERVER.DB.update(table, data, where, function(){
                                 return (
@@ -1150,74 +1194,126 @@
                             });
 
                         },
-
+                        
+                        /* END methods to make queries to DB object */
+                        /* END methods to make queries to DB object */
+                        /* END methods to make queries to DB object */
+                        
                         _sync    :   function(tables, callback){
                             var sync_data = [], _this = this, user_data = SERVER.SESSION.local_data();
                             tables.forEach(function(table_name, table_num){
-                                var sql= 'SELECT * FROM sync as s  INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE table_name ="'+table_name+'"';
-                                SERVER.DB._executeSQL(sql, function(data){
-                                    sync_data.push({
-                                        name        :   table_name,
-                                        last_sync   :   SERVER.SESSION._get_sync_time(table_name),
-                                        updated     :   data, // move here
-                                        deleted     :   []
-                                    });
-                                    if(table_num == (tables.length-1)){
-                                        _this._tables_to_sync = []; // new // for now here
-                                        // if this is the last table needed to be synced
-                                        _this._request( CONFIG.route("sync"),
-                                        {
-                                            tables  :   sync_data,
-                                            info    :   user_data
-                                        },
-                                        function(server){
-                                            console.log(server);
-                                            if(server){
-                                                console.log("server");
-                                                var changes = server.response;
-                                                changes.forEach(function(ij, num){
-                                                     // apply changes
-                                                    if( (ij.updated && ij.updated.length > 0) ||
-                                                        (ij.deleted && ij.deleted.length > 0)
-                                                    ){
-                                                        //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
-                                                        if(ij.updated.length > 0){
-                                                            if(ij.table == "xiao_project_comments"){
-                                                                SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
-                                                                    _this._sync_clear(ij.table,  server.info.time);
-                                                                    if( num == (changes.length-1) ){
-                                                                        return (callback ? callback() : true);
-                                                                    }
-                                                                });
-                                                            }else{
-                                                                SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
-                                                                    _this._sync_clear(ij.table,  server.info.time);
-                                                                    if( num == (changes.length-1) ){
-                                                                        return (callback ? callback() : true);
-                                                                    }
-                                                                });
+                                if(table_name  === "xiao_project_comments" || table_name === "xiao_todo_comments" ){
+                                    _this._sync_chat(table_name);
+                                }else{
+                                    var sql= 'SELECT * FROM sync as s  INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE table_name ="'+table_name+'"';
+                                    SERVER.DB._executeSQL(sql, function(data){
+                                        sync_data.push({
+                                            name        :   table_name,
+                                            last_sync   :   SERVER.SESSION._get_sync_time(table_name),
+                                            updated     :   data, // move here
+                                            deleted     :   []
+                                        });
+                                        if(table_num == (tables.length-1)){
+                                            _this._tables_to_sync = []; // new // for now here
+                                            // if this is the last table needed to be synced
+                                            _this._request( CONFIG.route("sync"),
+                                            {
+                                                tables  :   sync_data,
+                                                info    :   user_data
+                                            },
+                                            function(server){
+                                                console.log(server);
+                                                if(server){
+                                                    console.log("server");
+                                                    var changes = server.response;
+                                                    changes.forEach(function(ij, num){
+                                                         // apply changes
+                                                        if( (ij.updated && ij.updated.length > 0) ||
+                                                            (ij.deleted && ij.deleted.length > 0)
+                                                        ){
+                                                            //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
+                                                            if(ij.updated.length > 0){
+                                                                // need remove
+                                                                // need remove
+                                                                // need remove
+                                                        /*        if(ij.table == "xiao_project_comments"){
+                                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
+                                                                        _this._sync_clear(ij.table,  server.info.time);
+                                                                        if( num == (changes.length-1) ){
+                                                                            return (callback ? callback() : true);
+                                                                        }
+                                                                    });
+                                                                // need remove
+                                                                // need remove
+                                                                // need remove
+                                                                }else{ */
+                                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
+                                                                        _this._sync_clear(ij.table,  server.info.time);
+                                                                        if( num == (changes.length-1) ){
+                                                                            return (callback ? callback() : true);
+                                                                        }
+                                                                    });
+//                                                                }
+                                                            }
+                                                        }else{
+                                                            if(num == (changes.length-1)){
+                                                                console.log(tables);
+                                                                _this._sync_clear(ij.table,  server.info.time);
+                                                                return (callback ? callback() : true);
                                                             }
                                                         }
-                                                    }else{
-                                                        if(num == (changes.length-1)){
-                                                            console.log(tables)
-                                                            _this._sync_clear(ij.table,  server.info.time);
-                                                            return (callback ? callback() : true);
-                                                        }
-                                                    }
-                                                });
-                                            }else{
-                                                console.log("no server");
-                                                return (callback ? callback() : false);
+                                                    });
+                                                }else{
+                                                    console.log("no server");
+                                                    return (callback ? callback() : false);
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        },
+                        
+                        _sync_chat  : function(table, callback){
+                            // this method is used to send new data to server
+                            // and to pull new data from server_db to local_db
+//                            SERVER.DB.select('pc.id, pc.content, pc.type, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id');
+                            var info = {
+                                table_name  :   table,
+                                last_sync   :   SERVER.SESSION._get_sync_time(table),
+                                user_data   :   SERVER.SESSION.local_data()
+                            }, _this = this;
+                            SERVER.DB.select();
+                            SERVER.DB.from("sync as s");
+                            SERVER.DB.join(table+" as pc", "pc.id = s.row_id");
+                            SERVER.DB.where('s.table_name = "'+table+'"');
+                            SERVER.DB.query(function(data){
+                                data.forEach(function(el, i){
+                                    // if audio we need to proceed uload 
+                                    if(el.type == "audio"){
+                                        SERVER.PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
+                                            data[i].server_path = server_path;
+                                            delete data[i].local_path;
+//                                            el.server_path = server_path;
+//                                            delete el.local_path;
+                                            if(i == (data.length-1)){
+                                                SERVER.SOCKET.sync_chat({messages:data, info: info}, function(server){
+                                                    SERVER.DB.insert_batch_on_duplicate_update(table, server.responce, function(data){
+                                                        _this._sync_clear(table,  server.info.time);
+                                                        return (callback ? callback() : true);
+                                                    });
+                                                }); 
                                             }
                                         });
                                     }
+                                    // filter removing local_path from array
+
                                 });
                             });
+                            this._clear_tables_to_sync(table);
                         },
 
                         _sync_clear  : function(table, time){
-                            var _this = this;
                             SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "'+table+'"');
                             SERVER.SESSION._update_sync_time(table, time);
                         },
