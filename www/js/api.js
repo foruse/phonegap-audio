@@ -673,7 +673,7 @@
                                 // fires when new message arrive
                                 console.log("updatechat data");
                                 console.log(data);
-                                SERVER.DB.batch_insert("xiao_project_comments", data, function(){
+                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
                                     callback(data);
                                 });
                             });
