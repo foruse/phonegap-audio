@@ -97,6 +97,7 @@
                         id, // project_id
                         /* get message event*/
                         function(messages) {
+                            console.log("Models.ProjectChat.chat_init");
                             messages.forEach(function(message){
                                 if(message.type == "text"){
                                     console.log(message);

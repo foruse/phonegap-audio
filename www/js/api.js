@@ -500,7 +500,7 @@
 
                     ProjectChat     :   {
 
-                        chat_init    :   function(project_id, callback){ 
+                        chat_init    :   function(project_id, callback){
                             
                             DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
                             DB.from("xiao_projects AS p");
@@ -512,9 +512,9 @@
                                 cosnoel.log("CHAT INIT EVENT");
                                 callback(data); // draw data from DB
                             });
-                            SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+                            SOCKET.updatechat({type:"project", id: project_id}, function(socket_messages){ // new messages ARRAY
                                 cosnoel.log("UPDATE CHAT EVENT");
-                                callback(messages);
+                                callback(socket_messages);
                             });
 
 //                            API._sync_chat('xiao_project_comments', function(){
@@ -668,16 +668,18 @@
 //                        },
                         
                         updatechat : function(connect_data, callback){ // in data we specify id and type
+                            console.log("update chat INITED");
                             this.socket.emit('addroom', connect_data);
 //                            this.socket.removeEventListener("updatechat");
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
                                 console.log("updatechat data");
                                 console.log(data);
+                                console.log(callback);
 //                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
-                                callback(data);
                                 SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function(){
                                     console.log("updatechat CALLBACK");
+                                    callback(data);
 //                                    console.log(data);
                                 });
                             });
@@ -827,14 +829,16 @@
                                     
                                     var len = results.rows.length, db_result = [];
                                     for (var i=0; i<len; i++){
-                                        console.log(results.rows);
+//                                        console.log(results.rows);
                                         db_result[i] = results.rows.item(i);
                                     }
                                     console.log(db_result);
                                     return (callback ? callback(db_result) : true);
                                 }
                                 function errorCB(err) {
-                                    console.log("Error processing SQL: "+err.code);
+                                    console.log("Error processing SQL code: "+err.code);
+                                    console.log("Error processing SQL error below ");
+                                    console.log(err);
                                 }
                                 db.transaction(queryDB, errorCB);
                                 function queryDB(tx) {
