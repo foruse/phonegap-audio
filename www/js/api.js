@@ -12,10 +12,11 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
-
+console.log("HELLOWWW");
  document.addEventListener("deviceready", onDeviceReady, false);
  
     function onDeviceReady() {
+    alert("hello1222")
         
         // APPLICATION CONFIGS
         // APPLICATION CONFIGS
