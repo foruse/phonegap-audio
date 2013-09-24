@@ -677,6 +677,7 @@
 //                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
                                 SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function(){
                                     console.log("updatechat CALLBACK");
+                                    console.log(data);
                                     callback(data);
                                 });
                             });
@@ -822,10 +823,14 @@
                             _executeSQL   : function(sql, callback){
                                 console.log(sql);
                                 function querySuccess(tx, results) {
+                                    console.log("querySuccess");
+                                    
                                     var len = results.rows.length, db_result = [];
                                     for (var i=0; i<len; i++){
+                                        console.log(results.rows);
                                         db_result[i] = results.rows.item(i);
                                     }
+                                    console.log(db_result);
                                     return (callback ? callback(db_result) : true);
                                 }
                                 function errorCB(err) {
