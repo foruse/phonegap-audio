@@ -218,7 +218,6 @@
 //                                });
 //                                API.read(callback);
                                 API.read(function(data){
-                                    console.log(data);
                                     callback(data);
                                 });
                                 /*
@@ -514,7 +513,7 @@
                                 callback(data); // draw data from DB
                             });
                             SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
-                                cosnoel.log("UPAEDTE CHAT EVENT");
+                                cosnoel.log("UPDATE CHAT EVENT");
                                 callback(messages);
                             });
 
