@@ -409,7 +409,8 @@
 
                         play    : function(id){
                             var _this = this;
-                            if(id == this._last_play_id && this._last_play_path){
+                            if(id == this._last_play_id && this._last_play_path != null){
+                                console.log("PLAY SAME FILE!!!");
                                 // if continue to play current media file
                                 PHONE.VoiceMessage.play(this._last_play_path);
                             }else{
@@ -419,6 +420,8 @@
                                 DB.from('xiao_project_comments AS pc');
                                 DB.where('pc.id="'+id+'"');
                                 DB.row(function(data){
+                                    console.log("PLAY data");
+                                    console.log(data);
                                     if(data.local_path != "" && data.local_path != undefined){
                                         console.log("file exists");
                                         // if this file exists in local db then there is a local path in the db
@@ -427,6 +430,8 @@
                                     }else{
                                         console.log("no file");
                                         PHONE.VoiceMessage.download(data['server_path'], function(new_local_path){
+                                            console.log("new_local_path");
+                                            console.log(new_local_path);
                                             PHONE.VoiceMessage.play(new_local_path);
                                             _this._last_play_path = new_local_path;
                                             DB.update("xiao_project_comments", {local_path:new_local_path}, 'id="'+id+'"');
