@@ -1153,10 +1153,23 @@
                                                     local_path TEXT NULL,\n\
                                                     project_id VARCHAR(255) NOT NULL,\n\
                                                     user_id VARCHAR(255) NOT NULL,\n\
-                                                    update_time DATETIME,\n\
+                                                    update_time VARCHAR(255) NULL,\n\
                                                     company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
                                                     UNIQUE(id))'
                                     );
+//                                    tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
+//                                                    server_id VARCHAR(255) NULL,\n\
+//                                                    id varchar(255) NOT NULL,\n\
+//                                                    content TEXT NULL,\n\
+//                                                    type VARCHAR(255) NULL,\n\
+//                                                    server_path TEXT NULL,\n\
+//                                                    local_path TEXT NULL,\n\
+//                                                    project_id VARCHAR(255) NOT NULL,\n\
+//                                                    user_id VARCHAR(255) NOT NULL,\n\
+//                                                    update_time DATETIME NULL,\n\
+//                                                    company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
+//                                                    UNIQUE(id))'
+//                                    );
 
     //                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
     //                                                server_id VARCHAR(255) NULL,\n\
