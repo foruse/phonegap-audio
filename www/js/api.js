@@ -509,12 +509,13 @@
                             DB.order_by('pc.update_time');
 //                            API._remove_from_sync("xiao_projects");
                             API.read(function(data){
-                                cosnoel.log("CHAT INIT EVENT");
+                                console.log("CHAT INIT EVENT");
                                 callback(data); // draw data from DB
                             });
                             SOCKET.updatechat({type:"project", id: project_id}, function(socket_messages){ // new messages ARRAY
-                                cosnoel.log("UPDATE CHAT EVENT");
-                                callback(socket_messages);
+                                console.log("UPDATE CHAT EVENT");
+                                console.log(callback);
+//                                callback(socket_messages);
                             });
 
 //                            API._sync_chat('xiao_project_comments', function(){
