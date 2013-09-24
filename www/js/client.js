@@ -12,41 +12,41 @@ function init_app() { //wrapper
             });
 
             Models.ProjectChat.chat_init(
-                    id, // project_id
-                    /* get message event*/
-                            function(messages) {
-                                messages.forEach(function(message) {
-                                    if (message.type == "text") {
-                                        console.log(message);
-                                        $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
-                                        console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
-                                    }
-                                    if (message.type == "audio") {
-                                        $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
-                                    }
-                                });
-                            }
-                    );
-
-                });
-
-        Models.ProjectChat.chat_init(
                 id, // project_id
                 /* get message event*/
                         function(messages) {
-                            console.log("Models.ProjectChat.chat_init");
                             messages.forEach(function(message) {
                                 if (message.type == "text") {
                                     console.log(message);
-                                    $("#chat").append('<p>' + message.content + '  <b>  DB message</b>  </p>');
+                                    $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
                                     console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
                                 }
                                 if (message.type == "audio") {
-                                    $("#chat").append('<p> VOice message <b> DB message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+                                    $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
                                 }
                             });
                         }
                 );
+
+        });
+
+//        Models.ProjectChat.chat_init(
+//                id, // project_id
+//                /* get message event*/
+//                        function(messages) {
+//                            console.log("Models.ProjectChat.chat_init");
+//                            messages.forEach(function(message) {
+//                                if (message.type == "text") {
+//                                    console.log(message);
+//                                    $("#chat").append('<p>' + message.content + '  <b>  DB message</b>  </p>');
+//                                    console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
+//                                }
+//                                if (message.type == "audio") {
+//                                    $("#chat").append('<p> VOice message <b> DB message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
+//                                }
+//                            });
+//                        }
+//                );
 //                    Models.Project.read(id, function(data) {
 //                        // asynchronous method which have several events (project info and chat messages)
 //

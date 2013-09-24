@@ -677,11 +677,11 @@ console.log("HELLOWWW");
                                 // fires when new message arrive
                                 console.log("updatechat data");
                                 console.log(data);
-                                console.log(callback);
+//                                console.log(callback);
 //                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
                                 SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function(){
                                     console.log("updatechat CALLBACK");
-//                                    callback(data);
+                                    callback(data);
 //                                    console.log(data);
                                 });
                             });
