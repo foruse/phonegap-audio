@@ -674,7 +674,8 @@
                                 // fires when new message arrive
                                 console.log("updatechat data");
                                 console.log(data);
-                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
+//                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
+                                SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function(){
                                     callback(data);
                                 });
                             });
@@ -887,6 +888,47 @@
                                 if(data instanceof Array === false) return false; // data is array here
 //                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
                                 var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (', ij = 0;
+                                for(var key in data[0]){
+                                    if(ij != 0){sql+=",";}
+//                                    sql+=","+key;
+                                    sql+=key;
+                                    ++ij;
+                                }
+                                var ijk= 0;
+                                sql+=')';
+                                for(var j in data){
+                                    for(var ij in data[j]){
+                                        if(i == 0){
+//                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
+                                            j == 0 ? sql+= ' SELECT ' : sql+= ' UNION SELECT ';
+                                        }
+                                        if(j == 0){
+                                            if(ijk!=0){sql+=",";}
+//                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
+                                            sql+='"'+data[j][ij]+'" as '+ ij + ''
+                                        }else{
+                                            if(ijk!=0){sql+=",";}
+//                                            sql+=', "'+data[j][ij]+'"';
+                                            sql+='"'+data[j][ij]+'"';
+                                        }
+                                        ++i;
+                                        ++ijk;
+                                    }
+                                    i=0;
+                                    ijk=0;
+                                }
+                                return (
+                                    callback ? this._executeSQL(sql, function(){
+                                        callback();
+                                    }) : this._executeSQL(sql)
+                                );
+                            },
+                            
+                            batch_insert_width_id   : function(table, data, callback){
+                                if(typeof table != "string") return false; // table is a string not an array
+                                if(data instanceof Array === false) return false; // data is array here
+//                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
+                                var i = 0, _this = this, sql = 'INSERT INTO '+table+' (', ij = 0;
                                 for(var key in data[0]){
                                     if(ij != 0){sql+=",";}
 //                                    sql+=","+key;
