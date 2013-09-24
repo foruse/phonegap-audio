@@ -514,8 +514,8 @@
                             });
                             SOCKET.updatechat({type:"project", id: project_id}, function(socket_messages){ // new messages ARRAY
                                 console.log("UPDATE CHAT EVENT");
-                                console.log(callback);
-//                                callback(socket_messages);
+//                                console.log(callback);
+                                callback(socket_messages);
                             });
 
 //                            API._sync_chat('xiao_project_comments', function(){
