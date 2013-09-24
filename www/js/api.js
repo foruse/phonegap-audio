@@ -510,9 +510,11 @@
                             DB.order_by('pc.update_time');
 //                            API._remove_from_sync("xiao_projects");
                             API.read(function(data){
+                                cosnoel.log("CHAT INIT EVENT");
                                 callback(data); // draw data from DB
                             });
                             SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+                                cosnoel.log("UPAEDTE CHAT EVENT");
                                 callback(messages);
                             });
 
