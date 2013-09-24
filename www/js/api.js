@@ -671,7 +671,11 @@
 //                            this.socket.removeEventListener("updatechat");
                             this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
                                 // fires when new message arrive
-                                callback(data);
+                                console.log("updatechat data");
+                                console.log(data);
+                                SERVER.DB.batch_insert("xiao_project_comments", data, function(){
+                                    callback(data);
+                                });
                             });
 //                            console.log(connect_data);
 //                            // type is project or todo
