@@ -695,7 +695,7 @@
 //                                console.log(data);
 //                                callback(data);
 //                            });
-                        },
+                        }
                                 /*
                         connect : function(type, id, callback){
                             // type is project or todo
@@ -721,9 +721,9 @@
                             }// else same connection
                         }, */
 
-                        sendchat    :   function(message){
-                            this.socket.emit("sendchat", message);
-                        }
+//                        sendchat    :   function(message){
+//                            this.socket.emit("sendchat", message);
+//                        }
 
                     },
 
