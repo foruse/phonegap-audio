@@ -675,10 +675,10 @@
                                 console.log("updatechat data");
                                 console.log(data);
 //                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
+                                callback(data);
                                 SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function(){
                                     console.log("updatechat CALLBACK");
-                                    console.log(data);
-                                    callback(data);
+//                                    console.log(data);
                                 });
                             });
 //                            console.log(connect_data);
@@ -965,9 +965,7 @@
                                     ijk=0;
                                 }
                                 return (
-                                    callback ? this._executeSQL(sql, function(){
-                                        callback();
-                                    }) : this._executeSQL(sql)
+                                    callback ? this._executeSQL(sql, callback) : this._executeSQL(sql)
                                 );
                             },
 
