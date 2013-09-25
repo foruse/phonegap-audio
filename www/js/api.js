@@ -12,11 +12,11 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
-console.log("HELLOWWW");
  document.addEventListener("deviceready", onDeviceReady, false);
  
     function onDeviceReady() {
-    alert("hello1222")
+        console.log("HELLOWWW");
+//    alert("hello1222")
         
         // APPLICATION CONFIGS
         // APPLICATION CONFIGS
@@ -501,7 +501,7 @@ console.log("HELLOWWW");
 
                     ProjectChat     :   {
 
-                        chat_init    :   function(project_id, callback){
+               /*         chat_init    :   function(project_id, callback){
                             
                             DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
                             DB.from("xiao_projects AS p");
@@ -519,104 +519,47 @@ console.log("HELLOWWW");
                                 callback(socket_messages);
                             });
 
-//                            API._sync_chat('xiao_project_comments', function(){
-                             // 1. When init chat sync DB first
-//                            API._sync('xiao_project_comments', function(){
-//                                console.log("sync chat callback");
-//                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-//                                DB.from("xiao_projects AS p");
-//                                DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-//                                DB.where('p.id ="'+ project_id +'"');
-//                                DB.order_by('pc.update_time');
-//                                API._clear_tables_to_sync();
-//                                SOCKET.updatechat({type:"project", id: project_id}, function(messages){ // new messages ARRAY
-//                                    console.log(messages);
-//                                    callback(messages);
-//                                });
-//                            }); // 1. When init chat sync DB first
+                        },*/
+                                
+                        update_messages    :   function(project_id, callback){
                             
-//                            SOCKET.connect({type:"project", id: project_id}, function(messages){ // new messages ARRAY
+                            
+                            SOCKET.updatechat({type:"project", id: project_id}, function(socket_messages){ // new messages ARRAY
+                                console.log("UPDATE CHAT EVENT");
+//                                console.log(callback);
+                                callback(socket_messages);
+                            });
+
                         },
+                                
+                        get_old_messages    :   function(project_id, callback){
+                            
+                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
+                            DB.from("xiao_projects AS p");
+                            DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
+                            DB.where('p.id ="'+ project_id +'"');
+                            DB.order_by('pc.update_time');
+//                            API._remove_from_sync("xiao_projects");
+                            API.read(function(data){
+                                console.log("CHAT INIT EVENT");
+                                callback(data); // draw data from DB
+                            });
+
+                        },
+                                
+                                
 
 //                        send_message    :   function(data, callback){
                         send_message    :   function(message, callback){
+                            console.log("sending mesage...");
                             message['user_id'] = SESSION.get("user_id"); // push user_id to message data
 
                             API.insert("xiao_project_comments", message, function(insert_id){
                                 message['id'] = insert_id;
+                                console.log('API.insert("xiao_project_comments"');
+                                console.log(message);
                                 callback(message);
                             });
-                            // 1. save message to local_db
-                   /*         DB.insert('xiao_project_comments', message, function(insert_id){
-                                message['id'] = insert_id; // push id to message data
-                                DB.select('pc.id, pc.content, pc.type, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id');
-                                DB.from("sync as s");
-                                DB.join("xiao_project_comments as pc", "pc.id = s.row_id");
-                                DB.where('s.table_name = "xiao_project_comments"');
-                                DB.query(function(data){
-                                    data.forEach(function(el){
-                                        // if audio we need to proceed uload 
-                                        if(el.type == "audio"){
-                                            PHONE.VoiceMessage.upload(el.local_path, "audio", function(server_path){
-                                                
-                                            });
-                                        }
-                                        // filter removing local_path from array
-                                        
-                                    });
-                                });
-                                API._clear_tables_to_sync();
-                            }); */
-                    
-                    
-                            // 1. save message to db
-                            // 2. sync db
-                            // 3. send socket message to all users to sync db
-
-    //                        var data = {
-    //                            content     :   "hello world",
-    //                            type        :   "text",
-    //                            project_id  :   "xiao_projects_8w4bk484&20130916170458"
-    ////                            user_id     :   "dsadasdas1212312"
-    //                        };
-    //                        var data = {
-    //                            content     :   "",
-    //                            type        :   "audio",
-    //                            local_path  :   "file://sdas/dsdas/test.wav",
-    //                            project_id  :   "xiao_projects_8w4bk484&20130916170458"
-    ////                            user_id   :   "dsadasdas1212312"
-    //                        };
-                            // 1. save message to db
-                            // 2. sync db
-//                            data['user_id'] = SESSION.get("user_id");
-//
-//                            if(data.type == "audio"){
-//                                PHONE.VoiceMessage.upload(data.local_path, "audio", function(server_path){
-//                                    console.log("upload");
-//                                    console.log(server_path);
-//                                    data['server_path'] = server_path.response;
-//                                    API.insert("xiao_project_comments", data, function(insert_id){
-//                                        // 3. send socket message to all users to sync db
-//                                        data['id'] = insert_id;
-//            //                            SESSION.push_message(insert_id);
-//                                        SOCKET.sendchat(data);
-//                                        console.log(data);
-//                                        callback(data);
-//                                    });
-//                                });
-//                            }else{
-//
-//                                API.insert("xiao_project_comments", data, function(insert_id){
-//                                    // 3. send socket message to all users to sync db
-//                                    data['id'] = insert_id;
-//        //                            SESSION.push_message(insert_id);
-//                                    SOCKET.sendchat(data);
-//                                    console.log(data);
-//                                    callback(data);
-//                                });
-//                            }
-
-
                         }
 
                     } 
@@ -1267,7 +1210,8 @@ console.log("HELLOWWW");
                             });
                         },
 
-                        insert  :  function(table, data, callback, timeout){ // timeout need to be set to true if we want to get callback after synchronization with server
+//                        insert  :  function(table, data, callback, timeout){ // timeout need to be set to true if we want to get callback after synchronization with server
+                        insert  :  function(table, data, callback){ // timeout need to be set to true if we want to get callback after synchronization with server
                             if(typeof table != "string") return false; // table is just text here not an array
                             if(data instanceof Array) return false;
                             // WHEN CREATE :
@@ -1275,9 +1219,10 @@ console.log("HELLOWWW");
                             //  after that sync performed asynchronously
                             var _this = this;
                             SERVER.DB.insert(table, data, function(insert_id){
-                                if(callback && timeout === true){
-                                    _this._sync( [table], function(){ callback(insert_id); });
-                                }else if(callback){
+//                                if(callback && timeout === true){
+//                                    _this._sync( [table], function(){ callback(insert_id); });
+//                                }else
+                                if(callback){
                                     callback(insert_id);
                                     _this._sync([table]);
                                 }else{_this._sync([table]);}
@@ -1449,7 +1394,7 @@ console.log("HELLOWWW");
                                 _this._check_local_DB_and_fs(table_name, function(data){
                                     sync_data.push(data);
                                     if(table_num == (tables.length-1)){
-                                        _this._make_socket_request(sync_data, callback);
+                                        callback ? _this._make_socket_request(sync_data, callback) : _this._make_socket_request(sync_data);
                                     }
                                 });
                             });
@@ -1487,6 +1432,7 @@ console.log("HELLOWWW");
                                         }
                                         
                                         function make_callback(){
+                                            console.log("make_callback");
                                             _this._sync_clear(ij.table,  server.info.time);
                                             if(num == (changes.length-1)){
                                                 return (callback ? callback() : true);
@@ -1994,7 +1940,10 @@ console.log("HELLOWWW");
 
 
         init_app(); // start wrapper functon
-        
+//        Models.User.test_create("", function() {
+//            
+//            console.log("Models.User.test_create");
+//        });
         
     }
 }
