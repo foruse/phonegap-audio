@@ -16,6 +16,11 @@
  
     function onDeviceReady() {
         console.log("HELLOWWW");
+        console.log("HELLOWWW");
+        console.log("HELLOWWW");
+        console.log("HELLOWWW");
+        console.log("HELLOWWW");
+        console.log("HELLOWWW");
 //    alert("hello1222")
         
         // APPLICATION CONFIGS
