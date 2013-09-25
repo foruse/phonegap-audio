@@ -7,33 +7,27 @@ function init_app() { //wrapper
 
 
         var id = "xiao_projects_8w4bk484&20130916170458";
-        Models.Project.read(id, function(project) {
-            console.log(project);
-            $("#project-info").append('<div>title: ' + project.title + ", description: " + project.desc + '</div>');
-            project.users.forEach(function(el, i) {
+        Models.Project.read(id, function(partners) {
+
+            partners.forEach(function(el, i) {
+                i === 0 ? $("#project-info").append('<div>' + el.name + " " + el.description + '</div>') : "";
                 $("#project-partners").append(el.name);
             });
 
-            project.messages.forEach(function(message) {
-                if (message.type == "text") {
-                    $("#chat").append('<p><span>from:' + message.poster.name + '</span> -"' + message.text + '"</p>');
-                }
-                if (message.type == "audio") {
-                    $("#chat").append('<p><span>from:' + message.poster.name + '</span> -<button class="play-send-voice" vo-id="' + message.id + '">PLAY</button></p>');
-                }
-            });
+
         });
 
         Models.ProjectChat.chat_init(
                 id, // project_id
                 function(messages) {
-                    console.log(messages);
                     messages.forEach(function(message) {
                         if (message.type == "text") {
-                            $("#chat").append('<p><span>from:' + message.poster.name + '</span> -"' + message.text + '"</p>');
+                            console.log(message);
+                            $("#chat").append('<p>' + message.content + '  <b>  NOT MY</b>  </p>');
+                            console.log("message--message--message--message--message--message--message--message--message--message--message--message--message--message--");
                         }
                         if (message.type == "audio") {
-                            $("#chat").append('<p><span>from:' + message.poster.name + '</span> -<button class="play-send-voice" vo-id="' + message.id + '">PLAY</button></p>');
+                            $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + message.id + '">PLAY</button> </p>');
                         }
                     });
                 }
@@ -44,7 +38,7 @@ function init_app() { //wrapper
 
             var data = {
                 //                content     :   "hello world",
-                text: mess,
+                content: mess,
                 type: "text",
                 project_id: "xiao_projects_8w4bk484&20130916170458"
                         //                            user_id     :   "dsadasdas1212312"
@@ -53,7 +47,7 @@ function init_app() { //wrapper
 
             Models.ProjectChat.send_message(data, function(message) {
                 $("#message-text").val("");
-                $("#chat").append('<p><b>ME: </b> ' + message.text + '</p>');
+                $("#chat").append('<p>' + message.content + ' <b> MY Message</b> </p>');
                 console.log(message);
             });
         });
@@ -65,7 +59,7 @@ function init_app() { //wrapper
             Models.VoiceMessage.record_start(function(file_path) {
                 console.log(file_path);
                 message = {
-                    text: "",
+                    content: "",
                     type: "audio",
                     project_id: "xiao_projects_8w4bk484&20130916170458",
                     local_path: file_path
@@ -88,7 +82,7 @@ function init_app() { //wrapper
             console.log(message);
             Models.ProjectChat.send_message(message, function(data) {
                 $("#message-text").val("");
-                $("#chat").append('<p><b>ME: </b><button class="play-send-voice" vo-id="' + data.id + '">PLAY</button></p>');
+                $("#chat").append('<p> VOice message <b> MY Message</b><button class="play-send-voice" vo-id="' + data.id + '">PLAY</button> </p>');
                 console.log(data);
                 message = {};
             });

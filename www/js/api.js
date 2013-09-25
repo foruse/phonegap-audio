@@ -15,14 +15,6 @@
 document.addEventListener("deviceready", onDeviceReady, false);
 
 function onDeviceReady() {
-    console.log("HELLOWWW");
-    console.log("HELLOWWW");
-    console.log("HELLOWWW");
-    console.log("HELLOWWW");
-    console.log("HELLOWWW");
-    console.log("HELLOWWW");
-//    alert("hello1222")
-
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -38,7 +30,6 @@ function onDeviceReady() {
         project_chat_url: "http://212.8.40.254:5959/",
         todo_chat_url: "http://212.8.40.254:5959/todo",
         audio_format: "wav",
-//        audio_format: "mp3",
         route: function(url) {
             return  this.server_url + this.routes[url];
         },
@@ -163,112 +154,6 @@ function onDeviceReady() {
                         }
 
                     }
-
-                },
-                Project: {
-                    create: function(data) {
-                        // data is following:
-                        data = {
-                            project: {
-                                name: "sssss",
-                                description: "sssss",
-                                color: "7"
-                            },
-                            //                        project_partners  : [{id:1},{id:2}]  
-                            //                            project_partners  : ["dasdas355656756","dasdf655685790p89gjkfh","dasdser343234","sdasd23424fgghjhgjkg","dfsdfsdhgj56756756"]  
-                            project_partners: ["sdasdaad3232323"]
-                        };
-
-                        data.project['creator_id'] = SESSION.get("user_id");
-                        data.project['company_id'] = SESSION.get("company_id");
-
-                        if (data.project) {
-                            API.insert('xiao_projects', data.project, function(insert_id) {
-                                if (data.project_partners.length > 0) {
-                                    var partners = [];
-                                    for (var i in data.project_partners) {
-                                        partners.push({
-                                            project_id: insert_id,
-                                            user_id: data.project_partners[i]
-                                        });
-                                    }
-                                    API.batch_insert('xiao_project_partners', partners);
-                                }
-                            });
-                        }
-                    },
-                    read: function(id, callback) {
-
-                        if (typeof(id) !== "function") { // get inside project page
-                            // if id is set we need to get a project page with all comments
-                            Models.ProjectChat.inited_chat = 0;
-                            SESSION.set("project_id", id);
-                            DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
-                            DB.from("xiao_projects AS p");
-                            DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            DB.join("xiao_users AS u", "u.id = pp.user_id");
-                            DB.where('p.id ="' + id + '"');
-
-//                                DB.query(function(partners){
-//                                    callback({partners:partners});
-//                                });
-//                                API.read(callback);
-                            API.read(function(data) {
-                                callback(data);
-                            });
-                            /*
-                             API._sync(["xiao_projects","xiao_project_partners","xiao_users", "xiao_project_comments"], function(){
-                             
-                             DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
-                             DB.from("xiao_projects AS p");
-                             DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                             // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                             DB.join("xiao_users AS u", "u.id = pp.user_id");
-                             DB.where('p.id ="'+ id +'"');
-                             
-                             DB.query(function(partners){
-                             callback({partners:partners});
-                             });
-                             
-                             DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-                             DB.from("xiao_projects AS p");
-                             DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-                             DB.where('p.id ="'+ id +'"');
-                             DB.order_by('pc.update_time');
-                             
-                             DB.query(function(chat){
-                             callback({chat:chat});
-                             });
-                             API._clear_tables_to_sync();
-                             }); */
-                        } else {
-                            callback = id;
-                            DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
-                            DB.from("xiao_projects AS p");
-                            DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            DB.join("xiao_users AS u", "u.id = pp.user_id");
-                            API.read(callback);
-                        }
-
-
-                    } /*,
-                     
-                     add_comment     :   function(data){
-                     // data is following:
-                     data = {
-                     type        :   "text",
-                     content     :   "test message",
-                     project_id  :   "xiao_projects_7Zn8eFu4&20130907155346"
-                     };
-                     
-                     if(data){
-                     API.insert("xiao_project_comments", data, function(insert_id){
-                     
-                     });
-                     }
-                     } */
 
                 },
                 User: {
@@ -453,51 +338,247 @@ function onDeviceReady() {
                     }
 
                 },
-                //                TEST : function(user){
-                //                    DB._init_db(1);
-                //                    SESSION._init_storage();
-                //                    if(user){
-                //                        Models.User.create({
-                //                            name            :   _random(4, "new_user"),
-                //                            avatar          :   _random(4, "avatar_"),
-                //                            pinyin          :   "x",
-                //                            password        :   _random(4, "password"),
-                //                            email           :   _random(4, "email"),
-                //                            QRCode          :   _random(4, "QRCOEDE"),
-                //                            adress          :   "testuser_123",
-                //                            phoneNum        :   "testuser_123",
-                //                            position        :   "testuser_123",
-                //                            company_id      :   1
-                //                        });
-                //                    }
-                //                },
+                Project: {
+                    create: function(data) {
+                        // data is following:
+                        data = {
+                            project: {
+                                title: "sssss",
+                                desc: "sssss",
+                                color: "7",
+                                creationTime: new Date().getTime()
+                            },
+                            //                        project_partners  : [{id:1},{id:2}]  
+                            //                            project_partners  : ["dasdas355656756","dasdf655685790p89gjkfh","dasdser343234","sdasd23424fgghjhgjkg","dfsdfsdhgj56756756"]  
+                            project_partners: ["sdasdaad3232323"]
+                        };
 
+                        data.project['creator_id'] = SESSION.get("user_id");
+                        data.project['company_id'] = SESSION.get("company_id");
+
+                        if (data.project) {
+                            API.insert('xiao_projects', data.project, function(insert_id) {
+                                if (data.project_partners.length > 0) {
+                                    var partners = [];
+                                    for (var i in data.project_partners) {
+                                        partners.push({
+                                            project_id: insert_id,
+                                            user_id: data.project_partners[i]
+                                        });
+                                    }
+                                    API.batch_insert('xiao_project_partners', partners);
+                                }
+                            });
+                        }
+                    },
+                    read: function(id, callback) {
+
+                        if (typeof(id) !== "function") {
+                            // get inside project page
+
+                            // if id is set we need to get a project page with all comments
+//                             Models.ProjectChat.inited_chat = 0;
+//                             SESSION.set("project_id", id);
+//                             DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
+//                             DB.from("xiao_projects AS p");
+//                             DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
+//                             DB.join("xiao_users AS u", "u.id = pp.user_id");
+//                             DB.where('p.id ="' + id + '"');
+//                             
+//                             API.read(function(data) {
+//                             callback(data);
+//                             });
+
+                            var result = {};
+                            API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
+
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.status, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.from("xiao_projects AS p");
+                                DB.join("xiao_users AS u", "u.id = p.creator_id");
+                                DB.join("xiao_companies AS c", "u.company_id = c.id");
+                                DB.where('p.id ="' + id + '"');
+                                API._clear_tables_to_sync();
+                                DB.row(function(project) {
+                                    var leader = project.company_creator_id == project.uid ? true : false,
+                                            new_user = project.isNewUser == 0 ? true : false;
+
+                                    project.creator = {
+                                        id: project.uid,
+                                        name: project.name,
+                                        pinyin: project.pinyin,
+                                        avatar: project.avatar,
+                                        company: project.company,
+                                        companyAdres: project.companyAdres,
+                                        position: project.position,
+                                        phoneNum: project.phoneNum,
+                                        email: project.email,
+                                        adress: project.adress,
+                                        isNewUser: new_user,
+                                        isLeader: leader,
+                                        QRCode: project.QRCode
+                                    };
+                                    delete project.uid;
+                                    delete project.company_creator_id;
+                                    delete project.name;
+                                    delete project.pinyin;
+                                    delete project.avatar;
+                                    delete project.company;
+                                    delete project.companyAdres;
+                                    delete project.position;
+                                    delete project.phoneNum;
+                                    delete project.email;
+                                    delete project.adress;
+                                    delete project.isNewUser;
+                                    delete project.QRCode;
+
+                                    make_callback({project: project});
+                                });
+
+                                DB.select("pc.id, pc.text, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.from("xiao_project_comments AS pc");
+                                DB.join("xiao_users AS u", "u.id = pс.user_id");
+                                DB.join("xiao_companies AS c", "u.company_id = c.id");
+                                DB.where('pc.project_id ="' + id + '"');
+                                DB.order_by('pc.update_time');
+                                API._clear_tables_to_sync();
+                                DB.query(function(messages) {
+                                    var mess_result = [];
+                                    messages.forEach(function(mess) {
+                                        var leader = mess.company_creator_id == mess.uid ? true : false,
+                                                new_user = mess.isNewUser == 0 ? true : false;
+                                        mess_result.push({
+                                            id: mess.id,
+                                            text: mess.text,
+                                            poster: {
+                                                id: mess.uid,
+                                                name: mess.name,
+                                                pinyin: mess.pinyin,
+                                                avatar: mess.avatar,
+                                                company: mess.company,
+                                                companyAdres: mess.companyAdres,
+                                                position: mess.position,
+                                                phoneNum: mess.phoneNum,
+                                                email: mess.email,
+                                                adress: mess.adress,
+                                                isNewUser: new_user,
+                                                isLeader: leader,
+                                                QRCode: mess.QRCode
+                                            },
+                                            attachment: {
+                                                id: mess.id,
+                                                type: mess.type,
+                                                src: mess.server_path
+                                            },
+                                            praise: [],
+                                            time: mess.update_time,
+                                            type: mess.type
+                                        });
+                                    });
+                                    make_callback({messages: mess_result});
+                                });
+
+
+                            });
+
+                            function make_callback(data) {
+                                if (data.project) {
+                                    result = data.project;
+                                }
+                                if (data.messages) {
+                                    result.messages = data.messages;
+                                }
+                                if (result.id && result.messages) {
+                                    callback(result);
+                                }
+                            }
+                        } else {
+                            callback = id;
+                            DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
+                            DB.from("xiao_projects AS p");
+                            DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
+                            // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
+                            DB.join("xiao_users AS u", "u.id = pp.user_id");
+                            API.read(callback);
+                        }
+
+
+                    }
+
+                },
                 ProjectChat: {
                     inited_chat: 0,
                     chat_init: function(project_id, callback) {
-                        console.log("ProjectChat chat_init chat_init chat_init");
-//                        this.inited_chat = 1;
-                        var _this = this;
-                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-                        DB.from("xiao_projects AS p");
-                        DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-                        DB.where('p.id ="' + project_id + '"');
-                        DB.order_by('pc.update_time');
-//                            API._remove_from_sync("xiao_projects");
-                        API.read(function(data) {
-                            console.log("CHAT INIT EVENT");
-                            console.log(_this.inited_chat);
-//                            return (_this.inited_chat != 1 ? callback(data) : false); // draw data from DB
-                            if(_this.inited_chat != 1){
-                                console.log("_this.inited_chat");
-                                callback(data);
-                                _this.inited_chat = 1;
-                            }
-                        });
+//                        console.log("ProjectChat chat_init chat_init chat_init");
+////                        this.inited_chat = 1;
+//                        var _this = this;
+//                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
+//                        DB.from("xiao_projects AS p");
+//                        DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
+//                        DB.where('p.id ="' + project_id + '"');
+//                        DB.order_by('pc.update_time');
+////                            API._remove_from_sync("xiao_projects");
+//                        API.read(function(data) {
+//                            console.log("CHAT INIT EVENT");
+//                            console.log(_this.inited_chat);
+////                            return (_this.inited_chat != 1 ? callback(data) : false); // draw data from DB
+//                            if (_this.inited_chat != 1) {
+//                                console.log("_this.inited_chat");
+//                                callback(data);
+//                                _this.inited_chat = 1;
+//                            }
+//                        });
+
                         SOCKET.updatechat({type: "project", id: project_id}, function(socket_messages) { // new messages ARRAY
                             console.log("UPDATE CHAT EVENT");
-//                                console.log(callback);
-                            callback(socket_messages);
+//                            callback(socket_messages);
+                            var in_m = "";
+                            socket_messages.forEach(function(m, i) {
+                                in_m += (i != 0 ? "," : "");
+                                in_m += '"' + m.id + '"';
+                            });
+                            DB.select("pc.id, pc.text, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                            DB.from("xiao_project_comments AS pc");
+                            DB.join("xiao_users AS u", "u.id = pс.user_id");
+                            DB.join("xiao_companies AS c", "u.company_id = c.id");
+                            DB.where('pc.id IN (' + in_m + ')');
+                            DB.order_by('pc.update_time');
+                            API._clear_tables_to_sync();
+                            DB.query(function(messages) {
+                                var mess_result = [];
+                                messages.forEach(function(mess) {
+                                    var leader = mess.company_creator_id == mess.uid ? true : false,
+                                            new_user = mess.isNewUser == 0 ? true : false;
+                                    mess_result.push({
+                                        id: mess.id,
+                                        text: mess.text,
+                                        poster: {
+                                            id: mess.uid,
+                                            name: mess.name,
+                                            pinyin: mess.pinyin,
+                                            avatar: mess.avatar,
+                                            company: mess.company,
+                                            companyAdres: mess.companyAdres,
+                                            position: mess.position,
+                                            phoneNum: mess.phoneNum,
+                                            email: mess.email,
+                                            adress: mess.adress,
+                                            isNewUser: new_user,
+                                            isLeader: leader,
+                                            QRCode: mess.QRCode
+                                        },
+                                        attachment: {
+                                            id: mess.id,
+                                            type: mess.type,
+                                            src: mess.server_path
+                                        },
+                                        praise: [],
+                                        time: mess.update_time,
+                                        type: mess.type
+                                    });
+                                });
+                                callback(mess_result);
+                            });
+
                         });
 
                     },
@@ -989,7 +1070,7 @@ function onDeviceReady() {
                                                             return _random(8, "_" + table);
                                                         },
                                                         _init_tables: ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
-                                                            'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments'],
+                                                            'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments', 'xiao_companies'],
                                                         _init_db: function(clear) {
                                                             var _this = this;
                                                             console.log("start init");
@@ -1005,86 +1086,114 @@ function onDeviceReady() {
                                                                     tx.executeSql('DROP TABLE IF EXISTS sync_delete');
                                                                 }
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_partners(\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id VARCHAR(255) NOT NULL, \n\
-                                                    project_id VARCHAR(255) NOT NULL,\n\
-                                                    user_id VARCHAR(255) NOT NULL,\n\
-                                                    update_time varchar(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL, \n\
+                                                                    project_id VARCHAR(255) NOT NULL,\n\
+                                                                    user_id VARCHAR(255) NOT NULL,\n\
+                                                                    update_time varchar(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
+                                                                        );
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_companies(\n\
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    title VARCHAR(255) NOT NULL,\n\
+                                                                    desc TEXT NULL,\n\
+                                                                    creator_id VARCHAR(255) NOT NULL,\n\
+                                                                    companyAdres VARCHAR(255) NOT NULL,\n\
+                                                                    update_time varchar(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_projects(\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id VARCHAR(255) NOT NULL,\n\
-                                                    creator_id VARCHAR(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    name VARCHAR(255) NOT NULL,\n\
-                                                    description VARCHAR(255) NULL,\n\
-                                                    color VARCHAR(255) NOT NULL,\n\
-                                                    level VARCHAR(255) NULL,\n\
-                                                    status VARCHAR(255)  NULL,\n\
-                                                    update_time varchar(255) NULL,\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    creator_id VARCHAR(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    title VARCHAR(255) NOT NULL,\n\
+                                                                    desc TEXT NULL,\n\
+                                                                    color VARCHAR(255) NULL,\n\
+                                                                    level VARCHAR(255) NULL,\n\
+                                                                    update_time varchar(255) NULL,\n\
+                                                                    creationTime varchar(255) NULL,\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partners(\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id VARCHAR(255) NOT NULL,\n\
-                                                    user_id INTEGER,\n\
-                                                    partner_id INTEGER,\n\
-                                                    update_time varchar(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ')'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    user_id INTEGER,\n\
+                                                                    partner_id INTEGER,\n\
+                                                                    update_time varchar(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ')'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_users(\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id VARCHAR(255) NOT NULL,\n\
-                                                    name varchar(255) NOT NULL,\n\
-                                                    avatar varchar(255) NOT NULL,\n\
-                                                    pinyin varchar(255) NOT NULL,\n\
-                                                    password varchar(255) NOT NULL,\n\
-                                                    email varchar(100) NOT NULL,QRCode varchar(255) NULL,\n\
-                                                    adress varchar(255) NULL,phoneNum int(11) NULL,\n\
-                                                    position varchar(255) NULL,\n\
-                                                    update_time VARCHAR(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    name varchar(255) NOT NULL,\n\
+                                                                    avatar varchar(255) NOT NULL,\n\
+                                                                    pinyin varchar(255) NOT NULL,\n\
+                                                                    password varchar(255) NOT NULL,\n\
+                                                                    email varchar(100) NOT NULL,\n\
+                                                                    QRCode varchar(255) NULL,\n\
+                                                                    adress varchar(255) NULL,\n\
+                                                                    phoneNum varchar(255) NULL,\n\
+                                                                    position varchar(255) NULL,\n\
+                                                                    update_time VARCHAR(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    isNewUser VARCHAR(255) NULL,\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partner_groups (\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id varchar(255) NOT NULL,\n\
-                                                    name varchar(255) NOT NULL,\n\
-                                                    creator_id VARCHAR(255) NOT NULL,\n\
-                                                    update_time VARCHAR(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id varchar(255) NOT NULL,\n\
+                                                                    name varchar(255) NOT NULL,\n\
+                                                                    creator_id VARCHAR(255) NOT NULL,\n\
+                                                                    update_time VARCHAR(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partner_group_users (\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id varchar(255) NOT NULL,\n\
-                                                    group_id varchar(255) NOT NULL,\n\
-                                                    user_id VARCHAR(255) NOT NULL,\n\
-                                                    update_time VARCHAR(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id varchar(255) NOT NULL,\n\
+                                                                    group_id varchar(255) NOT NULL,\n\
+                                                                    user_id VARCHAR(255) NOT NULL,\n\
+                                                                    update_time VARCHAR(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS sync (\n\
-                                                    sid INTEGER NOT NULL PRIMARY KEY,\n\
-                                                    table_name VARCHAR( 255 ) NOT NULL,\n\
-                                                    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
-                                                    row_id varchar(255) NOT NULL )'
+                                                                    sid INTEGER NOT NULL PRIMARY KEY,\n\
+                                                                    table_name VARCHAR( 255 ) NOT NULL,\n\
+                                                                    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                                                    row_id varchar(255) NOT NULL )'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
-                                                    server_id VARCHAR(255) NULL,\n\
-                                                    id varchar(255) NOT NULL,\n\
-                                                    content TEXT NULL,\n\
-                                                    type VARCHAR(255) NULL,\n\
-                                                    server_path TEXT NULL,\n\
-                                                    local_path TEXT NULL,\n\
-                                                    project_id VARCHAR(255) NOT NULL,\n\
-                                                    user_id VARCHAR(255) NOT NULL,\n\
-                                                    update_time VARCHAR(255) NULL,\n\
-                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-                                                    UNIQUE(id))'
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id varchar(255) NOT NULL,\n\
+                                                                    text TEXT NULL,\n\
+                                                                    type VARCHAR(255) NULL,\n\
+                                                                    server_path TEXT NULL,\n\
+                                                                    local_path TEXT NULL,\n\
+                                                                    project_id VARCHAR(255) NOT NULL,\n\
+                                                                    user_id VARCHAR(255) NOT NULL,\n\
+                                                                    update_time VARCHAR(255) NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
                                                                         );
+//                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
+//                                                                    server_id VARCHAR(255) NULL,\n\
+//                                                                    id varchar(255) NOT NULL,\n\
+//                                                                    content TEXT NULL,\n\
+//                                                                    type VARCHAR(255) NULL,\n\
+//                                                                    server_path TEXT NULL,\n\
+//                                                                    local_path TEXT NULL,\n\
+//                                                                    project_id VARCHAR(255) NOT NULL,\n\
+//                                                                    user_id VARCHAR(255) NOT NULL,\n\
+//                                                                    update_time VARCHAR(255) NULL,\n\
+//                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+//                                                                    read INTEGER DEFAULT 0,\n\
+//                                                                    UNIQUE(id))'
+//                                                                        );
 //                                    tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
 //                                                    server_id VARCHAR(255) NULL,\n\
 //                                                    id varchar(255) NOT NULL,\n\
@@ -1112,10 +1221,10 @@ function onDeviceReady() {
                                                                 //                                );
 
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS sync_delete (\n\
-                                                    `sid` INTEGER NOT NULL PRIMARY KEY,\n\
-                                                    `table_name` VARCHAR( 255 ) NOT NULL,\n\
-                                                    `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
-                                                    `row_id` varchar(255) NOT NULL )'
+                                                                    `sid` INTEGER NOT NULL PRIMARY KEY,\n\
+                                                                    `table_name` VARCHAR( 255 ) NOT NULL,\n\
+                                                                    `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                                                    `row_id` varchar(255) NOT NULL )'
                                                                         );
                                                                 if (clear) {
                                                                     _this._init_tables.forEach(function(cur) {
@@ -1388,6 +1497,7 @@ function onDeviceReady() {
                                                             info: SERVER.SESSION.local_data()
                                                         }, function(server) {
                                                             if (server) {
+                                                                console.log(server);
                                                                 console.log("server");
                                                                 var changes = server.response;
                                                                 changes.forEach(function(ij, num) {
@@ -1690,12 +1800,12 @@ function onDeviceReady() {
                                                         this.download = function(server_path, callback) {
 
                                                             var fileTransfer = new FileTransfer(),
-                                                                uri = encodeURI(server_path),
+                                                                    uri = encodeURI(server_path),
 //                                                            var uri = server_path,
-                                                                new_file_name = server_path.substring(server_path.lastIndexOf('/') + 1);
-                                                                console.log("donwloading");
-                                                                console.log(new_file_name);
-                                                                console.log(uri);
+                                                                    new_file_name = server_path.substring(server_path.lastIndexOf('/') + 1);
+                                                            console.log("donwloading");
+                                                            console.log(new_file_name);
+                                                            console.log(uri);
                                                             this._create_file(new_file_name, function(local_path) {
 //                                                                var fileTransfer = new FileTransfer();
                                                                 fileTransfer.download(
