@@ -5,7 +5,6 @@ function init_app() { //wrapper
 
     Models.User.test_create("", function() {
 
-
         var id = "xiao_projects_8w4bk484&20130916170458";
         Models.Project.read(id, function(project) {
             console.log(project);

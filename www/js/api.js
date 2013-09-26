@@ -12,7 +12,10 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
-document.addEventListener("deviceready", onDeviceReady, false);
+
+BROWSER_TEST_VERSION: true;
+
+BROWSER_TEST_VERSION ? document.addEventListener("deviceready", onDeviceReady, false) : onDeviceReady();
 
 function onDeviceReady() {
     // APPLICATION CONFIGS
@@ -25,10 +28,8 @@ function onDeviceReady() {
             file_upload_url: "upload",
             sockets: ""
         },
-        server_url: "http://212.8.40.254:5959/",
-        file_upload_url: "http://212.8.40.254:5959/upload",
-        project_chat_url: "http://212.8.40.254:5959/",
-        todo_chat_url: "http://212.8.40.254:5959/todo",
+//        server_url: "http://212.8.40.254:5959/",
+        server_url: "http://192.168.200.110:3000",
         audio_format: "wav",
         route: function(url) {
             return  this.server_url + this.routes[url];
@@ -37,7 +38,7 @@ function onDeviceReady() {
     };
 
     var ROUTE = function(url) {
-        return  CONFIG.server_url + CONFIG.routes[url];
+        return  CONFIG.server_url + "/" + CONFIG.routes[url];
     };
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -45,23 +46,27 @@ function onDeviceReady() {
 
     var inited_fs = null;
 
-    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
-//    window.requestFileSystem(LocalFileSystem.TEMPORARY, 0, function(fs) {
-        fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
+    if (BROWSER_TEST_VERSION) {
 
-            inited_fs = dir;
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+            fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
 
-            server_start();
-//                                    return dir;
-//                                    _this.fs = dir;
+                inited_fs = dir;
+
+                server_start();
+            }, function(err1, err2) {
+                console.log(err1);
+                console.log(err2);
+            });
         }, function(err1, err2) {
             console.log(err1);
             console.log(err2);
         });
-    }, function(err1, err2) {
-        console.log(err1);
-        console.log(err2);
-    });
+
+    } else {
+        alert("BROWSER_TEST_VERSION WITHOUT FS");
+        server_start();
+    }
 
     function server_start() {
 
@@ -225,15 +230,23 @@ function onDeviceReady() {
                             company_id: 1
                         };
 
-                        API.insert('xiao_users', data, function(insert_id) {
+                        DB.insert('xiao_users', data, function(insert_id) {
                             SESSION.set("user_id", insert_id);
                             SESSION.set("user_name", name);
-                            API.insert('xiao_project_partners', {
+                            DB.insert('xiao_project_partners', {
                                 project_id: "xiao_projects_8w4bk484&20130916170458",
                                 user_id: insert_id
                             }, callback);
-//                                callback(data);
+                            API._sync(['xiao_users', 'xiao_project_partners']);
                         });
+//                        API.insert('xiao_users', data, function(insert_id) {
+//                            SESSION.set("user_id", insert_id);
+//                            SESSION.set("user_name", name);
+//                            API.insert('xiao_project_partners', {
+//                                project_id: "xiao_projects_8w4bk484&20130916170458",
+//                                user_id: insert_id
+//                            }, callback);
+//                        });
                     }
 
                 },
@@ -372,7 +385,6 @@ function onDeviceReady() {
                         }
                     },
                     read: function(id, callback) {
-
                         if (typeof(id) !== "function") {
                             // get inside project page
 
@@ -391,64 +403,100 @@ function onDeviceReady() {
 
                             var result = {};
                             API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
-
-                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.status, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
                                 DB.from("xiao_projects AS p");
-                                DB.join("xiao_users AS u", "u.id = p.creator_id");
-                                DB.join("xiao_companies AS c", "u.company_id = c.id");
+                                DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
+//                                DB.join("xiao_users AS u", "u.id = p.creator_id");
+                                DB.left_join("xiao_users AS u", "u.id = pp.user_id");
+                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('p.id ="' + id + '"');
-                                API._clear_tables_to_sync();
-                                DB.row(function(project) {
-                                    var leader = project.company_creator_id == project.uid ? true : false,
-                                            new_user = project.isNewUser == 0 ? true : false;
 
-                                    project.creator = {
-                                        id: project.uid,
-                                        name: project.name,
-                                        pinyin: project.pinyin,
-                                        avatar: project.avatar,
-                                        company: project.company,
-                                        companyAdres: project.companyAdres,
-                                        position: project.position,
-                                        phoneNum: project.phoneNum,
-                                        email: project.email,
-                                        adress: project.adress,
-                                        isNewUser: new_user,
-                                        isLeader: leader,
-                                        QRCode: project.QRCode
+                                DB.query(function(partners) {
+//                                DB.row(function(project) {
+//                                    console.log(partners);
+                                    var project = {
+                                        id: partners[0].id,
+                                        level: partners[0].level,
+                                        title: partners[0].title,
+                                        color: partners[0].color,
+                                        creationTime: partners[0].creationTime,
+                                        unread: 0,
+                                        desc: partners[0].desc
                                     };
-                                    delete project.uid;
-                                    delete project.company_creator_id;
-                                    delete project.name;
-                                    delete project.pinyin;
-                                    delete project.avatar;
-                                    delete project.company;
-                                    delete project.companyAdres;
-                                    delete project.position;
-                                    delete project.phoneNum;
-                                    delete project.email;
-                                    delete project.adress;
-                                    delete project.isNewUser;
-                                    delete project.QRCode;
+                                    project.users = [];
+                                    partners.forEach(function(pp) {
+                                        var leader = pp.isLeader == "1" ? true : false,
+                                                new_user = pp.isNewUser == "0" ? true : false;
+                                        project.users.push({
+                                            id: pp.uid,
+                                            name: pp.name,
+                                            pinyin: pp.pinyin,
+                                            avatar: pp.avatar,
+                                            company: pp.company,
+                                            companyAdres: pp.companyAdres,
+                                            position: pp.position,
+                                            phoneNum: pp.phoneNum,
+                                            email: pp.email,
+                                            adress: pp.adress,
+                                            isNewUser: new_user,
+                                            isLeader: leader,
+                                            QRCode: pp.QRCode
+                                        });
+                                    });
 
                                     make_callback({project: project});
                                 });
+//                                DB.query(function(project) {
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.from("xiao_projects AS p");
+                                DB.left_join("xiao_users AS u", "u.id = p.creator_id");
+                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                                DB.where('p.id ="' + id + '"');
 
-                                DB.select("pc.id, pc.text, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.row(function(creator) {
+//                                    creator = el[0]
+//                                    console.log(creator)
+                                    var leader = true,
+//                                    new_user = (creator.isNewUser == "0" ? true : false),
+                                            new_user = true,
+                                            cr_user = {
+                                        id: creator.uid,
+                                        name: creator.name,
+                                        pinyin: creator.pinyin,
+                                        avatar: creator.avatar,
+                                        company: creator.company,
+                                        companyAdres: creator.companyAdres,
+                                        position: creator.position,
+                                        phoneNum: creator.phoneNum,
+                                        email: creator.email,
+                                        adress: creator.adress,
+                                        isNewUser: new_user,
+                                        isLeader: leader,
+                                        QRCode: creator.QRCode
+                                    };
+
+                                    make_callback({creator: cr_user});
+                                });
+
+                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
                                 DB.from("xiao_project_comments AS pc");
-                                DB.join("xiao_users AS u", "u.id = pс.user_id");
-                                DB.join("xiao_companies AS c", "u.company_id = c.id");
+                                DB.left_join("xiao_users AS u", "u.id = pc.user_id");
+                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('pc.project_id ="' + id + '"');
                                 DB.order_by('pc.update_time');
-                                API._clear_tables_to_sync();
+
+
                                 DB.query(function(messages) {
-                                    var mess_result = [];
+//                                    console.log(messages);
+                                    var mess_result = [],
+                                            unread = 0;
                                     messages.forEach(function(mess) {
-                                        var leader = mess.company_creator_id == mess.uid ? true : false,
-                                                new_user = mess.isNewUser == 0 ? true : false;
+                                        var leader = mess.isLeader == "1" ? true : false,
+                                                new_user = mess.isNewUser == "0" ? true : false;
+                                        unread += (mess.read == 0 ? 1 : 0);
                                         mess_result.push({
                                             id: mess.id,
-                                            text: mess.text,
+                                            text: mess.content,
                                             poster: {
                                                 id: mess.uid,
                                                 name: mess.name,
@@ -474,23 +522,35 @@ function onDeviceReady() {
                                             type: mess.type
                                         });
                                     });
-                                    make_callback({messages: mess_result});
+                                    make_callback({messages: mess_result, unread: unread});
                                 });
+                                API._clear_tables_to_sync();
 
-
+                                function make_callback(data) {
+//                                    console.log("PR make_callback")
+                                    if (data.project) {
+                                        result.project = data.project;
+                                    }
+                                    if (data.messages) {
+                                        result.messages = data.messages;
+                                        result.unread = data.unread;
+                                    }
+                                    if (data.creator) {
+                                        result.creator = data.creator;
+                                    }
+                                    if (result.project && result.messages && result.creator) {
+//                                    console.log(result);
+                                        var res = {};
+                                        res = result.project;
+                                        res.messages = result.messages;
+                                        res.creator = result.creator;
+                                        res.unread = result.unread;
+                                        callback(res);
+                                    }
+                                }
                             });
 
-                            function make_callback(data) {
-                                if (data.project) {
-                                    result = data.project;
-                                }
-                                if (data.messages) {
-                                    result.messages = data.messages;
-                                }
-                                if (result.id && result.messages) {
-                                    callback(result);
-                                }
-                            }
+
                         } else {
                             callback = id;
                             DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
@@ -536,7 +596,7 @@ function onDeviceReady() {
                                 in_m += (i != 0 ? "," : "");
                                 in_m += '"' + m.id + '"';
                             });
-                            DB.select("pc.id, pc.text, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
                             DB.from("xiao_project_comments AS pc");
                             DB.join("xiao_users AS u", "u.id = pс.user_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -550,7 +610,7 @@ function onDeviceReady() {
                                             new_user = mess.isNewUser == 0 ? true : false;
                                     mess_result.push({
                                         id: mess.id,
-                                        text: mess.text,
+                                        text: mess.content,
                                         poster: {
                                             id: mess.uid,
                                             name: mess.name,
@@ -643,16 +703,54 @@ function onDeviceReady() {
 //                        id      : null,
 
                                                     init: function() {
-                                                        this.socket = new io.connect(ROUTE("sockets"));
+                                                        this.socket = io.connect(ROUTE("sockets"));
+                                                        this.socket.on('connect_failed', function() {
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                            console.log("fail");
+                                                        });
                                                         return this;
                                                     },
                                                     sync: function(data, callback) {
+                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets')), _this = this;
+                                                        data.connection_code = this.connection_code();
                                                         this.socket.emit("sync", data);
-//                            this.socket.removeEventListener("sync_result");
+                                                        io.sockets[sockets_route].open === false ? callback(false) : "";
                                                         this.socket.on("sync_result", function(callback_data) {
-                                                            callback(callback_data);
+                                                            if (_this.check_double_event(callback_data.info.connection_code)) {
+                                                                callback(callback_data);
+                                                            }
                                                         });
                                                     },
+                                                    check_double_event: function(code) {
+                                                        // BUG FIX FOR SOCKET.IO
+                                                        // WE ALWAYS HAVE TWO callbacks
+                                                        // AND WE NEED TO WAIT FOR THE SECOND ONE TO KEEP ASYNC CHAIN
+                                                        var key = this._codes.indexOf(code);
+                                                        if (key >= 0) {
+                                                            this._codes.splice(key, 1);
+                                                            return false;
+                                                        }
+                                                        return true;
+                                                    },
+                                                    connection_code: function() {
+                                                        var code = _random(12, _random(3, "_ccode"));
+                                                        this._codes.push(code);
+                                                        return code;
+                                                    },
+                                                    _codes: [],
 //                        sync_chat : function(data, callback){
 //                            this.socket.emit("syncchat", data);
 //                            console.log(callback);
@@ -802,23 +900,23 @@ function onDeviceReady() {
                                                             // retunr one row
                                                             this._executeSQL(this._sql + ' LIMIT 1', function(data) {
                                                                 for (var i in data[0]) {
-                                                                    console.log(data[0][i])
+//                                                                    console.log(data[0][i])
                                                                     callback(data[0][i]);
                                                                     return;
                                                                 }
                                                             });
                                                         },
                                                         _executeSQL: function(sql, callback) {
-                                                            console.log(sql);
+//                                                            console.log(sql);
                                                             function querySuccess(tx, results) {
-                                                                console.log("querySuccess");
+//                                                                console.log("querySuccess");
 
                                                                 var len = results.rows.length, db_result = [];
                                                                 for (var i = 0; i < len; i++) {
 //                                        console.log(results.rows);
                                                                     db_result[i] = results.rows.item(i);
                                                                 }
-                                                                console.log(db_result);
+//                                                                console.log(db_result);
                                                                 return (callback ? callback(db_result) : true);
                                                             }
                                                             function errorCB(err) {
@@ -1090,6 +1188,7 @@ function onDeviceReady() {
                                                                     id VARCHAR(255) NOT NULL, \n\
                                                                     project_id VARCHAR(255) NOT NULL,\n\
                                                                     user_id VARCHAR(255) NOT NULL,\n\
+                                                                    isLeader VARCHAR(255) NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
@@ -1170,13 +1269,14 @@ function onDeviceReady() {
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
                                                                     server_id VARCHAR(255) NULL,\n\
                                                                     id varchar(255) NOT NULL,\n\
-                                                                    text TEXT NULL,\n\
+                                                                    content TEXT NULL,\n\
                                                                     type VARCHAR(255) NULL,\n\
                                                                     server_path TEXT NULL,\n\
                                                                     local_path TEXT NULL,\n\
                                                                     project_id VARCHAR(255) NOT NULL,\n\
                                                                     user_id VARCHAR(255) NOT NULL,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
+                                                                    read INTEGER DEFAULT 0,\n\
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
@@ -1479,26 +1579,33 @@ function onDeviceReady() {
                                                         });
                                                     },
                                                     _sync: function(tables, callback) {
+//                                                        console.log(callback);
+//                                                                    console.log(callback)
                                                         var sync_data = [], _this = this;
                                                         tables.forEach(function(table_name, table_num) {
                                                             _this._check_local_DB_and_fs(table_name, function(data) {
                                                                 sync_data.push(data);
                                                                 if (table_num == (tables.length - 1)) {
+                                                                    console.log("FFFFFFFFFFFFFFF")
+//                                                                    console.log(callback)
                                                                     callback ? _this._make_socket_request(sync_data, callback) : _this._make_socket_request(sync_data);
                                                                 }
                                                             });
                                                         });
                                                     },
                                                     _make_socket_request: function(sync_data, callback) {
+//                                                        console.log(callback)
                                                         var _this = this;
                                                         this._tables_to_sync = [];
+                                                        console.log("SERVER REQUEST: ");
+                                                        console.log(sync_data);
                                                         SERVER.SOCKET.sync({
                                                             tables: sync_data,
                                                             info: SERVER.SESSION.local_data()
                                                         }, function(server) {
                                                             if (server) {
+                                                                console.log("SERVER RESPONCE: ");
                                                                 console.log(server);
-                                                                console.log("server");
                                                                 var changes = server.response;
                                                                 changes.forEach(function(ij, num) {
                                                                     // apply changes
@@ -1522,9 +1629,9 @@ function onDeviceReady() {
                                                                     }
 
                                                                     function make_callback() {
-                                                                        console.log("make_callback");
                                                                         _this._sync_clear(ij.table, server.info.time);
                                                                         if (num == (changes.length - 1)) {
+                                                                            console.log("LAST make_callback");
                                                                             return (callback ? callback() : true);
                                                                         }
                                                                     }
@@ -1721,16 +1828,8 @@ function onDeviceReady() {
                                                             this.set("user_name", "Igor");
                                                             this.set("company_id", 1);
                                                             SERVER.DB._init_tables.forEach(function(cur) {
-                                                                //                                console.log(cur)
                                                                 _this._update_sync_time(cur, 1);
                                                             });
-                                                            //                            SERVER.DB.select("u.name");
-                                                            //                            SERVER.DB.from('xiao_users as u');
-                                                            //                            SERVER.DB.where('u.id = "'+test_user_id+'" ');
-                                                            //                            SERVER.DB.col(function(user_name){
-                                                            //                                console.log(user_name);
-                                                            //                                _this.set("user_name", user_name);
-                                                            //                            });
 
                                                             return this;
                                                         }
@@ -1753,7 +1852,6 @@ function onDeviceReady() {
                                                         this.device = function() {
                                                             var device;
                                                             var ua = navigator.userAgent.toLowerCase();
-                                                            console.log(ua);
                                                             if (ua.match(/(iphone|ipod|ipad)/i)) {
                                                                 device = "ios";
                                                             } else if (ua.match(/android/i)) {
@@ -2018,8 +2116,10 @@ function onDeviceReady() {
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-                                                SESSION: SERVER.SESSION._init_storage(1),
-                                                DB: SERVER.DB._init_db(1),
+//                                                SESSION: SERVER.SESSION._init_storage(1),
+                                                SESSION: SERVER.SESSION,
+//                                                DB: SERVER.DB._init_db(1),
+                                                DB: SERVER.DB._init_db(),
                                                 PHONE: SERVER.PHONE
 
                                             };
