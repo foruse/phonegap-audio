@@ -12,10 +12,9 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
+BROWSER_TEST_VERSION = true;
 
-BROWSER_TEST_VERSION: true;
-
-BROWSER_TEST_VERSION ? document.addEventListener("deviceready", onDeviceReady, false) : onDeviceReady();
+BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
 
 function onDeviceReady() {
     // APPLICATION CONFIGS
@@ -46,7 +45,7 @@ function onDeviceReady() {
 
     var inited_fs = null;
 
-    if (BROWSER_TEST_VERSION) {
+    if (!BROWSER_TEST_VERSION) {
 
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
             fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
@@ -89,19 +88,19 @@ function onDeviceReady() {
                     read: function(id, callback) { // if id is specified we get one partner else all partners
                         if (typeof(id) === "function") {// no id
                             callback = id;
-                            DB.select("u.id, u.name, u.avatar, u.pinyin");
+                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
                             DB.from("xiao_partners AS p");
-                            DB.join("xiao_users AS u", "u.id = p.partner_id");
+                            DB.left_join("xiao_users AS u", "u.id = p.partner_id");
+                            DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                             DB.where('p.user_id ="' + SESSION.get("user_id") + '"');
+                            API.read(callback);
                         } else if (id) {
-                            DB.select("u.id, u.name, u.avatar, u.pinyin");
-                            DB.from("xiao_users AS г");
+                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                            DB.from("xiao_users AS u");
+                            DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                             DB.where('u.id ="' + id + '"');
+                            API.row(callback);
                         }
-                        API.read(function(data) {
-                            console.log(data);
-                            callback(data);
-                        });
                     }
 
                 },
@@ -110,42 +109,33 @@ function onDeviceReady() {
                         DB.select("g.id, g.name");
                         DB.from("xiao_partner_groups AS g");
                         DB.where('g.creator_id ="' + SESSION.get("user_id") + '"');
-
-                        //                        API.read(callback);
-                        API.read(function(data) {
-                            console.log(data);
-                            callback(data);
-                        });
+                        API.read(callback);
                     },
                     get_group_users: function(id, callback) {
-                        //                        id = "xiao_partner_groups_8l52ai82&20130909085640";
-
-                        DB.select("g.id as group_id, g.name as group_name, u.name, u.avatar, u.pinyin, u.QRCode, u.email, u.adress, u.phoneNum");
+                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
                         DB.from("xiao_partner_groups AS g");
-                        DB.join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
-                        DB.join("xiao_users AS u", "u.id = gu.user_id");
+                        DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
+                        DB.left_join("xiao_users AS u", "u.id = gu.user_id");
+                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('g.creator_id ="' + SESSION.get("user_id") + '"');
                         typeof(id) !== "function" ? DB.where('g.id = "' + id + '"') : callback = id;
-
-                        API.read(function(data) {
-                            console.log(data);
-                            callback(data);
-                        });
+                        API.read(callback);
                     },
-                    create: function(data) {
+                    create: function(data, callback) {
                         // data is following:
-                        data = {
-                            name: "Igor_group",
-                            //                        users   :   [1,2,3,4]
-                            users: ['sdasdaad3232323']
-                        };
+//                        data = {
+//                            name: "Igor_group",
+//                            users: ['3232323','23123dfsd','321312f444']
+//                        };
                         if (data) {
-                            API.insert('xiao_partner_groups', {
+                            DB.insert('xiao_partner_groups', {
                                 name: data.name,
                                 creator_id: SESSION.get("user_id")
                             }, function(insert_id) {
-                                console.log(insert_id);
-                                if (data.users.length > 0) {
+                                if (callback) {
+                                    callback(insert_id);
+                                }
+                                if (data.users && data.users.length > 0) {
                                     var partners = [];
                                     for (var i in data.users) {
                                         partners.push({
@@ -153,61 +143,60 @@ function onDeviceReady() {
                                             user_id: data.users[i]
                                         });
                                     }
-                                    API.batch_insert('xiao_partner_group_users', partners);
+                                    DB.batch_insert('xiao_partner_group_users', partners, function() {
+                                        API._sync(['xiao_partner_groups', 'xiao_partner_group_users']);
+                                    });
+                                } else {
+                                    API._sync(['xiao_partner_groups']);
                                 }
                             });
                         }
-
                     }
 
                 },
                 User: {
                     update: function(data, callback) {
 
-                        data = {
-                            name: "Igor",
-                            avatar: "src?sdsd/../fsdfsd",
-                            pinyin: "x",
-                            password: "testuser_123",
-                            email: "testuser_123",
-                            QRCode: "testuser_123",
-                            adress: "testuser_123",
-                            phoneNum: "testuser_123",
-                            position: "testuser_123",
-                            company_id: 1
-                        };
-
-                        API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"', function(data) {
-                            console.log(data);
-                            callback(data);
-                        });
+//                        data = {
+//                            name: "Igor",
+//                            avatar: "src?sdsd/../fsdfsd",
+//                            pinyin: "x",
+//                            password: "testuser_123",
+//                            email: "testuser_123",
+//                            QRCode: "testuser_123",
+//                            adress: "testuser_123",
+//                            phoneNum: "testuser_123",
+//                            position: "testuser_123",
+//                            isNewUser: 1,
+//                            company_id: 1
+//                        };
+                        callback ?
+                                API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"', callback) :
+                                API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"');
                     },
                     read: function(callback) {
                         // get user data
-                        DB.select();
-                        DB.from("xiao_users AS u ");
-                        DB.where('u.id = "' + SESSION.get("user_id") + '"');
-
-                        API.read(function(data) {
-                            console.log(data);
-                            callback(data);
-                        });
-
+                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                        DB.from("xiao_users AS u");
+                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                        DB.where('u.id ="' + SESSION.get("user_id") + '"');
+                        API.row(callback);
                     },
                     create: function(data, callback) {
 
-                        data = {
-                            name: _random(4, "new_user"),
-                            avatar: _random(4, "avatar_"),
-                            pinyin: "x",
-                            password: _random(4, "password"),
-                            email: _random(4, "email"),
-                            QRCode: _random(4, "QRCOEDE"),
-                            adress: "testuser_123",
-                            phoneNum: "testuser_123",
-                            position: "testuser_123",
-                            company_id: 1
-                        };
+//                        data = {
+//                            name: _random(4, "new_user"),
+//                            avatar: _random(4, "avatar_"),
+//                            pinyin: "x",
+//                            password: _random(4, "password"),
+//                            email: _random(4, "email"),
+//                            QRCode: _random(4, "QRCOEDE"),
+//                            adress: "testuser_123",
+//                            phoneNum: "testuser_123",
+//                            position: "testuser_123",
+//                            isNewUser: 1,
+//                            company_id: 1
+//                        };
 
                         API.insert('xiao_users', data, function(insert_id) {
                             SESSION.set("user_id", insert_id);
@@ -227,6 +216,7 @@ function onDeviceReady() {
                             adress: "testuser_123",
                             phoneNum: "testuser_123",
                             position: "testuser_123",
+                            isNewUser: 1,
                             company_id: 1
                         };
 
@@ -236,8 +226,27 @@ function onDeviceReady() {
                             DB.insert('xiao_project_partners', {
                                 project_id: "xiao_projects_8w4bk484&20130916170458",
                                 user_id: insert_id
-                            }, callback);
-                            API._sync(['xiao_users', 'xiao_project_partners']);
+                            });
+                            partner_data = {
+                                name: name,
+                                avatar: _random(4, "avatar_"),
+                                pinyin: "x",
+                                password: _random(4, "password"),
+                                email: _random(4, "email"),
+                                QRCode: _random(4, "QRCOEDE"),
+                                adress: "testuser_123",
+                                phoneNum: "testuser_123",
+                                position: "testuser_123",
+                                isNewUser: 1,
+                                company_id: 1
+                            };
+                            DB.insert('xiao_users', partner_data, function(partner_id) {
+                                DB.insert('xiao_partners', {
+                                    user_id: insert_id,
+                                    partner_id: partner_id
+                                }, callback);
+                                API._sync(['xiao_users', 'xiao_project_partners', 'xiao_partners']);
+                            });
                         });
 //                        API.insert('xiao_users', data, function(insert_id) {
 //                            SESSION.set("user_id", insert_id);
@@ -354,17 +363,15 @@ function onDeviceReady() {
                 Project: {
                     create: function(data) {
                         // data is following:
-                        data = {
-                            project: {
-                                title: "sssss",
-                                desc: "sssss",
-                                color: "7",
-                                creationTime: new Date().getTime()
-                            },
-                            //                        project_partners  : [{id:1},{id:2}]  
-                            //                            project_partners  : ["dasdas355656756","dasdf655685790p89gjkfh","dasdser343234","sdasd23424fgghjhgjkg","dfsdfsdhgj56756756"]  
-                            project_partners: ["sdasdaad3232323"]
-                        };
+//                        data = {
+//                            project: {
+//                                title: "sssss",
+//                                desc: "sssss",
+//                                color: "7",
+//                                creationTime: new Date().getTime()
+//                            }, 
+//                            project_partners: ["sdasdaad3232323","sdasdaad3232323sasd"]
+//                        };
 
                         data.project['creator_id'] = SESSION.get("user_id");
                         data.project['company_id'] = SESSION.get("company_id");
@@ -387,33 +394,16 @@ function onDeviceReady() {
                     read: function(id, callback) {
                         if (typeof(id) !== "function") {
                             // get inside project page
-
-                            // if id is set we need to get a project page with all comments
-//                             Models.ProjectChat.inited_chat = 0;
-//                             SESSION.set("project_id", id);
-//                             DB.select("p.id, p.name, p.description, p.creator_id, p.company_id, p.color, p.level, p.status, p.update_time");
-//                             DB.from("xiao_projects AS p");
-//                             DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
-//                             DB.join("xiao_users AS u", "u.id = pp.user_id");
-//                             DB.where('p.id ="' + id + '"');
-//                             
-//                             API.read(function(data) {
-//                             callback(data);
-//                             });
-
                             var result = {};
                             API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
                                 DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
                                 DB.from("xiao_projects AS p");
                                 DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
-//                                DB.join("xiao_users AS u", "u.id = p.creator_id");
                                 DB.left_join("xiao_users AS u", "u.id = pp.user_id");
                                 DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('p.id ="' + id + '"');
 
                                 DB.query(function(partners) {
-//                                DB.row(function(project) {
-//                                    console.log(partners);
                                     var project = {
                                         id: partners[0].id,
                                         level: partners[0].level,
@@ -446,7 +436,6 @@ function onDeviceReady() {
 
                                     make_callback({project: project});
                                 });
-//                                DB.query(function(project) {
                                 DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
                                 DB.from("xiao_projects AS p");
                                 DB.left_join("xiao_users AS u", "u.id = p.creator_id");
@@ -454,11 +443,7 @@ function onDeviceReady() {
                                 DB.where('p.id ="' + id + '"');
 
                                 DB.row(function(creator) {
-//                                    creator = el[0]
-//                                    console.log(creator)
-                                    var leader = true,
-//                                    new_user = (creator.isNewUser == "0" ? true : false),
-                                            new_user = true,
+                                    var leader = true, new_user = true,
                                             cr_user = {
                                         id: creator.uid,
                                         name: creator.name,
@@ -487,7 +472,7 @@ function onDeviceReady() {
 
 
                                 DB.query(function(messages) {
-//                                    console.log(messages);
+
                                     var mess_result = [],
                                             unread = 0;
                                     messages.forEach(function(mess) {
@@ -525,9 +510,8 @@ function onDeviceReady() {
                                     make_callback({messages: mess_result, unread: unread});
                                 });
                                 API._clear_tables_to_sync();
-
                                 function make_callback(data) {
-//                                    console.log("PR make_callback")
+
                                     if (data.project) {
                                         result.project = data.project;
                                     }
@@ -539,7 +523,6 @@ function onDeviceReady() {
                                         result.creator = data.creator;
                                     }
                                     if (result.project && result.messages && result.creator) {
-//                                    console.log(result);
                                         var res = {};
                                         res = result.project;
                                         res.messages = result.messages;
@@ -549,18 +532,75 @@ function onDeviceReady() {
                                     }
                                 }
                             });
-
-
                         } else {
+                            // get ALL projects page
                             callback = id;
-                            DB.select("p.id as project_id, p.name as project_name, p.description as project_description, u.id as partner_id, u.name as partner_name");
-                            DB.from("xiao_projects AS p");
-                            DB.left_join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            // DB.join("xiao_project_partners AS pp", "p.id = pp.project_id");
-                            DB.join("xiao_users AS u", "u.id = pp.user_id");
-                            API.read(callback);
-                        }
+                            var result = [];
+                            API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.desc, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.from("xiao_projects AS p");
+                                DB.left_join("xiao_users AS u", "u.id = p.creator_id");
+                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
 
+                                DB.query(function(projects) {
+
+                                    projects.forEach(function(pr) {
+
+                                        DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
+                                        DB.from("xiao_projects AS p");
+                                        DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
+                                        DB.left_join("xiao_users AS u", "u.id = p.creator_id");
+                                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                                        DB.where('p.id ="' + pr.id + '"');
+
+                                        DB.query(function(partners) {
+
+                                            DB.select("COUNT(pc.read) as unread");
+                                            DB.from("xiao_project_comments AS pc");
+                                            DB.where('pc.project_id ="' + pr.id + '"');
+                                            DB.where('pc.read ="0"');
+                                            DB.group_by('pc.read');
+
+                                            DB.col(function(unread) {
+                                                result.push({
+                                                    id: pr.id,
+                                                    level: pr.level,
+                                                    title: pr.title,
+                                                    color: pr.color,
+                                                    creationTime: pr.creationTime,
+                                                    unread: unread,
+                                                    desc: pr.desc,
+                                                    creator: {
+                                                        id: pr.uid,
+                                                        name: pr.name,
+                                                        pinyin: pr.pinyin,
+                                                        avatar: pr.avatar,
+                                                        company: pr.company,
+                                                        companyAdres: pr.companyAdres,
+                                                        position: pr.position,
+                                                        phoneNum: pr.phoneNum,
+                                                        email: pr.email,
+                                                        adress: pr.adress,
+                                                        isNewUser: pr.isNewUser,
+                                                        isLeader: "1",
+                                                        QRCode: pr.QRCode
+                                                    },
+                                                    users: partners
+                                                });
+                                                if (result.length == projects.length) {
+                                                    callback(result);
+                                                }
+                                            });
+
+                                            API._clear_tables_to_sync();
+                                        });
+                                        API._clear_tables_to_sync();
+                                    });
+                                });
+                                API._clear_tables_to_sync();
+
+                            });
+                        }
 
                     }
 
@@ -568,29 +608,9 @@ function onDeviceReady() {
                 ProjectChat: {
                     inited_chat: 0,
                     chat_init: function(project_id, callback) {
-//                        console.log("ProjectChat chat_init chat_init chat_init");
-////                        this.inited_chat = 1;
-//                        var _this = this;
-//                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-//                        DB.from("xiao_projects AS p");
-//                        DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-//                        DB.where('p.id ="' + project_id + '"');
-//                        DB.order_by('pc.update_time');
-////                            API._remove_from_sync("xiao_projects");
-//                        API.read(function(data) {
-//                            console.log("CHAT INIT EVENT");
-//                            console.log(_this.inited_chat);
-////                            return (_this.inited_chat != 1 ? callback(data) : false); // draw data from DB
-//                            if (_this.inited_chat != 1) {
-//                                console.log("_this.inited_chat");
-//                                callback(data);
-//                                _this.inited_chat = 1;
-//                            }
-//                        });
 
                         SOCKET.updatechat({type: "project", id: project_id}, function(socket_messages) { // new messages ARRAY
                             console.log("UPDATE CHAT EVENT");
-//                            callback(socket_messages);
                             var in_m = "";
                             socket_messages.forEach(function(m, i) {
                                 in_m += (i != 0 ? "," : "");
@@ -642,35 +662,6 @@ function onDeviceReady() {
                         });
 
                     },
-//                        update_messages    :   function(project_id, callback){
-//                            
-//                            
-//                            SOCKET.updatechat({type:"project", id: project_id}, function(socket_messages){ // new messages ARRAY
-//                                console.log("UPDATE CHAT EVENT");
-////                                console.log(callback);
-//                                callback(socket_messages);
-//                            });
-//
-//                        },
-//                                
-//                        get_old_messages    :   function(project_id, callback){
-//                            
-//                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.project_id, pc.user_id, pc.update_time, pc.company_id");
-//                            DB.from("xiao_projects AS p");
-//                            DB.join("xiao_project_comments AS pc", "pc.project_id = p.id");
-//                            DB.where('p.id ="'+ project_id +'"');
-//                            DB.order_by('pc.update_time');
-////                            API._remove_from_sync("xiao_projects");
-//                            API.read(function(data){
-//                                console.log("CHAT INIT EVENT");
-//                                callback(data); // draw data from DB
-//                            });
-//
-//                        },
-
-
-
-//                        send_message    :   function(data, callback){
                     send_message: function(message, callback) {
                         console.log("sending mesage...");
                         message['user_id'] = SESSION.get("user_id"); // push user_id to message data
@@ -728,104 +719,24 @@ function onDeviceReady() {
                                                         data.connection_code = this.connection_code();
                                                         this.socket.emit("sync", data);
                                                         io.sockets[sockets_route].open === false ? callback(false) : "";
-                                                        this.socket.on("sync_result", function(callback_data) {
-                                                            if (_this.check_double_event(callback_data.info.connection_code)) {
-                                                                callback(callback_data);
-                                                            }
-                                                        });
-                                                    },
-                                                    check_double_event: function(code) {
-                                                        // BUG FIX FOR SOCKET.IO
-                                                        // WE ALWAYS HAVE TWO callbacks
-                                                        // AND WE NEED TO WAIT FOR THE SECOND ONE TO KEEP ASYNC CHAIN
-                                                        var key = this._codes.indexOf(code);
-                                                        if (key >= 0) {
-                                                            this._codes.splice(key, 1);
-                                                            return false;
-                                                        }
-                                                        return true;
+                                                        this.socket.on("sync_result" + data.connection_code, callback);
                                                     },
                                                     connection_code: function() {
-                                                        var code = _random(12, _random(3, "_ccode"));
-                                                        this._codes.push(code);
-                                                        return code;
+                                                        return _random(12, _random(3, "_ccode"));
                                                     },
-                                                    _codes: [],
-//                        sync_chat : function(data, callback){
-//                            this.socket.emit("syncchat", data);
-//                            console.log(callback);
-////                            if(callback){this.socket.on("syncchat_result", callback)};
-//                            if(callback){
-//                                this.socket.on("syncchat_result", function(callback_data){
-//                                    console.log("CALBACK RECEIVED");
-//                                    callback(callback_data);
-//                                });
-//                            }
-//                        },
-
                                                     updatechat: function(connect_data, callback) { // in data we specify id and type
                                                         console.log("update chat INITED");
                                                         this.socket.emit('addroom', connect_data);
-//                            this.socket.removeEventListener("updatechat");
                                                         this.socket.on("updatechat", function(data) { // data just contain message that we need to sync DB
-                                                            // fires when new message arrive
                                                             console.log("updatechat data");
                                                             console.log(data);
-//                                console.log(callback);
-//                                SERVER.DB.batch_insert_or_ignore("xiao_project_comments", data, function(){
                                                             SERVER.DB.batch_insert_width_id("xiao_project_comments", data, function() {
-                                                                console.log("updatechat CALLBACK");
                                                                 callback(data);
-//                                    console.log(data);
                                                             });
                                                         });
-//                            console.log(connect_data);
-//                            // type is project or todo
-//                            var _this = this, url = CONFIG[connect_data.type+'_chat_url'];
-//                            console.log(url);
-////                            if(typeof(url === "undefined")){console.log("ERROR url");return false;}
-//                            this.socket = io.connect(url);
-//                            console.log("connect");
-//                            this.socket.on('connect', function(){
-//                                // call the server-side and make room with id or add to existing one
-//                                console.log("CONNECT");
-//                                _this.socket.emit('addroom', connect_data);
-//                            });
-//                            this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
-//                                // fires when new message arrive
-//                                console.log("upDATE");
-//                                console.log(data);
-//                                callback(data);
-//                            });
-                                                    }
-                                                    /*
-                                                     connect : function(type, id, callback){
-                                                     // type is project or todo
-                                                     var _this = this, url;
-                                                     
-                                                     if(!this.socket || !this.type || this.type != type || this.id != id){
-                                                     url = CONFIG[type+'_chat_url'];
-                                                     if(typeof(url) === "undefined"){console.log("ERROR");return false;}
-                                                     this.socket = io.connect(url);
-                                                     this.id = id;
-                                                     this.type = type;
-                                                     this.socket.on('connect', function(){
-                                                     // call the server-side and make room with id or add to existing one
-                                                     console.log("CONNECT");
-                                                     _this.socket.emit('addroom', {id:id});
-                                                     });
-                                                     this.socket.on("updatechat", function(data){ // data just contain message that we need to sync DB
-                                                     // fires when new message arrive
-                                                     console.log("upDATE");
-                                                     console.log(data);
-                                                     callback(data);
-                                                     }); 
-                                                     }// else same connection
-                                                     }, */
 
-//                        sendchat    :   function(message){
-//                            this.socket.emit("sendchat", message);
-//                        }
+                                                    }
+
 
                                                 },
                                                 // DB        
@@ -835,18 +746,13 @@ function onDeviceReady() {
 
 
                                                     return {
-                                                        // _sql : "", _tables_to_sync : [],
                                                         _sql: "",
                                                         select: function(data) {
-                                                            //                            var select = (data == "" ? "*" : data);
                                                             var select = (data ? data : "*");
-                                                            // this._tables_to_sync = [];
-                                                            // SERVER.API._tables_to_sync = [];
                                                             return this._sql = 'SELECT ' + select + ' ';
                                                         },
                                                         from: function(table) {
                                                             this._sql += ' FROM ' + table;
-                                                            // return this._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                             return SERVER.API._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                         },
                                                         where: function(where) {
@@ -854,53 +760,30 @@ function onDeviceReady() {
                                                             return this._sql += where;
                                                         },
                                                         join: function(table, on) {
-                                                            // this._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                             SERVER.API._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                             return this._sql += ' INNER JOIN ' + table + ' ON ' + on;
                                                         },
                                                         left_join: function(table, on) {
-                                                            // this._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                             SERVER.API._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
                                                             return this._sql += ' LEFT JOIN ' + table + ' ON ' + on;
                                                         },
                                                         order_by: function(order) {
                                                             return this._sql += ' ORDER BY ' + order;
                                                         },
-                                                        //                        right_join    :   function(table, on){
-                                                        //                            // this._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
-                                                        //                            SERVER.API._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
-                                                        //                            return this._sql+=' RIGHT JOIN '+table+' ON '+ on;
-                                                        //                        },
-                                                        //
-                                                        //                        full_join    :   function(table, on){
-                                                        //                            // this._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
-                                                        //                            SERVER.API._tables_to_sync.push(table.match(/([A-z0-9_]+)/ig)[0]);
-                                                        //                            return this._sql+=' FULL OUTER JOIN '+table+' ON '+ on;
-                                                        //                        },
-
+                                                        group_by: function(group) {
+                                                            return this._sql += ' ORDER BY ' + group;
+                                                        },
                                                         query: function(callback) {
-                                                            //as we make all queries throught API we don't allow without sync
-                                                            //                            return (
-                                                            //                                this._tables_to_sync.length > 0 ?
-                                                            //                                this._executeSQL(this._sql, function(data){
-                                                            //                                    callback(data);
-                                                            //                                })  : false
-                                                            //                            );
-                                                            this._executeSQL(this._sql, function(data) {
-                                                                callback(data);
-                                                            });
+                                                            this._executeSQL(this._sql, callback);
                                                         },
                                                         row: function(callback) {
-                                                            // retunr one row
-                                                            this._executeSQL(this._sql + ' LIMIT 1', function(data) {
-                                                                callback(data[0]);
-                                                            });
+                                                            // return one row
+                                                            this._executeSQL(this._sql + ' LIMIT 1', callback);
                                                         },
                                                         col: function(callback) {
-                                                            // retunr one row
+                                                            // return one col
                                                             this._executeSQL(this._sql + ' LIMIT 1', function(data) {
                                                                 for (var i in data[0]) {
-//                                                                    console.log(data[0][i])
                                                                     callback(data[0][i]);
                                                                     return;
                                                                 }
@@ -909,14 +792,10 @@ function onDeviceReady() {
                                                         _executeSQL: function(sql, callback) {
 //                                                            console.log(sql);
                                                             function querySuccess(tx, results) {
-//                                                                console.log("querySuccess");
-
                                                                 var len = results.rows.length, db_result = [];
                                                                 for (var i = 0; i < len; i++) {
-//                                        console.log(results.rows);
                                                                     db_result[i] = results.rows.item(i);
                                                                 }
-//                                                                console.log(db_result);
                                                                 return (callback ? callback(db_result) : true);
                                                             }
                                                             function errorCB(err) {
@@ -981,13 +860,11 @@ function onDeviceReady() {
                                                                 return false; // table is a string not an array
                                                             if (data instanceof Array === false)
                                                                 return false; // data is array here
-//                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
                                                             var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO ' + table + ' (', ij = 0;
                                                             for (var key in data[0]) {
                                                                 if (ij != 0) {
                                                                     sql += ",";
                                                                 }
-//                                    sql+=","+key;
                                                                 sql += key;
                                                                 ++ij;
                                                             }
@@ -996,20 +873,17 @@ function onDeviceReady() {
                                                             for (var j in data) {
                                                                 for (var ij in data[j]) {
                                                                     if (i == 0) {
-//                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
                                                                         j == 0 ? sql += ' SELECT ' : sql += ' UNION SELECT ';
                                                                     }
                                                                     if (j == 0) {
                                                                         if (ijk != 0) {
                                                                             sql += ",";
                                                                         }
-//                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
                                                                         sql += '"' + data[j][ij] + '" as ' + ij + ''
                                                                     } else {
                                                                         if (ijk != 0) {
                                                                             sql += ",";
                                                                         }
-//                                            sql+=', "'+data[j][ij]+'"';
                                                                         sql += '"' + data[j][ij] + '"';
                                                                     }
                                                                     ++i;
@@ -1029,13 +903,11 @@ function onDeviceReady() {
                                                                 return false; // table is a string not an array
                                                             if (data instanceof Array === false)
                                                                 return false; // data is array here
-//                                var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO '+table+' (id';
                                                             var i = 0, _this = this, sql = 'INSERT INTO ' + table + ' (', ij = 0;
                                                             for (var key in data[0]) {
                                                                 if (ij != 0) {
                                                                     sql += ",";
                                                                 }
-//                                    sql+=","+key;
                                                                 sql += key;
                                                                 ++ij;
                                                             }
@@ -1044,20 +916,17 @@ function onDeviceReady() {
                                                             for (var j in data) {
                                                                 for (var ij in data[j]) {
                                                                     if (i == 0) {
-//                                            j == 0 ? sql+= ' SELECT "'+ _this._make_id(table) + '" as id' : sql+= ' UNION SELECT "'+ _this._make_id(table) + '" as id';
                                                                         j == 0 ? sql += ' SELECT ' : sql += ' UNION SELECT ';
                                                                     }
                                                                     if (j == 0) {
                                                                         if (ijk != 0) {
                                                                             sql += ",";
                                                                         }
-//                                            sql+=', "'+data[j][ij]+'" as '+ ij + ''
                                                                         sql += '"' + data[j][ij] + '" as ' + ij + ''
                                                                     } else {
                                                                         if (ijk != 0) {
                                                                             sql += ",";
                                                                         }
-//                                            sql+=', "'+data[j][ij]+'"';
                                                                         sql += '"' + data[j][ij] + '"';
                                                                     }
                                                                     ++i;
@@ -1157,12 +1026,6 @@ function onDeviceReady() {
                                                                     }
                                                                 });
                                                             });
-
-//                                return (
-//                                    callback ? this._executeSQL(sql, function(){
-//                                        callback();
-//                                    }) : this._executeSQL(sql)
-//                                );
                                                         },
                                                         _make_id: function(table) {
                                                             return _random(8, "_" + table);
@@ -1220,10 +1083,11 @@ function onDeviceReady() {
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partners(\n\
                                                                     server_id VARCHAR(255) NULL,\n\
                                                                     id VARCHAR(255) NOT NULL,\n\
-                                                                    user_id INTEGER,\n\
-                                                                    partner_id INTEGER,\n\
+                                                                    user_id VARCHAR(255) NOT NULL,\n\
+                                                                    partner_id VARCHAR(255) NOT NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ')'
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_users(\n\
                                                                     server_id VARCHAR(255) NULL,\n\
@@ -1280,33 +1144,6 @@ function onDeviceReady() {
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
-//                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
-//                                                                    server_id VARCHAR(255) NULL,\n\
-//                                                                    id varchar(255) NOT NULL,\n\
-//                                                                    content TEXT NULL,\n\
-//                                                                    type VARCHAR(255) NULL,\n\
-//                                                                    server_path TEXT NULL,\n\
-//                                                                    local_path TEXT NULL,\n\
-//                                                                    project_id VARCHAR(255) NOT NULL,\n\
-//                                                                    user_id VARCHAR(255) NOT NULL,\n\
-//                                                                    update_time VARCHAR(255) NULL,\n\
-//                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
-//                                                                    read INTEGER DEFAULT 0,\n\
-//                                                                    UNIQUE(id))'
-//                                                                        );
-//                                    tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
-//                                                    server_id VARCHAR(255) NULL,\n\
-//                                                    id varchar(255) NOT NULL,\n\
-//                                                    content TEXT NULL,\n\
-//                                                    type VARCHAR(255) NULL,\n\
-//                                                    server_path TEXT NULL,\n\
-//                                                    local_path TEXT NULL,\n\
-//                                                    project_id VARCHAR(255) NOT NULL,\n\
-//                                                    user_id VARCHAR(255) NOT NULL,\n\
-//                                                    update_time DATETIME NULL,\n\
-//                                                    company_id VARCHAR(255) NOT NULL DEFAULT '+SERVER.SESSION.get("company_id")+',\n\
-//                                                    UNIQUE(id))'
-//                                    );
 
                                                                 //                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
                                                                 //                                                server_id VARCHAR(255) NULL,\n\
@@ -1368,7 +1205,6 @@ function onDeviceReady() {
                                                     read: function(callback) {
                                                         //                        console.log(SERVER.DB);
                                                         // WHEN READ sync first then EXECUTE SQL
-                                                        // this._sync(SERVER.DB._tables_to_sync, function(data){
                                                         this._sync(this._tables_to_sync, function() {
                                                             SERVER.DB.query(function(result) {
                                                                 callback(result);
@@ -1544,17 +1380,6 @@ function onDeviceReady() {
                                                                             }
                                                                             datadata['server_path'] = server_path;
                                                                             make_callback([datadata]);
-//                                                console.log(data);
-//                                                console.log(el);
-//                                                console.log(i);
-//                                                console.log(data[i]);
-//                                                console.log("server_path");
-//                                                console.log("server_path");
-//                                                console.log(server_path);
-//                                                delete data[i].local_path;
-//                                                if(i == (data.length-1)){
-//                                                    make_callback(data);
-//                                                }
                                                                         });
                                                                     } else if (el.type == "text") {
                                                                         if (i == (data.length - 1)) {
@@ -1579,22 +1404,17 @@ function onDeviceReady() {
                                                         });
                                                     },
                                                     _sync: function(tables, callback) {
-//                                                        console.log(callback);
-//                                                                    console.log(callback)
                                                         var sync_data = [], _this = this;
                                                         tables.forEach(function(table_name, table_num) {
                                                             _this._check_local_DB_and_fs(table_name, function(data) {
                                                                 sync_data.push(data);
                                                                 if (table_num == (tables.length - 1)) {
-                                                                    console.log("FFFFFFFFFFFFFFF")
-//                                                                    console.log(callback)
                                                                     callback ? _this._make_socket_request(sync_data, callback) : _this._make_socket_request(sync_data);
                                                                 }
                                                             });
                                                         });
                                                     },
                                                     _make_socket_request: function(sync_data, callback) {
-//                                                        console.log(callback)
                                                         var _this = this;
                                                         this._tables_to_sync = [];
                                                         console.log("SERVER REQUEST: ");
@@ -1631,7 +1451,6 @@ function onDeviceReady() {
                                                                     function make_callback() {
                                                                         _this._sync_clear(ij.table, server.info.time);
                                                                         if (num == (changes.length - 1)) {
-                                                                            console.log("LAST make_callback");
                                                                             return (callback ? callback() : true);
                                                                         }
                                                                     }
@@ -1757,19 +1576,6 @@ function onDeviceReady() {
                                                      
                                                      XHR.send(data);
                                                      */
-                                                    /*         } */
-
-                                                    //                    _config: {
-                                                    //
-                                                    //                        server_url : "http://212.8.40.254:5959/",
-                                                    ////                        server_url : "http://192.168.200.110:3000/",
-                                                    //
-                                                    //                        route  : function(url){ return  this.server_url+this.routes[url];},
-                                                    //
-                                                    //                        routes  :   {
-                                                    //                            sync    :   "sync/sync"
-                                                    //                        }
-                                                    //                    }
                                                 },
                                                 // API
                                                 // API
@@ -1802,14 +1608,6 @@ function onDeviceReady() {
                                                             }
                                                             return data;
                                                         },
-                                                        //                        push_message : function(id){
-                                                        //                            
-                                                        //                        },
-                                                        //                                
-                                                        //                        not_pushed_messages : function(){
-                                                        //                    
-                                                        //                        },
-
                                                         set: function(data, value) {
                                                             return storage.setItem(data, value);
                                                         },
@@ -1871,16 +1669,11 @@ function onDeviceReady() {
                                                         this.short_name = null;
 
                                                         this._create_file = function(after, callback) {
-//                                                        this._create_file = function(after, callback, no_random) {
-//                                                            var _this = this, new_file_name = no_random ? after : _random(5, after);
                                                             var _this = this, new_file_name = _random(5, after);
                                                             new_file_name += (/\.[A-Za-z0-9]+$/.test(after) ? "" : "." + CONFIG.audio_format); // if file name dpn't have format we specify it
-                                                            console.log(new_file_name);
                                                             this.fs.getFile(new_file_name, {create: true, exclusive: false}, function(fileEntry) {
                                                                 _this.file_path = fileEntry.fullPath;
                                                                 _this.short_name = fileEntry;
-                                                                console.log(fileEntry.fullPath);
-                                                                //                                callback(_this.file_path);
                                                                 callback(fileEntry.fullPath);
                                                             }, _this.log_error);
                                                         };
@@ -1899,13 +1692,11 @@ function onDeviceReady() {
 
                                                             var fileTransfer = new FileTransfer(),
                                                                     uri = encodeURI(server_path),
-//                                                            var uri = server_path,
                                                                     new_file_name = server_path.substring(server_path.lastIndexOf('/') + 1);
                                                             console.log("donwloading");
                                                             console.log(new_file_name);
                                                             console.log(uri);
                                                             this._create_file(new_file_name, function(local_path) {
-//                                                                var fileTransfer = new FileTransfer();
                                                                 fileTransfer.download(
                                                                         uri,
                                                                         local_path,
@@ -1919,9 +1710,7 @@ function onDeviceReady() {
                                                                             console.log("download error source " + error.source);
                                                                             console.log("download error target " + error.target);
                                                                             console.log("upload error code" + error.code);
-//                                            return false;
                                                                         }
-//                                        true//,
                                                                 //                                {
                                                                 //                                    headers: {
                                                                 //                                        "Authorization": "Basic dGVzdHVzZXJuYW1lOnRlc3RwYXNzd29yZA=="
@@ -1959,7 +1748,6 @@ function onDeviceReady() {
                                                             }
                                                             options.params = {type: type};
 
-//                                ft.upload(local_path, encodeURI(CONFIG.file_upload_url), callback, fail, options);
                                                             ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(node_obj) {
                                                                 callback(node_obj.response);
                                                             }, fail, options);
@@ -1991,7 +1779,6 @@ function onDeviceReady() {
                                                                 _this.audio = new Media(file_path, _this.log_success, _this.log_error);
                                                                 _this.audio.startRecord();
                                                                 _this.last_record_path = file_path;
-                                                                //                                _this._draw_record_time();
                                                                 callback(file_path);
                                                             });
 
@@ -2001,19 +1788,15 @@ function onDeviceReady() {
                                                             if (this.audio) {
                                                                 var _this = this;
                                                                 this.audio.stopRecord();
-                                                                //                                this.upload(this.file_path, "audio", function(data){
-                                                                //                                    console.log(data);
+
                                                                 _this.audio = null;
                                                                 _this.last_record_path = null;
-                                                                //                                });
-                                                                //                                this._stop_timer();
+
                                                             }
                                                         };
 
                                                         this.record_play = function(file) {
-                                                            //                            if(this.last_record_path != file){
                                                             this.audio = new Media(file, this.log_success, this.log_error);
-                                                            //                            }
                                                             this.audio.play();
                                                         };
 
@@ -2046,7 +1829,6 @@ function onDeviceReady() {
                                                         this.stop = function() {
                                                             if (this.audio) {
                                                                 this.audio.stop();
-                                                                //                                this._stop_timer();
                                                             }
                                                         };
 
@@ -2088,26 +1870,8 @@ function onDeviceReady() {
                                                         // PHONEGAP
                                                         // PHONEGAP
 
-                                                        //                CONFIG  :   {
-                                                        //                    server_url       : "http://212.8.40.254:5959/",
-                                                        //                    file_upload_url  : "http://212.8.40.254:5959/upload",
-                                                        //                    project_chat_url : "http://212.8.40.254:5959/",
-                                                        //                    todo_chat_url    : "http://212.8.40.254:5959/todo",
-                                                        //
-                                                        //                    route  : function(url){ return  this.server_url+this.routes[url];},
-                                                        //
-                                                        //                    routes  :   {
-                                                        //                        sync    :   "sync"
-                                                        //                    },                    
-                                                        //                    root_dir    :   "BAO"
-                                                        //                }
-
-
                                             };
 
-                                            //            document.addEventListener("deviceready", onDeviceReady, false);
-                                            //            function onDeviceReady() {
-//                SERVER.SOCKET.init()
                                             return {
                                                 //                API     : SERVER.API,
                                                 //                DB      : SERVER.DB,
@@ -2124,12 +1888,7 @@ function onDeviceReady() {
 
                                             };
 
-
-                                            //           };
-
                                         }()
-
-
 
                                         );
 
@@ -2137,10 +1896,6 @@ function onDeviceReady() {
 
 
                                 init_app(); // start wrapper functon
-//        Models.User.test_create("", function() {
-//            
-//            console.log("Models.User.test_create");
-//        });
 
                             }
                 }
