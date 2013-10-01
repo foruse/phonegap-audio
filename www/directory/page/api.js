@@ -16,7 +16,7 @@
 
 //BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
 document.addEventListener("deviceready", onDeviceReady, false);
- onDeviceReady()
+// onDeviceReady()
 function onDeviceReady() {
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -67,7 +67,7 @@ function onDeviceReady() {
 //        alert("BROWSER_TEST_VERSION WITHOUT FS");
 //        server_start();
 //    }
-server_start()
+server_start();
     function server_start() {
 
         App_model = function(SERVER) {
@@ -2067,8 +2067,8 @@ server_start()
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-//                                                SESSION: SERVER.SESSION._init_storage(1),
-                                                SESSION: SERVER.SESSION,
+                                                SESSION: SERVER.SESSION._init_storage(1),
+//                                                SESSION: SERVER.SESSION,
 //                                                DB: SERVER.DB._init_db(1),
                                                 DB: SERVER.DB._init_db(),
                                                 PHONE: SERVER.PHONE
