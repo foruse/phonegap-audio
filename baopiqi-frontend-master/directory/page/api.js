@@ -2066,10 +2066,10 @@ function onDeviceReady() {
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-//                                                SESSION: SERVER.SESSION._init_storage(1),
-                                                SESSION: SERVER.SESSION,
-//                                                DB: SERVER.DB._init_db(1),
-                                                DB: SERVER.DB._init_db(),
+                                                SESSION: SERVER.SESSION._init_storage(1),
+//                                                SESSION: SERVER.SESSION,
+                                                DB: SERVER.DB._init_db(1),
+//                                                DB: SERVER.DB._init_db(),
                                                 PHONE: SERVER.PHONE
 
                                             };

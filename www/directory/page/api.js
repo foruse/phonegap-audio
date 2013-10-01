@@ -12,10 +12,10 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
-BROWSER_TEST_VERSION = true;
+//BROWSER_TEST_VERSION = true;
 
-BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
-
+//BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
+document.addEventListener("deviceready", onDeviceReady, false);
 function onDeviceReady() {
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -1806,7 +1806,7 @@ function onDeviceReady() {
                                                         _init_storage: function(clear) {
                                                             var _this = this,
 //                                    test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
-                                                                    test_user_id = "dsadasdas1212312";
+                                                            test_user_id = "dsadasdas1212312";
                                                             this.clear();
                                                             this.set("user_id", test_user_id);
                                                             this.set("user_name", "Igor");
