@@ -16,6 +16,7 @@
 
 //BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
 document.addEventListener("deviceready", onDeviceReady, false);
+ onDeviceReady()
 function onDeviceReady() {
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -45,28 +46,28 @@ function onDeviceReady() {
 
     var inited_fs = null;
 
-    if (!BROWSER_TEST_VERSION) {
+//    if (!BROWSER_TEST_VERSION) {
 
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
-            fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
+//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+//            fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
+//
+//                inited_fs = dir;
+//
+//                server_start();
+//            }, function(err1, err2) {
+//                console.log(err1);
+//                console.log(err2);
+//            });
+//        }, function(err1, err2) {
+//            console.log(err1);
+//            console.log(err2);
+//        });
 
-                inited_fs = dir;
-
-                server_start();
-            }, function(err1, err2) {
-                console.log(err1);
-                console.log(err2);
-            });
-        }, function(err1, err2) {
-            console.log(err1);
-            console.log(err2);
-        });
-
-    } else {
+//    } else {
 //        alert("BROWSER_TEST_VERSION WITHOUT FS");
-        server_start();
-    }
-
+//        server_start();
+//    }
+server_start()
     function server_start() {
 
         App_model = function(SERVER) {
