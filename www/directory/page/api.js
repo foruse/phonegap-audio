@@ -18,6 +18,7 @@
 document.addEventListener("deviceready", onDeviceReady, false);
 // onDeviceReady()
 function onDeviceReady() {
+    alert("it works")
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
