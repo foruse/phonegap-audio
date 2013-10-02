@@ -7,6 +7,7 @@
         Models.properties({
             addProject: function(params, complete) {
                 params = jQun.set({descr: params.desc}, params);
+                delete params.desc;
                 Mdls.Project.create({
                     project: jQun.except(params, ["users"]),
                     users: params.users
@@ -34,7 +35,8 @@
             // getSchedules : function(){ },
             getSingleProject: function(params, complete) {
 //                Mdls.Project.read(params, complete);
-                Mdls.Project.read(params, function(data){
+                console.log("getSingleProject");
+                Mdls.Project.read(params, function(data) {
                     console.log(data);
                     complete(data);
                 });
@@ -43,8 +45,8 @@
                 switch (params.type) {
                     case "project":
 //                        Mdls.ProjectChat.chat_init(params.id, complete);
-                        Mdls.ProjectChat.chat_init(params.id, function(data){
-                            console.log(data)
+                        Mdls.ProjectChat.chat_init(params.id, function(data) {
+                            console.log(data);
                             complete(data);
                         });
                         break;
@@ -53,14 +55,14 @@
                         break;
                 }
             },
-            addComment : function(params, complete){
+            addComment: function(params, complete) {
                 var _params = {};
                 switch (params.type) {
                     case "text":
                         _params = {
-                            project_id : params.projectId,
-                            content : params.text,
-                            type : params.type
+                            project_id: params.projectId,
+                            content: params.text,
+                            type: params.type
                         };
                         break;
                     case "voice":
@@ -80,7 +82,7 @@
             // globalSearch : function(){ },
             // invitation : function(){ },
             login: function(params, complete) {
-                Mdls.User.login(params,complete);
+                Mdls.User.login(params, complete);
             },
             getProjects: function(params, complete) {
                 Mdls.Project.read(params, complete);
@@ -90,22 +92,55 @@
                 // 	data['count'] = 123;
                 // 	complete(data)
                 // });
-                // Mdls.User.read(function(data){
-                // 	complete(data);
-                // });
-                return {count: 123}
+                Mdls.User.read(function(data) {
+                    console.log(data);
+                    complete(data);
+                });
+//                return {count: 123}
             },
-            createGroup: function(params, complete){
+            createGroup: function(params, complete) {
                 console.log(params);
+                Mdls.Partner_Groups.create(params, complete);
             },
             // praise : function(){ },
-            register: function(_params, complete) {
-                Mdls.User.create(_params, complete);
-            }
+            register: function(params, complete) {
+                Mdls.User.create(params, complete);
+            },
             // toDoCompleted : function(){ },
             // sendToDo : function(){ },
-            // getToDoInfo : function(){ },
-            // getToDoList : function(){ }
+            getToDo: function(params, complete) {
+                console.log(params);
+//                 Mdls.Todo.read({project_id: params.id}, complete);
+                Mdls.Todo.read(params, function(data) {
+                    console.log(data);
+                    complete(data);
+                });
+            },
+//             getToDoInfo : function(params, complete){ 
+//                 console.log("getToDoInfo");
+//                 console.log(params);
+////                 Mdls.Todo.read({project_id: params.id}, complete);
+////                 Mdls.Todo.read({project_id: params.id}, function(data){
+////                    console.log(data);
+////                    complete(data);
+////                });
+//             },
+            getToDoList: function(params, complete) {
+                console.log(params);
+//                 Mdls.Todo.read({project_id: params.id}, complete);
+                Mdls.Todo.read({project_id: params.id}, function(data) {
+                    console.log(data);
+                    complete(data);
+                });
+            },
+            getSchedules: function(params, complete) {
+                console.log(params);
+//                 Mdls.Todo.read({project_id: params.id}, complete);
+//                Mdls.Todo.read({project_id: params.id}, function(data) {
+//                    console.log(data);
+//                    complete(data);
+//                });
+            }
         });
 
 
@@ -181,7 +216,9 @@
                             data.projects.forEach(function(pro) {
                                 pro.status = 1;
                             });
-                            data.pageMax = data.pageIndex + (data.pageSize - data.emptyFolders === 0 ? 0 : 1);
+//                            data.pageMax = data.pageIndex + (data.pageSize - data.emptyFolders === 0 ? 0 : 1);
+                            data.pageMax = data.pageIndex + (data.emptyFolders > 0 ? 0 : 1);
+                            ;
                             return data;
                         },
                         getSchedules: function(data) {
@@ -202,6 +239,17 @@
                                 schedules: data
                             };
                         }
+//                        getMessages: function(data) {
+//                            var id = Bao.Global.loginUser.id;
+//
+//                            data.forEach(function(dt) {
+//                                var poster = dt.poster;
+//
+//                                poster.isLoginUser = poster.id === id;
+//                            });
+//
+//                            return data;
+//                        }
                     }
             ));
 

@@ -15,8 +15,8 @@
 //BROWSER_TEST_VERSION = true;
 
 //BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
-document.addEventListener("deviceready", onDeviceReady, false);
-// onDeviceReady()
+//document.addEventListener("deviceready", onDeviceReady, false);
+ onDeviceReady()
 function onDeviceReady() {
     alert("it works")
     // APPLICATION CONFIGS

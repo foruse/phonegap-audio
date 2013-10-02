@@ -321,7 +321,10 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 					return;
 				}
 				
-				CallServer.open("createGroup", {}, function(){
+				CallServer.open("createGroup", {
+                                    users : e.users,
+                                    name : e.inputText
+                                }, function(){
 				
 				});
 			}
