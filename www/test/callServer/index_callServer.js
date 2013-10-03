@@ -52,7 +52,9 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 		["getToDoList",			new Text("url?id={id}"),					"",	true],
 		["sendToDo",			new Text("url?title={title}&remind={remind}&desc={desc}&attachments={attachments}&date={date}"), "POST"],
 		["toDoCompleted",		new Text("url?id={id}"),					""],
-		["getWorkStream",		new Text("url?id={id}"),					"", true]
+		["getWorkStream",		new Text("url?id={id}"),					"", true],
+		["addComment",			new Text("url?text={text}&type={type}&projectId={projectId}&attachment={attachment}"),	""],
+		["createGroup",		new Text("url?users=[users]&name={name}"),	""]
 	], allHandlers);
 
 	return CallServer;
@@ -199,6 +201,7 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 			data = Index.SingleProject.getSingleProject();
 
 			data.id = params.id;
+			data.pageMax = data.pageIndex + (data.emptyFolders > 0 ? 0 : 1);
 
 			return data;
 		},
@@ -211,7 +214,15 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 			return data;
 		},
 		getMessages : function(data){
+			var id = Bao.Global.loginUser.id;
+
 			data = Index.SingleProject.getMessages();
+
+			data.forEach(function(dt){
+				var poster = dt.poster;
+
+				poster.isLoginUser = poster.id === id;
+			});
 
 			return data;
 		},

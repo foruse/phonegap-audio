@@ -1833,9 +1833,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 	this.ClassListCollection,
 	window,
 	// selectorRegx
- /([\#\.])([^\s\:\#\.\,\+\~\[\>\(\)]+)/g
-//	/([\#\.])([^\s\:\#\.\,\+\~\[\>]+)/g
-
+	/([\#\.])([^\s\:\#\.\,\+\~\[\>\(\)]+)/g
 ));
 
 this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty){

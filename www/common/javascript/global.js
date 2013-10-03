@@ -25,12 +25,10 @@ this.Global = (function(Fixed, Management, HTML){
 				});
 
 				// 首先要登录才会用登录用户的数据
-//				history.go("login").login("ss@ss.com", "123456");
 				history.go("login");
 			},
 			login : function(e){
 				Global.loginUser = e.loginUser;
-//				Global.history.go("workStream");
 			}
 		});
 	};

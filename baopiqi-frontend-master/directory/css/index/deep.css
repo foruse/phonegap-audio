@@ -427,8 +427,11 @@
 	min-height : 140px;
 	max-height : 140px;
 }
-
 #titleBar button[action="sendToDoCompleted"] {
 	background-color : #f1af10;
 	background : #f1af10 url(../../../common/image/width24.png) 7px -118px no-repeat;
+}
+
+#workStream li > figure {
+	
 }

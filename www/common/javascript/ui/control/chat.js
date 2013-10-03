@@ -413,7 +413,7 @@ this.ChatListContent = (function(MessageGroup){
 		},
 		clearAllMessages : function(){
 			this.innerHTML = "";
-                        this.messageGroup = undefined;
+			this.messageGroup = undefined;
 		},
 		color : 0,
 		messageGroup : undefined,

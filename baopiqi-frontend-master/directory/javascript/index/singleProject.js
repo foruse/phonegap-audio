@@ -89,24 +89,22 @@ this.Discussion = (function(ProjectPanel, ChatList){
 			messageappended : function(e){
 				overflowPanel.bottom();
 			},
-//                        messagecompleted : function(e){
-//                            CallServer.open("addComment",  jQun.set({ projectId : projecetId }, e.message), function(){
-//                                
-//                            });
-//                        },
-                        messagecompleted : function(e){
-                            var message = e.message;
+			messagecompleted : function(e){
+				var message = e.message;
 
-                            CallServer.open("addComment", {
-                                    projectId : projecetId,
-                                    attachment : message.attachment,
-                                    text : message.text,
-                                    type : message.type
-                                },
-                                function(){
-
-                                });
-                       },
+				CallServer.open(
+					"addComment",
+					{
+						projectId : projecetId,
+						attachment : message.attachment,
+						text : message.text,
+						type : message.type
+					},
+					function(){
+				
+					}
+				);
+			},
 			clickpraise : function(e){
 				var message = e.message, loginUser = Global.loginUser;
 
@@ -212,17 +210,26 @@ this.ToDoList = (function(ProjectPanel, AnchorList, formatKey){
 
 this.WorkStream = (function(ProjectPanel, ProjectAnchorList){
 	function WorkStream(selector, infoHtml){
-		var workStream = this;
+		var workStream = this, ulEl = workStream.find(">ul");
 
 		this.attach({
 			loadproject : function(e){
 				var project = e.project;
 				
 				CallServer.open("getWorkStream", { id : project.id }, function(data){
-					workStream.find(">ul").innerHTML = infoHtml.render({ workSteam : data });
+					var asideEls;
+
+					ulEl.innerHTML = infoHtml.render({ workStream : data });
+					asideEls = ulEl.find("aside");
+
+					data.forEach(function(dt, i){
+						new ProjectAnchorList(dt.toDoList).appendTo(asideEls[i]);
+					});
 				});
 			}
 		});
+
+		new OverflowPanel(ulEl[0]);
 	};
 	WorkStream = new NonstaticClass(WorkStream, "Bao.Page.Index.SingleProject.WorkStream", ProjectPanel.prototype);
 

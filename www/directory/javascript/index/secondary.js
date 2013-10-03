@@ -46,7 +46,7 @@ this.AddProject = (function(Global, Validation, UserManagementList){
 
 					CallServer.open("addProject", {
 						title : addProject.find('>section[desc="title"]>input').value,
-						colormark : addProject.find('>section[desc="color"] button.selected').get("colormark", "attr"),
+						color : addProject.find('>section[desc="color"] button.selected').get("colormark", "attr"),
 						desc : addProject.find('>footer textarea').value,
 						users : addProject.userManagementList.getAllUsers()
 					}, function(data){

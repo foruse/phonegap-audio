@@ -12,13 +12,11 @@
 //   - othervise data which needed to be synced is triggerred to sync table and will be synced when connection to server will be esteblished
 //
 //local DB automaticaly created but to fix something or to reload we can use Models.TEST.INIT() or other methods there -- also see last lines of this file
-//BROWSER_TEST_VERSION = true;
+BROWSER_TEST_VERSION = true;
 
-//BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
-//document.addEventListener("deviceready", onDeviceReady, false);
- onDeviceReady()
+BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
+
 function onDeviceReady() {
-    alert("it works")
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -47,28 +45,28 @@ function onDeviceReady() {
 
     var inited_fs = null;
 
-//    if (!BROWSER_TEST_VERSION) {
+    if (!BROWSER_TEST_VERSION) {
 
-//        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
-//            fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
-//
-//                inited_fs = dir;
-//
-//                server_start();
-//            }, function(err1, err2) {
-//                console.log(err1);
-//                console.log(err2);
-//            });
-//        }, function(err1, err2) {
-//            console.log(err1);
-//            console.log(err2);
-//        });
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+            fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
 
-//    } else {
+                inited_fs = dir;
+
+                server_start();
+            }, function(err1, err2) {
+                console.log(err1);
+                console.log(err2);
+            });
+        }, function(err1, err2) {
+            console.log(err1);
+            console.log(err2);
+        });
+
+    } else {
 //        alert("BROWSER_TEST_VERSION WITHOUT FS");
-//        server_start();
-//    }
-server_start();
+        server_start();
+    }
+
     function server_start() {
 
         App_model = function(SERVER) {
@@ -86,30 +84,27 @@ server_start();
             // Models
             // Models
             return Models = {
-                
-                UsersCounter : {
-                    
-                    read: function(callback){
-                        callback({count: 100000, validationImage : "src"})
+                UsersCounter: {
+                    read: function(callback) {
+                        callback({count: 100000, validationImage: "src"})
 //                        SOCKET.request("counter", {}, function(result) {
 //                            
 //                        });
                     }
-                    
+
                 },
-                
                 Partner: {
                     read: function(id, callback) { // if id is specified we get one partner else all partners
                         if (typeof(id) === "function") {// no id
                             callback = id;
-                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                             DB.from("xiao_partners AS p");
                             DB.left_join("xiao_users AS u", "u.id = p.partner_id");
                             DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                             DB.where('p.user_id ="' + SESSION.get("user_id") + '"');
                             API.read(callback);
                         } else if (id) {
-                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                            DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                             DB.from("xiao_users AS u");
                             DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                             DB.where('u.id ="' + id + '"');
@@ -126,13 +121,14 @@ server_start();
                         API.read(callback);
                     },
                     get_group_users: function(id, callback) {
-                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_partner_groups AS g");
                         DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
                         DB.left_join("xiao_users AS u", "u.id = gu.user_id");
                         DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('g.creator_id ="' + SESSION.get("user_id") + '"');
-                        typeof(id) !== "function" ? DB.where('g.id = "' + id + '"') : callback = id;
+                        if (id != -1)
+                            DB.where('g.id = "' + id + '"'); // if id is (-1) then we get ALL users in ALL groups
                         API.read(callback);
                     },
                     create: function(data, callback) {
@@ -190,7 +186,7 @@ server_start();
                     },
                     read: function(callback) {
                         // get user data
-                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres");
+                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_users AS u");
                         DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('u.id ="' + SESSION.get("user_id") + '"');
@@ -239,25 +235,52 @@ server_start();
 //                            });
 //                        });
                         SOCKET.request("login", data, function(result) {
-//                            console.log(result);
-                            if (result.user) {
-                                SESSION.set("user_id", result.user.id);
-                                SESSION.set("user_name", result.user.name);
-                                if(result.user.isNewUser == 1)API.update("xiao_users",{isNewUser: 0}, 'id="'+result.user.id+'"');
-                                callback({
-                                    status: 0,
-                                    user: result.user
-                                });
-                            } else if(result.error){
-                                console.log(result.error.message);
-                                callback({
-                                    status: -1
-                                });
-                            }else{
-                                console.log(result.error.message);
-                                callback({
-                                    status: -1
-                                });
+                            console.log(result);
+                            if (result !== false) {
+                                if (result.user) {
+                                    SESSION.set("user_id", result.user.id);
+                                    SESSION.set("user_name", result.user.name);
+                                    SESSION.set("user_email", result.user.email);
+                                    SESSION.set("user_pwd", result.user.pwd);
+                                    if (result.user.isNewUser == 1)
+                                        API.update("xiao_users", {isNewUser: 0}, 'id="' + result.user.id + '"');
+                                    callback({
+                                        status: 0,
+                                        user: result.user
+                                    });
+                                } else if (result.error) {
+                                    console.log(result.error.message);
+                                    callback({
+                                        status: -1
+                                    });
+                                } else {
+                                    console.log(result.error.message);
+                                    callback({
+                                        status: -1
+                                    });
+                                }
+                            } else {
+                                console.log(data)
+                                //offline like this for now in development
+                                if (SESSION.get("user_id") && SESSION.get("user_pwd") && SESSION.get("user_name") && SESSION.get("user_email")) {
+                                    if (SESSION.get("user_pwd") == md5(data.pwd) && SESSION.get("user_email") == data.email) {
+                                        Models.User.read(function(offline_user) {
+                                            offline_user.status = 0;
+                                            callback(offline_user);
+                                        });
+//                                        callback({
+//                                            status: 0
+//                                        });
+                                    } else {
+                                        callback({
+                                            status: -1
+                                        });
+                                    }
+                                } else {
+                                    callback({
+                                        status: -1
+                                    });
+                                }
                             }
                         });
                     },
@@ -272,26 +295,29 @@ server_start();
 //                            position: "testuser_123"
 //                        };
                         SOCKET.request("registration", data, function(result) {
-                            console.log(result)
-                            if (result.user) {
-                                DB.insert_with_id('xiao_users', result.user);
-                                API._clear_tables_to_sync();
-                                SESSION.set("user_id", result.user.id);
-                                SESSION.set("user_name", result.user.name);
-                                callback({
-                                    status: 0,
-                                    user: result.user
-                                });
-                            } else if(result.error.code == 2){
-                                console.log(result.error.message);
-                                callback({
-                                    status: -1
-                                });
-                            }else{
-                                console.log(result.error.message);
-                                callback({
-                                    status: -1
-                                });
+                            if (result !== false) {
+                                if (result.user) {
+                                    DB.insert_with_id('xiao_users', result.user);
+                                    API._clear_tables_to_sync();
+                                    SESSION.set("user_id", result.user.id);
+                                    SESSION.set("user_name", result.user.name);
+                                    callback({
+                                        status: 0,
+                                        user: result.user
+                                    });
+                                } else if (result.error.code == 2) {
+                                    console.log(result.error.message);
+                                    callback({
+                                        status: -1
+                                    });
+                                } else {
+                                    console.log(result.error.message);
+                                    callback({
+                                        status: -1
+                                    });
+                                }
+                            } else {
+                                alert("no internet connection");
                             }
                         });
                     },
@@ -348,18 +374,6 @@ server_start();
 //                                user_id: insert_id
 //                            }, callback);
 //                        });
-                    }
-
-                },
-                Todo: {
-                    create: function(data) {
-
-                    },
-                    read: function(id) {
-
-                    },
-                    update: function(id, data) {
-
                     }
 
                 },
@@ -468,6 +482,8 @@ server_start();
                         data.project['creator_id'] = SESSION.get("user_id");
                         data.project['company_id'] = SESSION.get("company_id");
 
+                        data.users.push(SESSION.get("user_id"));
+
                         if (data.project) {
                             API.insert('xiao_projects', data.project, function(insert_id) {
                                 if (data.users.length > 0) {
@@ -479,22 +495,20 @@ server_start();
                                         });
                                     }
                                     API.batch_insert('xiao_project_partners', partners, callback);
-                                }else{
+                                } else {
                                     callback();
                                 }
                             });
                         }
                     },
                     read: function(params, callback) {
-//                        if (typeof(id) !== "function") {
                         if ("id" in params) {
-                            console.log("INSIDE PROJECT PAGE")
                             // get inside project page
                             var result = {};
                             API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
-                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                 DB.from("xiao_projects AS p");
-                                DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
+                                DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                 DB.left_join("xiao_users AS u", "u.id = pp.user_id");
                                 DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('p.id ="' + params.id + '"');
@@ -514,35 +528,32 @@ server_start();
                                         };
                                         project.users = [];
                                         partners.forEach(function(pp) {
-//                                            var leader = pp.isLeader == "1" ? true : false,
-//                                                    new_user = pp.isNewUser == "0" ? true : false;
                                             project.users.push({
                                                 id: pp.uid,
                                                 name: pp.name,
                                                 pinyin: pp.pinyin,
                                                 avatar: pp.avatar,
                                                 company: pp.company,
-                                                companyAdres: pp.companyAdres,
+                                                companyAdress: pp.companyAdress,
                                                 position: pp.position,
                                                 phoneNum: pp.phoneNum,
                                                 email: pp.email,
                                                 adress: pp.adress,
                                                 isNewUser: pp.isNewUser,
-                                                isLeader: pp.isLeader,
                                                 QRCode: pp.QRCode
                                             });
                                         });
                                     }
                                     make_callback({project: project});
                                 });
-                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                                 DB.from("xiao_projects AS p");
                                 DB.left_join("xiao_users AS u", "u.id = p.creator_id");
                                 DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('p.id ="' + params.id + '"');
 
                                 DB.row(function(creator) {
-                                    var leader = true, new_user = true, cr_user = {};
+                                    var cr_user = {};
                                     if (creator) {
                                         cr_user = {
                                             id: creator.uid,
@@ -550,20 +561,20 @@ server_start();
                                             pinyin: creator.pinyin,
                                             avatar: creator.avatar,
                                             company: creator.company,
-                                            companyAdres: creator.companyAdres,
+                                            companyAdress: creator.companyAdress,
                                             position: creator.position,
                                             phoneNum: creator.phoneNum,
                                             email: creator.email,
                                             adress: creator.adress,
-                                            isNewUser: new_user,
-                                            isLeader: leader,
+                                            isNewUser: creator.isNewUser,
+//                                            isLeader: leader,
                                             QRCode: creator.QRCode
                                         };
                                     }
                                     make_callback({creator: cr_user});
                                 });
-                                
-                                DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
+
+                                DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                 DB.from("xiao_projects AS p");
                                 DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                 DB.left_join("xiao_users AS u", "u.id = p.creator_id");
@@ -574,7 +585,7 @@ server_start();
                                     make_callback({users: partners});
                                 });
 
-//                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+//                                DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
 //                                DB.from("xiao_project_comments AS pc");
 //                                DB.left_join("xiao_users AS u", "u.id = pc.user_id");
 //                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
@@ -598,7 +609,7 @@ server_start();
 //                                                    pinyin: mess.pinyin,
 //                                                    avatar: mess.avatar,
 //                                                    company: mess.company,
-//                                                    companyAdres: mess.companyAdres,
+//                                                    companyAdress: mess.companyAdress,
 //                                                    position: mess.position,
 //                                                    phoneNum: mess.phoneNum,
 //                                                    email: mess.email,
@@ -626,47 +637,39 @@ server_start();
                                     if (data.project) {
                                         result.project = data.project;
                                     }
-//                                    if (data.messages) {
-//                                        result.messages = data.messages;
-//                                        result.unread = data.unread;
-//                                    }
                                     if (data.creator) {
                                         result.creator = data.creator;
                                     }
                                     if (data.users) {
                                         result.users = data.users;
                                     }
-//                                    if (result.project && result.messages && result.creator) {
                                     if (result.project && result.creator && result.users) {
                                         var res = {};
                                         res = result.project;
-//                                        res.messages = result.messages;
                                         res.creator = result.creator;
                                         res.users = result.users;
                                         res.attachments = [];
-                                        console.log(res);
                                         callback(res);
                                     }
                                 }
                             });
                         } else {
                             // get ALL projects page
-//                            callback = id;
-//                            if(params.pageIndex && params.pageSize){
-                            if("pageIndex" in params && "pageSize" in params){
+                            if ("pageIndex" in params && "pageSize" in params) {
                                 var result = [];
                                 API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
-                                    DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
-                                    DB.from("xiao_projects AS p");
+                                    DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                                    DB.from("xiao_project_partners AS pp");
+                                    DB.left_join("xiao_projects AS p", "pp.project_id = p.id");
                                     DB.left_join("xiao_users AS u", "u.id = p.creator_id");
                                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
-                                    DB.limit(params.pageSize, (params.pageIndex-1) * params.pageSize);
+                                    DB.where('pp.user_id = "' + SESSION.get("user_id") + '"');
+                                    DB.limit(params.pageSize, (params.pageIndex - 1) * params.pageSize);
 
                                     DB.query(function(projects) {
-                                        console.log(projects)
                                         projects.forEach(function(pr) {
 
-                                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id, pp.isLeader");
+                                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                             DB.from("xiao_projects AS p");
                                             DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                             DB.left_join("xiao_users AS u", "u.id = p.creator_id");
@@ -690,14 +693,14 @@ server_start();
                                                         creationTime: pr.creationTime,
                                                         unread: unread,
                                                         descr: pr.descr,
-                                                        lastMessage : "12345",
+                                                        lastMessage: "12345",
                                                         creator: {
                                                             id: pr.uid,
                                                             name: pr.name,
                                                             pinyin: pr.pinyin,
                                                             avatar: pr.avatar,
                                                             company: pr.company,
-                                                            companyAdres: pr.companyAdres,
+                                                            companyAdress: pr.companyAdress,
                                                             position: pr.position,
                                                             phoneNum: pr.phoneNum,
                                                             email: pr.email,
@@ -709,15 +712,12 @@ server_start();
                                                         users: partners
                                                     });
                                                     if (result.length == projects.length) {
-    //                                                    callback(result);
                                                         callback({
                                                             projects: result,
-                                                            pageIndex : params.pageIndex, // number
-                                                            pageMax : 1, // number
-                                                            pageSize : params.pageSize, // number
-                                                            emptyFolders : params.pageSize - projects.length // number
+                                                            pageIndex: params.pageIndex,
+                                                            pageSize: params.pageSize,
+                                                            emptyFolders: params.pageSize - projects.length
                                                         });
-                                                        console.log(result)
                                                     }
                                                 });
 
@@ -732,21 +732,235 @@ server_start();
                             }
                         }
 
+                    },
+                    remove: function(id, callback) {
+                        // Удаление проекта
+                        // У меня вопрос:
+                        // - удаление проекта, которое должно быть в БЕТА, что имееться ввиду под удлением(удаление самого преокта? или удаление себя из проекта? кто может это делать?)
+//                        
+                        // ответ:
+                        //  Только для АДМИНА. Удаление проекта
+                        /*
+                        if(SESSION.get("isAdmin") == 1){
+                            API.remove("xiao_projects", 'id="'+id+'"', callback);
+                        }
+                        */
                     }
 
                 },
                 ProjectChat: {
+                    _inited_chats: [],
                     chat_init: function(project_id, callback) {
+
                         // existing messages
-                        
-                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
+                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                         DB.from("xiao_project_comments AS pc");
                         DB.left_join("xiao_users AS u", "u.id = pc.user_id");
                         DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('pc.project_id ="' + project_id + '"');
                         DB.order_by('pc.update_time');
+                        var login_user = SESSION.get("user_id");
+//                        DB.query(function(messages) {
+                        API.read(function(messages) {
+                            var mess_result = [], unread = 0;
+                            if (messages.length > 0) {
+                                messages.forEach(function(mess) {
+                                    unread += (mess.read == 0 ? 1 : 0);
+                                    mess_result.push({
+                                        id: mess.id,
+                                        text: mess.content,
+                                        poster: {
+                                            id: mess.uid,
+                                            name: mess.name,
+                                            pinyin: mess.pinyin,
+                                            avatar: mess.avatar,
+                                            company: mess.company,
+                                            companyAdress: mess.companyAdress,
+                                            position: mess.position,
+                                            phoneNum: mess.phoneNum,
+                                            email: mess.email,
+                                            adress: mess.adress,
+                                            isNewUser: mess.isNewUser,
+                                            isLoginUser: login_user == mess.uid,
+                                            QRCode: mess.QRCode
+                                        },
+                                        attachment: {
+                                            id: mess.id,
+                                            type: mess.type,
+                                            src: mess.server_path
+                                        },
+                                        praise: [],
+                                        time: mess.update_time,
+                                        type: mess.type
+                                    });
+                                });
+                            }
+                            console.log(mess_result)
+                            callback(mess_result);
+//                            make_callback({messages: mess_result, unread: unread});
+                        });
 
-                        DB.query(function(messages) {
+
+                        // new cooming messages
+//                        if (this._inited_chats.lastIndexOf(project_id) === -1)
+                        SOCKET.updatechat({type: "project", id: project_id}, function(socket_messages) { // new messages ARRAY
+                            console.log("UPDATE CHAT EVENT");
+                            var in_m = "";
+                            socket_messages.forEach(function(m, i) {
+                                in_m += (i != 0 ? "," : "");
+                                in_m += '"' + m.id + '"';
+                            });
+                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                            DB.from("xiao_project_comments AS pc");
+                            DB.join("xiao_users AS u", "u.id = pc.user_id");
+                            DB.join("xiao_companies AS c", "u.company_id = c.id");
+                            DB.where('pc.id IN (' + in_m + ')');
+                            DB.order_by('pc.update_time');
+                            API._clear_tables_to_sync();
+                            DB.query(function(messages) {
+                                var mess_result = [];
+                                messages.forEach(function(mess) {
+//                                    var leader = mess.company_creator_id == mess.uid ? true : false,
+//                                            new_user = mess.isNewUser == 0 ? true : false;
+                                    mess_result.push({
+                                        id: mess.id,
+                                        text: mess.content,
+                                        poster: {
+                                            id: mess.uid,
+                                            name: mess.name,
+                                            pinyin: mess.pinyin,
+                                            avatar: mess.avatar,
+                                            company: mess.company,
+                                            companyAdress: mess.companyAdress,
+                                            position: mess.position,
+                                            phoneNum: mess.phoneNum,
+                                            email: mess.email,
+                                            adress: mess.adress,
+                                            isNewUser: mess.isNewUser,
+//                                            isLeader: leader,
+                                            QRCode: mess.QRCode
+                                        },
+                                        attachment: {
+                                            id: mess.id,
+                                            type: mess.type,
+                                            src: mess.server_path
+                                        },
+                                        praise: [],
+                                        time: mess.update_time,
+                                        type: mess.type
+                                    });
+                                });
+                                callback(mess_result);
+                            });
+
+                        });
+                    },
+                    send_message: function(message, callback) {
+                        console.log("sending mesage...");
+                        message['user_id'] = SESSION.get("user_id"); // push user_id to message data
+                        API.insert("xiao_project_comments", message, function(insert_id) {
+                            message['id'] = insert_id;
+                            console.log('API.insert("xiao_project_comments"');
+                            console.log(message);
+                            callback(message);
+                        });
+//                        alert(SESSION.get("user_id"));
+                    }
+
+                },
+                Todo: {
+                    create: function(todo, callback) {
+//                        var todo = {
+//                            color : 1, // number : from 0 to 5(0 : orange, 1 : tan, 2 : cyan, 3 : blue, 4 : henna, 5 : purple)
+//                            title : "sss",
+//                            descr : "aaa",
+//                            endTime : new Date().getTime(),
+//                            user_id : 4, // performer
+//                            project_id : "201310011115357d1e32i5_xiao_projects"
+//                        };
+
+                        todo.creator_id = SESSION.get("user_id");
+
+                        API.insert("xiao_todos", todo, function(insert_id) {
+                            todo.id = insert_id;
+                            if (callback)
+                                callback(todo);
+                        });
+                    },
+                    read: function(params, callback) {
+                        console.log(params);
+                        if ("project_id" in params) {
+                            // get Todo LIST
+//                            DB.select();
+//                            DB.from("xiao_todos as t");
+//                            DB.where('t.project_id = "'+params.id+'"');
+//                            DB.where('t.user_id = "'+SESSION.get("user_id")+'"');
+//                            API.read(callback);
+                            var result = {};
+                            API._sync(["xiao_todos"], function() {
+                                DB.select();
+                                DB.from("xiao_todos as t");
+                                DB.where('t.project_id = "' + params.project_id + '"');
+                                DB.where('t.user_id = "' + SESSION.get("user_id") + '"');
+                                DB.where('t.finished = "0"');
+                                DB.query(function(todos) {
+                                    make_callback({uncompleted: todos});
+                                });
+                                DB.select();
+                                DB.from("xiao_todos as t");
+                                DB.where('t.project_id = "' + params.project_id + '"');
+                                DB.where('t.user_id = "' + SESSION.get("user_id") + '"');
+                                DB.where('t.finished = "1"');
+                                DB.query(function(todos) {
+                                    make_callback({completed: todos});
+                                });
+                                API._clear_tables_to_sync();
+
+                                function make_callback(data) {
+                                    if (data.completed) {
+                                        result.completed = data.completed;
+                                    }
+                                    if (data.uncompleted) {
+                                        result.uncompleted = data.uncompleted;
+                                    }
+                                    if (result.completed && result.uncompleted) {
+                                        callback(result);
+                                    }
+                                }
+                            });
+                        } else if ("id" in params) {
+                            //get ONE todo
+                            DB.select();
+                            DB.from("xiao_todos AS t");
+//                            DB.where('t.user_id = "'+SESSION.get("user_id")+'"');
+                            DB.where('t.id = "' + params.id + '"');
+//                            API.row(callback);
+                            API.row(function(data) {
+                                console.log(data);
+                                data.attachments = [];
+                                data.messages = [];
+                                callback(data);
+                            });
+                        }
+                    },
+                    update: function(id, data, callback) {
+
+                    }
+
+                },
+                TodoChat: {
+                    chat_init: function(project_id, callback) {
+
+                        // existing messages
+                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.update_time, tc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                        DB.from("xiao_todo_comments AS tc");
+                        DB.left_join("xiao_users AS u", "u.id = tc.user_id");
+                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                        DB.where('tc.todo_id ="' + project_id + '"');
+                        DB.order_by('tc.update_time');
+                        var login_user = SESSION.get("user_id");
+//                        DB.query(function(messages) {
+                        API.read(function(messages) {
                             var mess_result = [], unread = 0;
                             if (messages.length > 0) {
                                 messages.forEach(function(mess) {
@@ -762,12 +976,13 @@ server_start();
                                             pinyin: mess.pinyin,
                                             avatar: mess.avatar,
                                             company: mess.company,
-                                            companyAdres: mess.companyAdres,
+                                            companyAdress: mess.companyAdress,
                                             position: mess.position,
                                             phoneNum: mess.phoneNum,
                                             email: mess.email,
                                             adress: mess.adress,
                                             isNewUser: mess.isNewUser,
+                                            isLoginUser: login_user === mess.uid,
 //                                            isLeader: mess.isLeader,
                                             QRCode: mess.QRCode
                                         },
@@ -785,28 +1000,28 @@ server_start();
                             callback(mess_result);
 //                            make_callback({messages: mess_result, unread: unread});
                         });
-                        
-                        
+
+
                         // new cooming messages
-                        SOCKET.updatechat({type: "project", id: project_id}, function(socket_messages) { // new messages ARRAY
-                            console.log("UPDATE CHAT EVENT");
+                        SOCKET.updatechat({type: "todo", id: project_id}, function(socket_messages) { // new messages ARRAY
+                            console.log("UPDATE TODO CHAT EVENT");
                             var in_m = "";
                             socket_messages.forEach(function(m, i) {
                                 in_m += (i != 0 ? "," : "");
                                 in_m += '"' + m.id + '"';
                             });
-                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdres, c.creator_id as company_creator_id");
-                            DB.from("xiao_project_comments AS pc");
-                            DB.join("xiao_users AS u", "u.id = pс.user_id");
+                            DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                            DB.from("xiao_todo_comments AS tc");
+                            DB.join("xiao_users AS u", "u.id = tc.user_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
-                            DB.where('pc.id IN (' + in_m + ')');
-                            DB.order_by('pc.update_time');
+                            DB.where('tc.id IN (' + in_m + ')');
+                            DB.order_by('tc.update_time');
                             API._clear_tables_to_sync();
                             DB.query(function(messages) {
                                 var mess_result = [];
                                 messages.forEach(function(mess) {
-                                    var leader = mess.company_creator_id == mess.uid ? true : false,
-                                            new_user = mess.isNewUser == 0 ? true : false;
+//                                    var leader = mess.company_creator_id == mess.uid ? true : false,
+//                                            new_user = mess.isNewUser == 0 ? true : false;
                                     mess_result.push({
                                         id: mess.id,
                                         text: mess.content,
@@ -816,13 +1031,13 @@ server_start();
                                             pinyin: mess.pinyin,
                                             avatar: mess.avatar,
                                             company: mess.company,
-                                            companyAdres: mess.companyAdres,
+                                            companyAdress: mess.companyAdress,
                                             position: mess.position,
                                             phoneNum: mess.phoneNum,
                                             email: mess.email,
                                             adress: mess.adress,
-                                            isNewUser: new_user,
-                                            isLeader: leader,
+                                            isNewUser: mess.isNewUser,
+//                                            isLeader: leader,
                                             QRCode: mess.QRCode
                                         },
                                         attachment: {
@@ -844,9 +1059,9 @@ server_start();
                     send_message: function(message, callback) {
                         console.log("sending mesage...");
                         message['user_id'] = SESSION.get("user_id"); // push user_id to message data
-                        API.insert("xiao_project_comments", message, function(insert_id) {
+                        API.insert("xiao_todo_comments", message, function(insert_id) {
                             message['id'] = insert_id;
-                            console.log('API.insert("xiao_project_comments"');
+                            console.log('API.insert("xiao_todo_comments"');
                             console.log(message);
                             callback(message);
                         });
@@ -890,16 +1105,28 @@ server_start();
                                                     connection_code: function() {
                                                         return _random(12, _random(3, "_ccode"));
                                                     },
+                                                    _inited_chats: {
+                                                        project: [],
+                                                        todo: []
+                                                    },
                                                     updatechat: function(connect_data, callback) { // in data we specify id and type
-                                                        console.log("update chat INITED");
-                                                        this.socket.emit('addroom', connect_data);
-                                                        this.socket.on("updatechat", function(data) { // data just contain message that we need to sync DB
-                                                            console.log("updatechat data");
-                                                            console.log(data);
-                                                            SERVER.DB.batch_insert_with_id("xiao_project_comments", data, function() {
-                                                                callback(data);
+                                                        console.log(connect_data)
+                                                        console.log(typeof(connect_data.id))
+                                                        console.log(this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id))
+                                                        if(connect_data.id && this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id) === -1){
+                                                            console.log("update chat INITED");
+                                                            this._inited_chats[connect_data['type']].push(connect_data.id);
+                                                            console.log(this._inited_chats)
+                                                            this.socket.emit('addroom', connect_data);
+                                                            this.socket.on("updatechat", function(data) { // data just contain message that we need to sync DB
+                                                                console.log("updatechat data");
+                                                                console.log(data);
+//                                                            SERVER.DB.batch_insert_with_id("xiao_project_comments", data, function() {
+                                                                SERVER.DB.batch_insert_or_ignore_with_id("xiao_project_comments", data, function() {
+                                                                    callback(data);
+                                                                });
                                                             });
-                                                        });
+                                                        }
                                                     },
                                                     request: function(url, data, callback) {
                                                         var connection_code = this.connection_code();
@@ -947,8 +1174,8 @@ server_start();
                                                         group_by: function(group) {
                                                             return this._sql += ' ORDER BY ' + group;
                                                         },
-                                                        limit   : function(limit, offset){
-                                                            return this._sql += ' LIMIT '+limit + (offset ? (" OFFSET "+ offset) : "");
+                                                        limit: function(limit, offset) {
+                                                            return this._sql += ' LIMIT ' + limit + (offset ? (" OFFSET " + offset) : "");
                                                         },
                                                         query: function(callback) {
                                                             this._executeSQL(this._sql, callback);
@@ -975,6 +1202,10 @@ server_start();
                                                                 for (var i = 0; i < len; i++) {
                                                                     db_result[i] = results.rows.item(i);
                                                                 }
+
+                                                                if (db_result.length == 0 && !(sql.match(/sync/)))
+                                                                    console.log(sql);
+
                                                                 return (callback ? callback(db_result) : true);
                                                             }
                                                             function errorCB(err) {
@@ -1006,12 +1237,13 @@ server_start();
                                                         insert_with_id: function(table, data, callback) {
                                                             var sql = 'INSERT INTO ' + table + ' (', i = 0;
                                                             for (var key in data) {
-                                                                sql += (i == 0 ? key : ","+key);
+                                                                sql += (i == 0 ? key : "," + key);
                                                                 ++i;
                                                             }
-                                                            i=0 ; sql += ') VALUES (';
+                                                            i = 0;
+                                                            sql += ') VALUES (';
                                                             for (var key in data) {
-                                                                sql += (i == 0 ? '"'+data[key]+'"' : ',"'+data[key]+'"');
+                                                                sql += (i == 0 ? '"' + data[key] + '"' : ',"' + data[key] + '"');
                                                                 ++i;
                                                             }
                                                             sql += ')';
@@ -1098,6 +1330,47 @@ server_start();
                                                             if (data instanceof Array === false)
                                                                 return false; // data is array here
                                                             var i = 0, _this = this, sql = 'INSERT INTO ' + table + ' (', ij = 0;
+                                                            for (var key in data[0]) {
+                                                                if (ij != 0) {
+                                                                    sql += ",";
+                                                                }
+                                                                sql += key;
+                                                                ++ij;
+                                                            }
+                                                            var ijk = 0;
+                                                            sql += ')';
+                                                            for (var j in data) {
+                                                                for (var ij in data[j]) {
+                                                                    if (i == 0) {
+                                                                        j == 0 ? sql += ' SELECT ' : sql += ' UNION SELECT ';
+                                                                    }
+                                                                    if (j == 0) {
+                                                                        if (ijk != 0) {
+                                                                            sql += ",";
+                                                                        }
+                                                                        sql += '"' + data[j][ij] + '" as ' + ij + ''
+                                                                    } else {
+                                                                        if (ijk != 0) {
+                                                                            sql += ",";
+                                                                        }
+                                                                        sql += '"' + data[j][ij] + '"';
+                                                                    }
+                                                                    ++i;
+                                                                    ++ijk;
+                                                                }
+                                                                i = 0;
+                                                                ijk = 0;
+                                                            }
+                                                            return (
+                                                                    callback ? this._executeSQL(sql, callback) : this._executeSQL(sql)
+                                                                    );
+                                                        },
+                                                        batch_insert_or_ignore_with_id: function(table, data, callback) {
+                                                            if (typeof table != "string")
+                                                                return false; // table is a string not an array
+                                                            if (data instanceof Array === false)
+                                                                return false; // data is array here
+                                                            var i = 0, _this = this, sql = 'INSERT OR IGNORE INTO ' + table + ' (', ij = 0;
                                                             for (var key in data[0]) {
                                                                 if (ij != 0) {
                                                                     sql += ",";
@@ -1225,7 +1498,8 @@ server_start();
                                                             return _random(8, "_" + table);
                                                         },
                                                         _init_tables: ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
-                                                            'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments', 'xiao_companies'],
+                                                            'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments',
+                                                            'xiao_companies', 'xiao_todos', 'xiao_todo_comments'],
                                                         _init_db: function(clear) {
                                                             var _this = this;
                                                             console.log("start init");
@@ -1256,7 +1530,7 @@ server_start();
                                                                     title VARCHAR(255) NOT NULL,\n\
                                                                     descr TEXT NULL,\n\
                                                                     creator_id INTEGER NOT NULL,\n\
-                                                                    companyAdres VARCHAR(255) NOT NULL,\n\
+                                                                    companyAdress VARCHAR(255) NOT NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
@@ -1268,7 +1542,7 @@ server_start();
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     title VARCHAR(255) NOT NULL,\n\
                                                                     descr TEXT NULL,\n\
-                                                                    color VARCHAR(255) NULL,\n\
+                                                                    color INTEGER NULL,\n\
                                                                     level VARCHAR(255) NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
                                                                     creationTime varchar(255) NULL,\n\
@@ -1287,7 +1561,6 @@ server_start();
                                                                     id INTEGER NULL,\n\
                                                                     name varchar(255) NOT NULL,\n\
                                                                     email varchar(100) NOT NULL,\n\
-                                                                    pwd varchar(255) NOT NULL,\n\
                                                                     avatar varchar(255) NULL,\n\
                                                                     pinyin varchar(255) NULL,\n\
                                                                     QRCode varchar(255) NULL,\n\
@@ -1334,6 +1607,38 @@ server_start();
                                                                     user_id VARCHAR(255) NOT NULL,\n\
                                                                     time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
+                                                                    read INTEGER DEFAULT 0,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
+                                                                        );
+
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_todos (\n\
+                                                                    server_id VARCHAR(255) NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL ,\n\
+                                                                    title VARCHAR(255) NOT NULL ,\n\
+                                                                    descr TEXT NULL DEFAULT NULL,\n\
+                                                                    color INTEGER NULL DEFAULT NULL,\n\
+                                                                    finished INTEGER DEFAULT 0,\n\
+                                                                    endTime DATETIME DEFAULT NULL,\n\
+                                                                    user_id INTEGER NOT NULL ,\n\
+                                                                    creator_id INTEGER NOT NULL ,\n\
+                                                                    project_id VARCHAR(255) NOT NULL ,\n\
+                                                                    update_time TIMESTAMP NULL DEFAULT NULL,\n\
+                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
+                                                                        );
+
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_todo_comments (\n\
+                                                                    server_id VARCHAR(255) NULL DEFAULT NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    content VARCHAR(255) NULL DEFAULT NULL,\n\
+                                                                    type VARCHAR(255) NOT NULL,\n\
+                                                                    server_path TEXT NULL,\n\
+                                                                    local_path TEXT NULL,\n\
+                                                                    todo_id VARCHAR(255) NOT NULL,\n\
+                                                                    user_id INTEGER NOT NULL,\n\
+                                                                    time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                                                    update_time TIMESTAMP NULL DEFAULT NULL,\n\
                                                                     read INTEGER DEFAULT 0,\n\
                                                                     company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
@@ -1808,7 +2113,7 @@ server_start();
                                                         _init_storage: function(clear) {
                                                             var _this = this,
 //                                    test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
-                                                            test_user_id = "dsadasdas1212312";
+                                                                    test_user_id = "dsadasdas1212312";
                                                             this.clear();
                                                             this.set("user_id", test_user_id);
                                                             this.set("user_name", "Igor");
@@ -2068,8 +2373,8 @@ server_start();
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-                                                SESSION: SERVER.SESSION._init_storage(1),
-//                                                SESSION: SERVER.SESSION,
+//                                                SESSION: SERVER.SESSION._init_storage(1),
+                                                SESSION: SERVER.SESSION,
 //                                                DB: SERVER.DB._init_db(1),
                                                 DB: SERVER.DB._init_db(),
                                                 PHONE: SERVER.PHONE

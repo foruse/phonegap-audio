@@ -299,14 +299,14 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 		userIndexList.appendTo(this.find(">article")[0]);
 		
 		userIndexList.attach({
-			userclick : function(e){
-				var el, targetEl = jQun(e.target);
-
-				el = targetEl.between(">ol figure>p", this);
+			clickavatar : function(e, targetEl){
+				var el = targetEl.between(">ol figure>p", this);
 
 				if(el.length > 0){
 					el.classList.toggle("selected");
 				}
+
+				e.stopPropagation();
 			}
 		});
 
@@ -333,9 +333,6 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 					});
 					clickButtonEvent.trigger(targetEl[0]);
 				}
-			},
-			clickavatar : function(e){
-				e.stopPropagation();
 			},
 			clickbutton : function(e){
 				// 隐藏遮罩

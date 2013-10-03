@@ -68,6 +68,7 @@ function onDeviceReady() {
     }
 
     function server_start() {
+        var a = new window.Event("applicationload");
 
         App_model = function(SERVER) {
             /* Private */
@@ -83,7 +84,8 @@ function onDeviceReady() {
             // Models
             // Models
             // Models
-            return Models = {
+//            return Models = {
+            Models = {
                 UsersCounter: {
                     read: function(callback) {
                         callback({count: 100000, validationImage: "src"})
@@ -123,9 +125,12 @@ function onDeviceReady() {
                     get_group_users: function(id, callback) {
                         DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_partner_groups AS g");
-                        DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
-                        DB.left_join("xiao_users AS u", "u.id = gu.user_id");
-                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                        DB.join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
+                        DB.join("xiao_users AS u", "u.id = gu.user_id");
+                        DB.join("xiao_companies AS c", "u.company_id = c.id");
+//                        DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
+//                        DB.left_join("xiao_users AS u", "u.id = gu.user_id");
+//                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('g.creator_id ="' + SESSION.get("user_id") + '"');
                         if (id != -1)
                             DB.where('g.id = "' + id + '"'); // if id is (-1) then we get ALL users in ALL groups
@@ -265,8 +270,8 @@ function onDeviceReady() {
                                 if (SESSION.get("user_id") && SESSION.get("user_pwd") && SESSION.get("user_name") && SESSION.get("user_email")) {
                                     if (SESSION.get("user_pwd") == md5(data.pwd) && SESSION.get("user_email") == data.email) {
                                         Models.User.read(function(offline_user) {
-                                            offline_user.status = 0;
-                                            callback(offline_user);
+                                           
+                                            callback({user:offline_user, status:0});
                                         });
 //                                        callback({
 //                                            status: 0
@@ -502,7 +507,6 @@ function onDeviceReady() {
                         }
                     },
                     read: function(params, callback) {
-//                        if (typeof(id) !== "function") {
                         if ("id" in params) {
                             // get inside project page
                             var result = {};
@@ -529,8 +533,6 @@ function onDeviceReady() {
                                         };
                                         project.users = [];
                                         partners.forEach(function(pp) {
-//                                            var leader = pp.isLeader == "1" ? true : false,
-//                                                    new_user = pp.isNewUser == "0" ? true : false;
                                             project.users.push({
                                                 id: pp.uid,
                                                 name: pp.name,
@@ -543,7 +545,6 @@ function onDeviceReady() {
                                                 email: pp.email,
                                                 adress: pp.adress,
                                                 isNewUser: pp.isNewUser,
-//                                                isLeader: pp.isLeader,
                                                 QRCode: pp.QRCode
                                             });
                                         });
@@ -557,7 +558,6 @@ function onDeviceReady() {
                                 DB.where('p.id ="' + params.id + '"');
 
                                 DB.row(function(creator) {
-//                                    var leader = true, new_user = true, cr_user = {};
                                     var cr_user = {};
                                     if (creator) {
                                         cr_user = {
@@ -642,21 +642,15 @@ function onDeviceReady() {
                                     if (data.project) {
                                         result.project = data.project;
                                     }
-//                                    if (data.messages) {
-//                                        result.messages = data.messages;
-//                                        result.unread = data.unread;
-//                                    }
                                     if (data.creator) {
                                         result.creator = data.creator;
                                     }
                                     if (data.users) {
                                         result.users = data.users;
                                     }
-//                                    if (result.project && result.messages && result.creator) {
                                     if (result.project && result.creator && result.users) {
                                         var res = {};
                                         res = result.project;
-//                                        res.messages = result.messages;
                                         res.creator = result.creator;
                                         res.users = result.users;
                                         res.attachments = [];
@@ -666,8 +660,6 @@ function onDeviceReady() {
                             });
                         } else {
                             // get ALL projects page
-//                            callback = id;
-//                            if(params.pageIndex && params.pageSize){
                             if ("pageIndex" in params && "pageSize" in params) {
                                 var result = [];
                                 API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
@@ -680,7 +672,6 @@ function onDeviceReady() {
                                     DB.limit(params.pageSize, (params.pageIndex - 1) * params.pageSize);
 
                                     DB.query(function(projects) {
-                                        console.log(projects)
                                         projects.forEach(function(pr) {
 
                                             DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
@@ -726,21 +717,11 @@ function onDeviceReady() {
                                                         users: partners
                                                     });
                                                     if (result.length == projects.length) {
-                                                        //                                                    callback(result);
                                                         callback({
                                                             projects: result,
-                                                            pageIndex: params.pageIndex, // number
-//                                                            pageMax : 1, // number
-                                                            pageSize: params.pageSize, // number
-                                                            emptyFolders: params.pageSize - projects.length // number
-                                                        });
-                                                        console.log("no empty folders")
-                                                        console.log({
-                                                            projects: result,
-                                                            pageIndex: params.pageIndex, // number
-//                                                            pageMax : 1, // number
-                                                            pageSize: params.pageSize, // number
-                                                            emptyFolders: params.pageSize - projects.length // number
+                                                            pageIndex: params.pageIndex,
+                                                            pageSize: params.pageSize,
+                                                            emptyFolders: params.pageSize - projects.length
                                                         });
                                                     }
                                                 });
@@ -761,7 +742,14 @@ function onDeviceReady() {
                         // Удаление проекта
                         // У меня вопрос:
                         // - удаление проекта, которое должно быть в БЕТА, что имееться ввиду под удлением(удаление самого преокта? или удаление себя из проекта? кто может это делать?)
-//                        API.remove("xiao_project", callback)
+//                        
+                        // ответ:
+                        //  Только для АДМИНА. Удаление проекта
+                        /*
+                        if(SESSION.get("isAdmin") == 1){
+                            API.remove("xiao_projects", 'id="'+id+'"', callback);
+                        }
+                        */
                     }
 
                 },
@@ -1085,13 +1073,31 @@ function onDeviceReady() {
 //                        alert(SESSION.get("user_id"));
                     }
 
+                },
+                        
+                Calendar: {
+            
+                    read : function(day, callback){
+                        var logged_user = SESSION.get("user_id");
+                        DB.select();
+                        DB.from('xiao_todos as t');
+                        DB.where('t.endTime = "'+day+'"');
+                        DB.where('(t.user_id = "'+logged_user+'" OR t.creator_id = "'+logged_user+'" )');
+//                        API.read(callback);
+                        API.read(function(data){
+                            callback({time: day, todos:data});
+                        });
+                    }
+                    
                 }
             };
             // Models
             // Models
-            // Models
+            // Models 
 
-
+            
+            window.dispatchEvent(a);
+            
         }(
                 // PRIVATE
                         // PRIVATE
@@ -2403,8 +2409,7 @@ function onDeviceReady() {
                                         );
 
 
-
-
+                                    
 //                                init_app(); // start wrapper functon
 
                             }

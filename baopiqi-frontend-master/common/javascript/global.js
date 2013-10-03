@@ -25,12 +25,14 @@ this.Global = (function(Fixed, Management, HTML){
 				});
 
 				// 首先要登录才会用登录用户的数据
-				history.go("login").login("igorizr1@gmail.com", "qwerty123");
-//				history.go("login");
+                                if(SERVER.SESSION.get("user_email")){
+                                    history.go("login").login(SERVER.SESSION.get("user_email"), "qwerty123");
+                                }else{
+                                    history.go("login");
+                                }
 			},
 			login : function(e){
 				Global.loginUser = e.loginUser;
-//				Global.history.go("workStream");
 			}
 		});
 	};

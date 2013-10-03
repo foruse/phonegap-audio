@@ -38,13 +38,17 @@ with(this){
 		type : "text" // string : "text", "voice" or "image", there are three types of message
 	};
 
-
 	this.DS_group = {
 		id : 1, // number
 		name : "group's name" // string
 	};
 
 	this.DS_project = {
+		attachments : [
+			DS_attachment,
+			//..
+			DS_attachment
+		],
 		id : 1, // number
 		level : 1, // number : from 1 to 3
 		title : "my title", // string

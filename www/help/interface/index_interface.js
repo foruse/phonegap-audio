@@ -51,6 +51,18 @@ with(window.index_dataStructure){ // from ../dataStructure/index_dataStructure.j
 			}
 		*/
 		["getPartners",			new Text("url?groupId={groupId}"),			"", true],
+
+		/*
+			{
+				params : {
+					name : "1234",
+					users : [
+						
+					]
+				}
+			}
+		*/
+		["createGroup",			new Text("url?name={name}&users={users}"),	""],
 		
 		/*
 			{
@@ -67,7 +79,20 @@ with(window.index_dataStructure){ // from ../dataStructure/index_dataStructure.j
 		["getProjects",			"url",										"", true],
 		
 		/*
-			undefined
+			{
+				params : {
+					last : 111111111, // number : time ticks
+					next : 111111111 // number : time ticks
+				},
+				return [
+					projects : [
+						DS_project,
+						// ...,
+						DS_project
+					],
+					time : 111111, // number : time ticks
+				]
+			}
 		*/
 		["getSchedules",		new Text("url?last={last}&next={next}"),	"", true],
 		
@@ -205,6 +230,37 @@ with(window.index_dataStructure){ // from ../dataStructure/index_dataStructure.j
 			}
 		*/
 		["getToDoList",			new Text("url?id={id}"),					"",	true],
+
+
+		/*
+			{
+				params : {
+					id : 123, // number : the id of the type(project or todo)
+					type : "project" // string : "project" or "todo"
+				},
+				return : [
+					DS_message,
+					// ..
+					DS_message
+				]
+			}
+		*/
+		["getMessages",			new Text("url?id={id}&type={type}"),		"", true],
+
+		/*
+			{
+				params : {
+					projectId : 1234,
+					text : "1234",
+					type : "text" // string : "text", "image" or "voice",
+					attachment : DS_attachment
+				},
+				return {
+					status : 0
+				}
+			}
+		*/
+		["addComment",			new Text("url?text={text}&type={type}"),	""]
 	]);
 }
 }(

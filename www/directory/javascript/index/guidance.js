@@ -256,7 +256,7 @@ this.CreateFirstProject = (function(){
 					CallServer.open("addProject", {
 						title : namePanel.find("input").value,
 						color : createFirstProject.find("aside>button.selected").get("colormark", "attr"),
-						descr : createFirstProject.find("li:last-child>textarea").innerHTML,
+						desc : createFirstProject.find("li:last-child>textarea").innerHTML,
 						users : []
 					}, function(data){
 						Global.history.go("invitation");
