@@ -66,6 +66,9 @@ function extend(Child, Parent) {
     Child.superclass = Parent.prototype;
 }
 
+ function trim(str){
+    return str.replace(/^\s+|\s+$/g, "");
+}
 
 function utf8_encode(str_data) {	// Encodes an ISO-8859-1 string to UTF-8
     // 
