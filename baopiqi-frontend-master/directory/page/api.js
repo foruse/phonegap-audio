@@ -156,7 +156,7 @@ function onDeviceReady() {
                         DB.remove("xiao_partner_group_users", 'user_id="' + user_id + '"', make_sync);
                         function make_sync(){
                             ++s_counter;
-                            if(s_counter === 3)API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users']);
+                            if(s_counter === 3)callback ? API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users'], callback) : API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users']);
                         }
                     }
 

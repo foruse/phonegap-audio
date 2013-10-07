@@ -1,8 +1,7 @@
 ﻿(function(Bao, StaticClass, Text, Index) {
     this.CallServer = (function(Mdls, Wait, Stroage, allHandlers) {
         function Models() {
-        }
-        ;
+        };
         Models = new StaticClass(Models);
         Models.properties({
             addProject: function(params, complete) {
@@ -30,7 +29,8 @@
                 Mdls.Partner_Groups.read(complete);
             },
             getPartners: function(params, complete) {
-                Mdls.Partner_Groups.get_group_users(params.groupId, complete);
+                params.groupId == "-1" ? Mdls.Partner.read(complete) : Mdls.Partner_Groups.get_group_users(params.groupId, complete);
+//                Mdls.Partner_Groups.get_group_users(params.groupId, complete);
             },
             // getSchedules : function(){ },
             getSingleProject: function(params, complete) {
@@ -140,8 +140,7 @@
 
 
         function CallServer() {
-        }
-        ;
+        };
         CallServer = new StaticClass(CallServer, "Bao.CallServer");
 
         CallServer.properties({
@@ -181,23 +180,23 @@
                                 letters[l] = -1;
                             });
 
-                            forEach(data, function(user) {
-                                var firstLetter = user.pinyin.substring(0, 1).toUpperCase(),
-                                        idx = letters[firstLetter];
+                            if (data.length > 0) forEach(data, function(user) {
+                                    var firstLetter = user.pinyin.substring(0, 1).toUpperCase(),
+                                            idx = letters[firstLetter];
 
-                                if (idx === -1) {
-                                    letters[firstLetter] = userListCollection.length;
-                                    userListCollection.push({
-                                        firstLetter: firstLetter,
-                                        users: [user]
-                                    });
+                                    if (idx === -1) {
+                                        letters[firstLetter] = userListCollection.length;
+                                        userListCollection.push({
+                                            firstLetter: firstLetter,
+                                            users: [user]
+                                        });
 
-                                    return;
-                                }
+                                        return;
+                                    }
 
-                                userListCollection[idx].users.push(user);
-                            });
-
+                                    userListCollection[idx].users.push(user);
+                                });
+                            
                             userListCollection.sort(function(i, n) {
                                 return charCodeAt.call(i.firstLetter) - charCodeAt.call(n.firstLetter);
                             });

@@ -68,6 +68,7 @@ function onDeviceReady() {
     }
 
     function server_start() {
+        var a = new window.Event("applicationload");
 
         App_model = function(SERVER) {
             /* Private */
@@ -83,10 +84,41 @@ function onDeviceReady() {
             // Models
             // Models
             // Models
-            return Models = {
+//            return Models = {
+            Models = {
+                Contacts: {
+                    // we do not save contacts to any DB (local or remote) as they are already stored in the phone
+                    // so we simply query them from phone
+
+                    // still an implementation of getPhoneNumber is needed
+                    // need to use a custom plugin OR user should enter the phonenumber
+                    read: function(callback) {
+                        PHONE.Contacts.read(function(contacts) {
+                            callback(contacts);
+                        });
+                    },
+                    // find: when new user appear in the compay we trigger this method(FIND) to find this user in our contact list by phone or email
+                    // 
+                    // I need to add using this method to _sync method...
+                    // if(table === "xiao_users"){
+                    //    Contacts.find(user_record, callback)
+                    // }
+                    find: function(params, callback) {
+                        // check params format needed
+                        PHONE.Contacts.filter(params, function(contacts) {
+                            callback(contacts);
+                        });
+                    },
+                    invite_via_email: function() {
+                        //  request to server
+                    },
+                    invite_via_sms: function() {
+                        //  request to server
+                    }
+                },
                 UsersCounter: {
                     read: function(callback) {
-                        callback({count: 100000, validationImage: "src"})
+                        callback({count: 100000, validationImage: "src"});
 //                        SOCKET.request("counter", {}, function(result) {
 //                            
 //                        });
@@ -97,18 +129,34 @@ function onDeviceReady() {
                     read: function(id, callback) { // if id is specified we get one partner else all partners
                         if (typeof(id) === "function") {// no id
                             callback = id;
+                            // all partners
                             DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
-                            DB.from("xiao_partners AS p");
-                            DB.left_join("xiao_users AS u", "u.id = p.partner_id");
-                            DB.left_join("xiao_companies AS c", "u.company_id = c.id");
-                            DB.where('p.user_id ="' + SESSION.get("user_id") + '"');
+                            DB.from("xiao_company_partners AS p");
+                            DB.join("xiao_users AS u", "u.id = p.user_id");
+                            DB.join("xiao_companies AS c", "u.company_id = c.id");
+                            DB.where('c.id ="' + SESSION.get("company_id") + '"'); // actually not needed
+//                            DB.where('p.user_id ="' + SESSION.get("user_id") + '"');
                             API.read(callback);
                         } else if (id) {
+                            // partner by id
                             DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                             DB.from("xiao_users AS u");
-                            DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                            DB.join("xiao_company_partners AS p", "p.company_id = u.id");
+                            DB.join("xiao_companies AS c", "p.company_id = c.id");
                             DB.where('u.id ="' + id + '"');
                             API.row(callback);
+                        }
+                    },
+                    remove: function(user_id, callback) {
+                        // remove partner from company
+//                        API.remove("xiao_company_partners", 'user_id="' + user_id + '"', callback);
+                        var s_counter = 0;
+                        DB.remove("xiao_company_partners", 'user_id="' + user_id + '"', make_sync);
+                        DB.remove("xiao_project_partners", 'user_id="' + user_id + '"', make_sync);
+                        DB.remove("xiao_partner_group_users", 'user_id="' + user_id + '"', make_sync);
+                        function make_sync(){
+                            ++s_counter;
+                            if(s_counter === 3)callback ? API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users'], callback) : API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users']);
                         }
                     }
 
@@ -123,9 +171,12 @@ function onDeviceReady() {
                     get_group_users: function(id, callback) {
                         DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_partner_groups AS g");
-                        DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
-                        DB.left_join("xiao_users AS u", "u.id = gu.user_id");
-                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                        DB.join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
+                        DB.join("xiao_users AS u", "u.id = gu.user_id");
+                        DB.join("xiao_companies AS c", "u.company_id = c.id");
+//                        DB.left_join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
+//                        DB.left_join("xiao_users AS u", "u.id = gu.user_id");
+//                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('g.creator_id ="' + SESSION.get("user_id") + '"');
                         if (id != -1)
                             DB.where('g.id = "' + id + '"'); // if id is (-1) then we get ALL users in ALL groups
@@ -265,8 +316,8 @@ function onDeviceReady() {
                                 if (SESSION.get("user_id") && SESSION.get("user_pwd") && SESSION.get("user_name") && SESSION.get("user_email")) {
                                     if (SESSION.get("user_pwd") == md5(data.pwd) && SESSION.get("user_email") == data.email) {
                                         Models.User.read(function(offline_user) {
-                                            offline_user.status = 0;
-                                            callback(offline_user);
+
+                                            callback({user: offline_user, status: 0});
                                         });
 //                                        callback({
 //                                            status: 0
@@ -297,13 +348,17 @@ function onDeviceReady() {
                         SOCKET.request("registration", data, function(result) {
                             if (result !== false) {
                                 if (result.user) {
-                                    DB.insert_with_id('xiao_users', result.user);
-                                    API._clear_tables_to_sync();
-                                    SESSION.set("user_id", result.user.id);
-                                    SESSION.set("user_name", result.user.name);
-                                    callback({
-                                        status: 0,
-                                        user: result.user
+                                    API._sync(['xiao_users', 'xiao_company_partners'], function() {
+
+                                        DB.insert_with_id('xiao_users', result.user);
+                                        API._clear_tables_to_sync();
+                                        SESSION.set("user_id", result.user.id);
+                                        SESSION.set("user_name", result.user.name);
+                                        callback({
+                                            status: 0,
+                                            user: result.user
+                                        });
+
                                     });
                                 } else if (result.error.code == 2) {
                                     console.log(result.error.message);
@@ -741,10 +796,11 @@ function onDeviceReady() {
                         // ответ:
                         //  Только для АДМИНА. Удаление проекта
                         /*
-                        if(SESSION.get("isAdmin") == 1){
-                            API.remove("xiao_projects", 'id="'+id+'"', callback);
-                        }
-                        */
+                         if(SESSION.get("isAdmin") == 1){
+                         API.remove("xiao_projects", 'id="'+id+'"', callback);
+                         }
+                         */
+                         callback ? API.remove("xiao_projects", 'id="' + id + '"', callback) : API.remove("xiao_projects", 'id="' + id + '"');;
                     }
 
                 },
@@ -945,6 +1001,9 @@ function onDeviceReady() {
                     },
                     update: function(id, data, callback) {
 
+                    },
+                    done: function(id, callback) {
+
                     }
 
                 },
@@ -1068,12 +1127,28 @@ function onDeviceReady() {
 //                        alert(SESSION.get("user_id"));
                     }
 
+                },
+                Calendar: {
+                    read: function(day, callback) {
+                        var logged_user = SESSION.get("user_id");
+                        DB.select();
+                        DB.from('xiao_todos as t');
+                        DB.where('t.endTime = "' + day + '"');
+                        DB.where('(t.user_id = "' + logged_user + '" OR t.creator_id = "' + logged_user + '" )');
+//                        API.read(callback);
+                        API.read(function(data) {
+                            callback({time: day, todos: data});
+                        });
+                    }
+
                 }
             };
             // Models
             // Models
-            // Models
+            // Models 
 
+
+            window.dispatchEvent(a);
 
         }(
                 // PRIVATE
@@ -1102,6 +1177,8 @@ function onDeviceReady() {
 
                                                         this.request("sync", data, callback);
                                                     },
+                                                    // connection code is used to make application safe from double socket events
+                                                    // normally they shouldn't appear
                                                     connection_code: function() {
                                                         return _random(12, _random(3, "_ccode"));
                                                     },
@@ -1113,7 +1190,7 @@ function onDeviceReady() {
                                                         console.log(connect_data)
                                                         console.log(typeof(connect_data.id))
                                                         console.log(this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id))
-                                                        if(connect_data.id && this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id) === -1){
+                                                        if (connect_data.id && this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id) === -1) {
                                                             console.log("update chat INITED");
                                                             this._inited_chats[connect_data['type']].push(connect_data.id);
                                                             console.log(this._inited_chats)
@@ -1424,6 +1501,26 @@ function onDeviceReady() {
                                                             }) : this._executeSQL(sql)
                                                                     );
                                                         },
+                                                        remove: function(table, where, callback) {
+                                                            var sql = 'DELETE FROM ' + table + ' WHERE ' + where;
+                                                            return (
+                                                                    callback ? this._executeSQL(sql, function() {
+                                                                        callback();
+                                                                    }) : this._executeSQL(sql)
+                                                            );
+                                                        },
+                                                        batch_remove: function(table, data, callback) {
+                                                            var sql = 'DELETE FROM ' + table + ' WHERE IN (';
+                                                            data.forEach(function(row, i){
+                                                                sql += (i == 0 ? row.id : ","+row.id);
+                                                            });
+                                                            sql+=")";
+                                                            return (
+                                                                    callback ? this._executeSQL(sql, function() {
+                                                                        callback();
+                                                                    }) : this._executeSQL(sql)
+                                                            );
+                                                        },
                                                         replace: function(table, data, callback) {
                                                             var i = 0, j = 0, sql = "", all_sql = "REPLACE INTO " + table + " ( ";
                                                             for (var str in data) {
@@ -1497,7 +1594,7 @@ function onDeviceReady() {
                                                         _make_id: function(table) {
                                                             return _random(8, "_" + table);
                                                         },
-                                                        _init_tables: ['xiao_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
+                                                        _init_tables: ['xiao_company_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
                                                             'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments',
                                                             'xiao_companies', 'xiao_todos', 'xiao_todo_comments'],
                                                         _init_db: function(clear) {
@@ -1521,40 +1618,40 @@ function onDeviceReady() {
                                                                     user_id INTEGER NOT NULL,\n\
                                                                     isLeader VARCHAR(255) NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_companies(\n\
-                                                                    server_id VARCHAR(255) NULL,\n\
-                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    id INTEGER NULL,\n\
                                                                     title VARCHAR(255) NOT NULL,\n\
                                                                     descr TEXT NULL,\n\
                                                                     creator_id INTEGER NOT NULL,\n\
                                                                     companyAdress VARCHAR(255) NOT NULL,\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
                                                                     update_time varchar(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_projects(\n\
                                                                     server_id VARCHAR(255) NULL,\n\
                                                                     id VARCHAR(255) NOT NULL,\n\
                                                                     creator_id INTEGER NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     title VARCHAR(255) NOT NULL,\n\
                                                                     descr TEXT NULL,\n\
                                                                     color INTEGER NULL,\n\
                                                                     level VARCHAR(255) NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
                                                                     creationTime varchar(255) NULL,\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
-                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partners(\n\
-                                                                    server_id VARCHAR(255) NULL,\n\
-                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_company_partners(\n\
+                                                                    id INTEGER NOT NULL,\n\
                                                                     user_id INTEGER NOT NULL,\n\
-                                                                    partner_id INTEGER NOT NULL,\n\
                                                                     update_time varchar(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_users(\n\
@@ -1568,7 +1665,8 @@ function onDeviceReady() {
                                                                     phoneNum varchar(255) NULL,\n\
                                                                     position varchar(255) NULL,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     isNewUser INTEGER NULL,\n\
                                                                     UNIQUE(id))'
                                                                         );
@@ -1578,7 +1676,8 @@ function onDeviceReady() {
                                                                     name varchar(255) NOT NULL,\n\
                                                                     creator_id VARCHAR(255) NOT NULL,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_partner_group_users (\n\
@@ -1587,14 +1686,9 @@ function onDeviceReady() {
                                                                     group_id varchar(255) NOT NULL,\n\
                                                                     user_id INTEGER NOT NULL,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
-                                                                        );
-                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS sync (\n\
-                                                                    sid INTEGER NOT NULL PRIMARY KEY,\n\
-                                                                    table_name VARCHAR( 255 ) NOT NULL,\n\
-                                                                    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
-                                                                    row_id varchar(255) NOT NULL )'
                                                                         );
                                                                 tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comments (\n\
                                                                     server_id VARCHAR(255) NULL,\n\
@@ -1608,7 +1702,8 @@ function onDeviceReady() {
                                                                     time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
                                                                     read INTEGER DEFAULT 0,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
 
@@ -1624,7 +1719,8 @@ function onDeviceReady() {
                                                                     creator_id INTEGER NOT NULL ,\n\
                                                                     project_id VARCHAR(255) NOT NULL ,\n\
                                                                     update_time TIMESTAMP NULL DEFAULT NULL,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
 
@@ -1640,7 +1736,8 @@ function onDeviceReady() {
                                                                     time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,\n\
                                                                     update_time TIMESTAMP NULL DEFAULT NULL,\n\
                                                                     read INTEGER DEFAULT 0,\n\
-                                                                    company_id VARCHAR(255) NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    deleted INTEGER DEFAULT 0,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
 
@@ -1662,12 +1759,19 @@ function onDeviceReady() {
                                                                     `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
                                                                     `row_id` varchar(255) NOT NULL )'
                                                                         );
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS sync (\n\
+                                                                    sid INTEGER NOT NULL PRIMARY KEY,\n\
+                                                                    table_name VARCHAR( 255 ) NOT NULL,\n\
+                                                                    time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                                                    row_id varchar(255) NOT NULL)'
+                                                                        );
                                                                 if (clear) {
                                                                     _this._init_tables.forEach(function(cur) {
                                                                         var sql = 'CREATE TRIGGER update_' + cur + ' AFTER UPDATE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
                                                                         tx.executeSql(sql);
                                                                         var sql = 'CREATE TRIGGER insert_' + cur + ' AFTER INSERT ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
                                                                         tx.executeSql(sql);
+//                                                                        var sql = 'CREATE TRIGGER delete_' + cur + ' BEFORE DELETE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id, deleted_flag) VALUES("' + cur + '", OLD.id, "1"); END; ';
                                                                         var sql = 'CREATE TRIGGER delete_' + cur + ' BEFORE DELETE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync_delete(table_name, row_id) VALUES("' + cur + '", OLD.id); END; ';
                                                                         tx.executeSql(sql);
                                                                     });
@@ -1701,6 +1805,13 @@ function onDeviceReady() {
                                                     /* methods to make queries to DB object */
                                                     /* methods to make queries to DB object */
 
+                                                    remove: function(table, where, callback) {
+                                                        var _this = this;
+                                                        SERVER.DB.remove(table, where, function() {
+                                                            if (callback)callback();
+                                                            _this._sync([table]);
+                                                        });
+                                                    },
                                                     read: function(callback) {
                                                         //                        console.log(SERVER.DB);
                                                         // WHEN READ sync first then EXECUTE SQL
@@ -1858,7 +1969,9 @@ function onDeviceReady() {
 
 
                                                     _check_local_DB_and_fs: function(table_name, callback) {
-                                                        var sql = 'SELECT * FROM sync as s INNER JOIN ' + table_name + ' as t ON s.row_id = t.id WHERE s.table_name ="' + table_name + '"';
+                                                        var result = {},
+                                                            sql = 'SELECT * FROM sync as s INNER JOIN ' + table_name + ' as t ON s.row_id = t.id WHERE s.table_name ="' + table_name + '"',
+                                                            sql_del = 'SELECT * FROM sync_delete WHERE table_name ="' + table_name + '"';
                                                         SERVER.DB._executeSQL(sql, function(data) {
                                                             if (table_name == "xiao_project_comments" || table_name == "xiao_todo_comments") {
                                                                 data.length > 0 ? data.forEach(function(el, i) {
@@ -1872,29 +1985,45 @@ function onDeviceReady() {
                                                                                 datadata[ijk] = new_data[ijk];
                                                                             }
                                                                             datadata['server_path'] = server_path;
-                                                                            make_callback([datadata]);
+                                                                            make_callback({updated:[datadata]});
                                                                         });
                                                                     } else if (el.type == "text") {
                                                                         if (i == (data.length - 1)) {
-                                                                            make_callback(data);
+                                                                            make_callback({updated:data});
                                                                         }
                                                                     }
                                                                     // filter removing local_path from array
 
-                                                                }) : make_callback(data);
+                                                                }) : make_callback({updated:data});
                                                             } else {
-                                                                make_callback(data);
+                                                                make_callback({updated:data});
                                                             }
 
-                                                            function make_callback(data) {
+                                                        });
+                                                        
+                                                        SERVER.DB._executeSQL(sql_del, function(del_data) {
+                                                            make_callback({deleted:del_data});
+                                                        });
+                                                        
+                                                        function make_callback(data) {
+                                                            
+                                                            if(data.updated){
+                                                                result.updated = data.updated;
+                                                            }
+                                                            
+                                                            if(data.deleted){
+                                                                result.deleted = data.deleted;
+                                                            }
+                                                            
+                                                            if(result.deleted && result.updated){
                                                                 callback({
                                                                     name: table_name,
                                                                     last_sync: SERVER.SESSION._get_sync_time(table_name),
-                                                                    updated: data, // move here
-                                                                    deleted: []
+                                                                    updated: result.updated, // move here
+                                                                    deleted: result.deleted
                                                                 });
                                                             }
-                                                        });
+                                                        }
                                                     },
                                                     _sync: function(tables, callback) {
                                                         var sync_data = [], _this = this;
@@ -1926,6 +2055,12 @@ function onDeviceReady() {
                                                                             (ij.deleted && ij.deleted.length > 0)
                                                                             ) {
                                                                         //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
+                                                                        if (ij.deleted.length > 0) {
+                                                                            SERVER.DB.batch_remove(ij.table, ij.deleted, function(){
+                                                                                _this._sync_delete_clear(ij.table);
+//                                                                                _this._sync_delete_clear(ij.table, server.info.time);
+                                                                            });
+                                                                        }
                                                                         if (ij.updated.length > 0) {
                                                                             if (ij.table == "xiao_project_comments" || ij.table == "xiao_todo_comments") {
                                                                                 SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function() {
@@ -1944,6 +2079,7 @@ function onDeviceReady() {
                                                                     function make_callback() {
                                                                         _this._sync_clear(ij.table, server.info.time);
                                                                         if (num == (changes.length - 1)) {
+                                                                            _this._sync_delete_clear();
                                                                             return (callback ? callback() : true);
                                                                         }
                                                                     }
@@ -2016,6 +2152,14 @@ function onDeviceReady() {
                                                     _sync_clear: function(table, time) {
                                                         SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "' + table + '"');
                                                         SERVER.SESSION._update_sync_time(table, time);
+                                                    },
+                                                    _sync_delete_clear: function(table, time) {
+                                                        if(table){
+                                                            SERVER.DB._executeSQL('DELETE FROM sync_delete WHERE table_name = "' + table + '"');
+                                                        }else{
+                                                            SERVER.DB._executeSQL('DELETE FROM sync_delete');
+                                                        }
+//                                                        SERVER.SESSION._update_sync_time(table, time);
                                                     }
 
                                                     /*             _request : function(url, params, callback){
@@ -2157,6 +2301,24 @@ function onDeviceReady() {
                                                             return device;
                                                         }();
 
+                                                        this.log_error = function(err, err1) {
+                                                            console.log("Phone_error");
+                                                            console.log(err);
+                                                            console.log(err1);
+//                                                            alert(err + " " + err1);
+                                                        };
+                                                        this.log_success = function() {
+                                                            console.log(" success ");
+                                                        };
+
+
+                                                    }
+                                                    ;
+                                                    /* PARENT */
+                                                    extend(Files, Phone);
+
+                                                    function Files() {
+                                                        Files.superclass.constructor.call(this);
                                                         this.fs = inited_fs; // see the start of this file
                                                         this.file_path = null;
                                                         this.short_name = null;
@@ -2169,16 +2331,6 @@ function onDeviceReady() {
                                                                 _this.short_name = fileEntry;
                                                                 callback(fileEntry.fullPath);
                                                             }, _this.log_error);
-                                                        };
-
-                                                        this.log_error = function(err, err1) {
-                                                            console.log("Phone_error");
-                                                            console.log(err);
-                                                            console.log(err1);
-//                                                            alert(err + " " + err1);
-                                                        };
-                                                        this.log_success = function() {
-                                                            console.log(" success ");
                                                         };
 
                                                         this.download = function(server_path, callback) {
@@ -2255,8 +2407,6 @@ function onDeviceReady() {
                                                             }
                                                         };
                                                     }
-                                                    ;
-                                                    /* PARENT */
 
                                                     /* Voice_message */
                                                     function VoiceMessage() {
@@ -2336,7 +2486,8 @@ function onDeviceReady() {
                                                         };
 
                                                     }
-                                                    extend(VoiceMessage, Phone);
+//                                                    extend(VoiceMessage, Phone);
+                                                    extend(VoiceMessage, Files);
                                                     /* Voice_message */
 
                                                     //                    function PhoneFiles(){
@@ -2349,10 +2500,104 @@ function onDeviceReady() {
                                                     //                    
                                                     //                    extend(PhoneFiles, Phone);
 
+                                                    function Contacts() {
+                                                        Contacts.superclass.constructor.call(this);
 
+                                                        this.filter = function(params, callback) {
+
+                                                            // ANY data format may be like this or not - the main point is that we need Object
+//                                                            var params = {
+//                                                                email   : "",
+//                                                                phone   : ""
+//                                                            };
+
+                                                            var q = [], _this = this, result = [];
+                                                            for (var el in params) {
+                                                                q.push(params[el]); // Object to array
+                                                            }
+                                                            q.forEach(function(f, i) {
+                                                                _this._getContacts(f, function(data) {
+                                                                    result.concat(data);
+                                                                    if (i == q.length)
+                                                                        callback(result);
+                                                                });
+                                                            });
+                                                        };
+
+                                                        this.read = function(callback) {
+                                                            this._getContacts(callback);
+                                                        };
+
+                                                        this._getContacts = function(filter, callback) {
+                                                            var options = new ContactFindOptions(), fields = ["name", "displayName", "nickname", "emails", "phoneNumbers"];
+                                                            options.multiple = true;
+                                                            //            var fields = ["*"];
+                                                            //            var fields = ["id","name", "displayName", "organizations","emails","phoneNumbers","addresses"];
+                                                            typeof(filter) == "function" ? callback = filter : options.filter = filter;
+                                                            navigator.contacts.find(fields, parseContacts, this.log_error, options);
+
+                                                            function parseContacts(contacts) {
+                                                                var result = [];
+                                                                if (contacts.length > 0) {
+                                                                    contacts.forEach(function(c) {
+                                                                        //get name starts
+                                                                        var name = "";
+                                                                        if (c.displayName != null) {
+                                                                            name = c.displayName;
+                                                                        } else {
+                                                                            for (var i in c.name) {
+                                                                                if (c.name[i] != null)
+                                                                                    name += c.name[i] + " ";
+
+                                                                            }
+                                                                            //                            if (trim(name) == "" && c.nickname != null) {
+                                                                            //                                name = c.nickname;
+                                                                            //                            }
+                                                                        }
+                                                                        //get name ends
+
+                                                                        //get phones starts
+//                                                                        var phones = [];
+                                                                        var phones = "";
+                                                                        if (c.phoneNumbers != null && c.phoneNumbers.length > 0) {
+                                                                            c.phoneNumbers.forEach(function(ph, i) {
+                                                                                if (ph.value != null)
+                                                                                    phones += (i == 0 ? ph.value : " | " + ph.value);
+//                                                                                    phones.push(ph.value);
+                                                                            });
+                                                                        }
+                                                                        //get phones ends
+
+                                                                        //get emails starts
+//                                                                        var emails = [];
+                                                                        var emails = "";
+                                                                        if (c.emails != null && c.emails.length > 0) {
+                                                                            c.emails.forEach(function(em, i) {
+                                                                                if (em.value != null)
+                                                                                    emails += (i == 0 ? em.value : " | " + em.value);
+//                                                                                    emails.push(em.value);
+                                                                            });
+                                                                        }
+                                                                        //get emails ends
+                                                                        result.push({
+                                                                            name: trim(name),
+                                                                            phones: phones,
+                                                                            emails: emails
+                                                                        });
+                                                                    });
+                                                                }
+                                                                callback(result);
+                                                            }
+                                                        };
+
+                                                    }
+                                                    ;
+                                                    extend(Contacts, Phone);
 
                                                     return {
-                                                        VoiceMessage: new VoiceMessage()
+                                                        VoiceMessage: new VoiceMessage(),
+                                                        Files: new Files(),
+                                                        Contacts: new Contacts()
                                                     };
 
 
@@ -2373,10 +2618,14 @@ function onDeviceReady() {
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-//                                                SESSION: SERVER.SESSION._init_storage(1),
                                                 SESSION: SERVER.SESSION,
-//                                                DB: SERVER.DB._init_db(1),
                                                 DB: SERVER.DB._init_db(),
+                                                // if it is needed to RECREATE DB AND STORAGE 
+                                                // uncomment lines below
+                                                // than comment again after refresh
+
+//                                                SESSION: SERVER.SESSION._init_storage(1),
+//                                                DB: SERVER.DB._init_db(1),
                                                 PHONE: SERVER.PHONE
 
                                             };
@@ -2384,7 +2633,6 @@ function onDeviceReady() {
                                         }()
 
                                         );
-
 
 
 
