@@ -154,9 +154,10 @@ function onDeviceReady() {
                         DB.remove("xiao_company_partners", 'user_id="' + user_id + '"', make_sync);
                         DB.remove("xiao_project_partners", 'user_id="' + user_id + '"', make_sync);
                         DB.remove("xiao_partner_group_users", 'user_id="' + user_id + '"', make_sync);
-                        function make_sync(){
+                        function make_sync() {
                             ++s_counter;
-                            if(s_counter === 3)callback ? API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users'], callback) : API._sync(['xiao_company_partners','xiao_project_partners','xiao_partner_group_users']);
+                            if (s_counter === 3)
+                                callback ? API._sync(['xiao_company_partners', 'xiao_project_partners', 'xiao_partner_group_users'], callback) : API._sync(['xiao_company_partners', 'xiao_project_partners', 'xiao_partner_group_users']);
                         }
                     }
 
@@ -722,64 +723,73 @@ function onDeviceReady() {
                                     DB.limit(params.pageSize, (params.pageIndex - 1) * params.pageSize);
 
                                     DB.query(function(projects) {
-                                        projects.forEach(function(pr) {
+                                        if (projects.length > 0) {
+                                            projects.forEach(function(pr) {
 
-                                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
-                                            DB.from("xiao_projects AS p");
-                                            DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
-                                            DB.left_join("xiao_users AS u", "u.id = p.creator_id");
-                                            DB.left_join("xiao_companies AS c", "u.company_id = c.id");
-                                            DB.where('p.id ="' + pr.id + '"');
+                                                DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                                                DB.from("xiao_projects AS p");
+                                                DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
+                                                DB.left_join("xiao_users AS u", "u.id = p.creator_id");
+                                                DB.left_join("xiao_companies AS c", "u.company_id = c.id");
+                                                DB.where('p.id ="' + pr.id + '"');
 
-                                            DB.query(function(partners) {
+                                                DB.query(function(partners) {
 
-                                                DB.select("COUNT(pc.read) as unread");
-                                                DB.from("xiao_project_comments AS pc");
-                                                DB.where('pc.project_id ="' + pr.id + '"');
-                                                DB.where('pc.read ="0"');
-                                                DB.group_by('pc.read');
+                                                    DB.select("COUNT(pc.read) as unread");
+                                                    DB.from("xiao_project_comments AS pc");
+                                                    DB.where('pc.project_id ="' + pr.id + '"');
+                                                    DB.where('pc.read ="0"');
+                                                    DB.group_by('pc.read');
 
-                                                DB.col(function(unread) {
-                                                    result.push({
-                                                        id: pr.id,
-                                                        level: pr.level,
-                                                        title: pr.title,
-                                                        color: pr.color,
-                                                        creationTime: pr.creationTime,
-                                                        unread: unread,
-                                                        descr: pr.descr,
-                                                        lastMessage: "12345",
-                                                        creator: {
-                                                            id: pr.uid,
-                                                            name: pr.name,
-                                                            pinyin: pr.pinyin,
-                                                            avatar: pr.avatar,
-                                                            company: pr.company,
-                                                            companyAdress: pr.companyAdress,
-                                                            position: pr.position,
-                                                            phoneNum: pr.phoneNum,
-                                                            email: pr.email,
-                                                            adress: pr.adress,
-                                                            isNewUser: pr.isNewUser,
-                                                            isLeader: "1",
-                                                            QRCode: pr.QRCode
-                                                        },
-                                                        users: partners
-                                                    });
-                                                    if (result.length == projects.length) {
-                                                        callback({
-                                                            projects: result,
-                                                            pageIndex: params.pageIndex,
-                                                            pageSize: params.pageSize,
-                                                            emptyFolders: params.pageSize - projects.length
+                                                    DB.col(function(unread) {
+                                                        result.push({
+                                                            id: pr.id,
+                                                            level: pr.level,
+                                                            title: pr.title,
+                                                            color: pr.color,
+                                                            creationTime: pr.creationTime,
+                                                            unread: unread,
+                                                            descr: pr.descr,
+                                                            lastMessage: "12345",
+                                                            creator: {
+                                                                id: pr.uid,
+                                                                name: pr.name,
+                                                                pinyin: pr.pinyin,
+                                                                avatar: pr.avatar,
+                                                                company: pr.company,
+                                                                companyAdress: pr.companyAdress,
+                                                                position: pr.position,
+                                                                phoneNum: pr.phoneNum,
+                                                                email: pr.email,
+                                                                adress: pr.adress,
+                                                                isNewUser: pr.isNewUser,
+                                                                isLeader: "1",
+                                                                QRCode: pr.QRCode
+                                                            },
+                                                            users: partners
                                                         });
-                                                    }
-                                                });
+                                                        if (result.length == projects.length) {
+                                                            callback({
+                                                                projects: result,
+                                                                pageIndex: params.pageIndex,
+                                                                pageSize: params.pageSize,
+                                                                emptyFolders: params.pageSize - projects.length
+                                                            });
+                                                        }
+                                                    });
 
+                                                    API._clear_tables_to_sync();
+                                                });
                                                 API._clear_tables_to_sync();
                                             });
-                                            API._clear_tables_to_sync();
-                                        });
+                                        } else {
+                                            callback({
+                                                projects: [],
+                                                pageIndex: params.pageIndex,
+                                                pageSize: params.pageSize,
+                                                emptyFolders: params.pageSize - projects.length
+                                            });
+                                        }
                                     });
                                     API._clear_tables_to_sync();
 
@@ -800,7 +810,8 @@ function onDeviceReady() {
                          API.remove("xiao_projects", 'id="'+id+'"', callback);
                          }
                          */
-                         callback ? API.remove("xiao_projects", 'id="' + id + '"', callback) : API.remove("xiao_projects", 'id="' + id + '"');;
+                        callback ? API.remove("xiao_projects", 'id="' + id + '"', callback) : API.remove("xiao_projects", 'id="' + id + '"');
+                        ;
                     }
 
                 },
@@ -1505,21 +1516,21 @@ function onDeviceReady() {
                                                             var sql = 'DELETE FROM ' + table + ' WHERE ' + where;
                                                             return (
                                                                     callback ? this._executeSQL(sql, function() {
-                                                                        callback();
-                                                                    }) : this._executeSQL(sql)
-                                                            );
+                                                                callback();
+                                                            }) : this._executeSQL(sql)
+                                                                    );
                                                         },
                                                         batch_remove: function(table, data, callback) {
                                                             var sql = 'DELETE FROM ' + table + ' WHERE id IN (';
-                                                            data.forEach(function(row, i){
-                                                                sql += (i == 0 ? '"'+row.id+'"' : ',"'+row.id+'"');
+                                                            data.forEach(function(row, i) {
+                                                                sql += (i == 0 ? '"' + row.id + '"' : ',"' + row.id + '"');
                                                             });
-                                                            sql+=")";
+                                                            sql += ")";
                                                             return (
                                                                     callback ? this._executeSQL(sql, function() {
-                                                                        callback();
-                                                                    }) : this._executeSQL(sql)
-                                                            );
+                                                                callback();
+                                                            }) : this._executeSQL(sql)
+                                                                    );
                                                         },
                                                         replace: function(table, data, callback) {
                                                             var i = 0, j = 0, sql = "", all_sql = "REPLACE INTO " + table + " ( ";
@@ -1808,7 +1819,8 @@ function onDeviceReady() {
                                                     remove: function(table, where, callback) {
                                                         var _this = this;
                                                         SERVER.DB.remove(table, where, function() {
-                                                            if (callback)callback();
+                                                            if (callback)
+                                                                callback();
                                                             _this._sync([table]);
                                                         });
                                                     },
@@ -1970,8 +1982,8 @@ function onDeviceReady() {
 
                                                     _check_local_DB_and_fs: function(table_name, callback) {
                                                         var result = {},
-                                                            sql = 'SELECT * FROM sync as s INNER JOIN ' + table_name + ' as t ON s.row_id = t.id WHERE s.table_name ="' + table_name + '"',
-                                                            sql_del = 'SELECT * FROM sync_delete WHERE table_name ="' + table_name + '"';
+                                                                sql = 'SELECT * FROM sync as s INNER JOIN ' + table_name + ' as t ON s.row_id = t.id WHERE s.table_name ="' + table_name + '"',
+                                                                sql_del = 'SELECT * FROM sync_delete WHERE table_name ="' + table_name + '"';
                                                         SERVER.DB._executeSQL(sql, function(data) {
                                                             if (table_name == "xiao_project_comments" || table_name == "xiao_todo_comments") {
                                                                 data.length > 0 ? data.forEach(function(el, i) {
@@ -1985,37 +1997,37 @@ function onDeviceReady() {
                                                                                 datadata[ijk] = new_data[ijk];
                                                                             }
                                                                             datadata['server_path'] = server_path;
-                                                                            make_callback({updated:[datadata]});
+                                                                            make_callback({updated: [datadata]});
                                                                         });
                                                                     } else if (el.type == "text") {
                                                                         if (i == (data.length - 1)) {
-                                                                            make_callback({updated:data});
+                                                                            make_callback({updated: data});
                                                                         }
                                                                     }
                                                                     // filter removing local_path from array
 
-                                                                }) : make_callback({updated:data});
+                                                                }) : make_callback({updated: data});
                                                             } else {
-                                                                make_callback({updated:data});
+                                                                make_callback({updated: data});
                                                             }
 
                                                         });
-                                                        
+
                                                         SERVER.DB._executeSQL(sql_del, function(del_data) {
-                                                            make_callback({deleted:del_data});
+                                                            make_callback({deleted: del_data});
                                                         });
-                                                        
+
                                                         function make_callback(data) {
-                                                            
-                                                            if(data.updated){
+
+                                                            if (data.updated) {
                                                                 result.updated = data.updated;
                                                             }
-                                                            
-                                                            if(data.deleted){
+
+                                                            if (data.deleted) {
                                                                 result.deleted = data.deleted;
                                                             }
-                                                            
-                                                            if(result.deleted && result.updated){
+
+                                                            if (result.deleted && result.updated) {
                                                                 callback({
                                                                     name: table_name,
                                                                     last_sync: SERVER.SESSION._get_sync_time(table_name),
@@ -2056,7 +2068,7 @@ function onDeviceReady() {
                                                                             ) {
                                                                         //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
                                                                         if (ij.deleted.length > 0) {
-                                                                            SERVER.DB.batch_remove(ij.table, ij.deleted, function(){
+                                                                            SERVER.DB.batch_remove(ij.table, ij.deleted, function() {
                                                                                 _this._sync_delete_clear(ij.table);
 //                                                                                _this._sync_delete_clear(ij.table, server.info.time);
                                                                             });
@@ -2154,9 +2166,9 @@ function onDeviceReady() {
                                                         SERVER.SESSION._update_sync_time(table, time);
                                                     },
                                                     _sync_delete_clear: function(table, time) {
-                                                        if(table){
+                                                        if (table) {
                                                             SERVER.DB._executeSQL('DELETE FROM sync_delete WHERE table_name = "' + table + '"');
-                                                        }else{
+                                                        } else {
                                                             SERVER.DB._executeSQL('DELETE FROM sync_delete');
                                                         }
 //                                                        SERVER.SESSION._update_sync_time(table, time);
