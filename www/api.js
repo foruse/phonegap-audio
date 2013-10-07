@@ -1603,8 +1603,7 @@ function onDeviceReady() {
                                                             db.transaction(createDB, error_create_DB);
                                                             function createDB(tx) {
                                                                 // DON't FORGET TO ADD TABLE TO init_tables     for test
-//                                                                if (clear) {
-                                                                if(SERVER.SESSION.get("inited_db") != "1"){
+                                                                if (clear) {
                                                                     _this._init_tables.forEach(function(drop_table) {
                                                                         tx.executeSql('DROP TABLE IF EXISTS ' + drop_table);
                                                                     });
@@ -1766,9 +1765,7 @@ function onDeviceReady() {
                                                                     time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
                                                                     row_id varchar(255) NOT NULL)'
                                                                         );
-//                                                                if (clear) {
-                                                                if(SERVER.SESSION.get("inited_db") != "1"){
-                                                                    SERVER.SESSION.set("inited_db", "1");
+                                                                if (clear) {
                                                                     _this._init_tables.forEach(function(cur) {
                                                                         var sql = 'CREATE TRIGGER update_' + cur + ' AFTER UPDATE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
                                                                         tx.executeSql(sql);
@@ -2260,23 +2257,14 @@ function onDeviceReady() {
                                                         _init_storage: function(clear) {
                                                             var _this = this,
 //                                    test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
-                                                                    test_user_id = "dsadasdas1212312",
-                                                                            inited_storage = this.get("inited_storage"),
-                                                                            inited_db = this.get("inited_db");
-                                                                            
-                                                            if(inited_storage == "1")this.set("inited_storage", "1");
-                                                            if(inited_db == "1")this.set("inited_db", "1");
+                                                                    test_user_id = "dsadasdas1212312";
+                                                            this.clear();
                                                             this.set("user_id", test_user_id);
                                                             this.set("user_name", "Igor");
                                                             this.set("company_id", 1);
-                                                            if(inited_storage != "1"){
-                                                                this.clear();
-                                                                this.set("inited_storage", "1");
-                                                                console.log("inited st")
-                                                                SERVER.DB._init_tables.forEach(function(cur) {
-                                                                    _this._update_sync_time(cur, 1);
-                                                                });
-                                                            }
+                                                            SERVER.DB._init_tables.forEach(function(cur) {
+                                                                _this._update_sync_time(cur, 1);
+                                                            });
 
                                                             return this;
                                                         }
@@ -2631,13 +2619,13 @@ function onDeviceReady() {
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
 //                                                SESSION: SERVER.SESSION,
-                                                SESSION: SERVER.SESSION._init_storage(1),
-                                                DB: SERVER.DB._init_db(),
+//                                                DB: SERVER.DB._init_db(),
                                                 // if it is needed to RECREATE DB AND STORAGE 
                                                 // uncomment lines below
                                                 // than comment again after refresh
 
-//                                                DB: SERVER.DB._init_db(1),
+                                                SESSION: SERVER.SESSION._init_storage(1),
+                                                DB: SERVER.DB._init_db(1),
                                                 PHONE: SERVER.PHONE
 
                                             };
