@@ -1510,9 +1510,9 @@ function onDeviceReady() {
                                                             );
                                                         },
                                                         batch_remove: function(table, data, callback) {
-                                                            var sql = 'DELETE FROM ' + table + ' WHERE IN (';
+                                                            var sql = 'DELETE FROM ' + table + ' WHERE id IN (';
                                                             data.forEach(function(row, i){
-                                                                sql += (i == 0 ? row.id : ","+row.id);
+                                                                sql += (i == 0 ? '"'+row.id+'"' : ',"'+row.id+'"');
                                                             });
                                                             sql+=")";
                                                             return (
