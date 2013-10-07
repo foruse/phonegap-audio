@@ -68,7 +68,7 @@ function onDeviceReady() {
     }
 
     function server_start() {
-        var a = new window.Event("applicationload");
+//        var a = new window.Event("applicationload");
 
         App_model = function(SERVER) {
             /* Private */
@@ -1159,7 +1159,7 @@ function onDeviceReady() {
             // Models 
 
 
-            window.dispatchEvent(a);
+//            window.dispatchEvent(a);
 
         }(
                 // PRIVATE
@@ -2327,7 +2327,7 @@ function onDeviceReady() {
                                                     }
                                                     ;
                                                     /* PARENT */
-                                                    extend(Files, Phone);
+                                                    
 
                                                     function Files() {
                                                         Files.superclass.constructor.call(this);
@@ -2419,7 +2419,8 @@ function onDeviceReady() {
                                                             }
                                                         };
                                                     }
-
+                                                    extend(Files, Phone);
+                                                    
                                                     /* Voice_message */
                                                     function VoiceMessage() {
                                                         VoiceMessage.superclass.constructor.call(this);
