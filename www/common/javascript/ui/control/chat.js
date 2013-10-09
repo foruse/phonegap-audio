@@ -1,4 +1,4 @@
-﻿(function(Chat, NonstaticClass, Panel, HTML, Global, set){
+﻿(function(Chat, NonstaticClass, Panel, HTML, Global, Voice, set){
 this.Attachment = (function(){
 	function Attachment(id, _src){
 		///	<summary>
@@ -90,13 +90,15 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 		// 点击信息内容区域
 		this.find(">figure>figcaption").attach({
 			userclick : function(e, targetEl){
+				// 查看图片
 				if(targetEl.between(">img", this).length > 0){
 					new ImageBox(targetEl.src)[0];
 					return;
 				}
 
+				// 播放语音
 				if(targetEl.between(">a>button", this).length > 0){
-					alert("voice");
+					Voice.play(targetEl.parent().getAttribute("voiceid"));
 					return;
 				}
 			}
@@ -427,7 +429,7 @@ this.ChatListContent = (function(MessageGroup){
 	this.MessageGroup
 ));
 
-this.ChatInput = (function(messageCompletedEvent, reader){
+this.ChatInput = (function(Global, messageCompletedEvent, reader){
 	function ChatInput(selector){
 		///	<summary>
 		///	聊天输入。
@@ -436,21 +438,44 @@ this.ChatInput = (function(messageCompletedEvent, reader){
 		var chatInput = this, imagePath = "",
 		
 			inputClassList = chatInput.classList;
-
+		
 		// 点击事件
 		this.attach({
 			userclick : function(e, targetEl){
 				if(targetEl.between(">button", this).length > 0){
 					// 移除或添加voice
 					inputClassList.toggle("voice");
-
-					// 如果有voice类，说明是语音输入状态
-					if(inputClassList.contains("voice")){
-						
-						return;
-					}
 					return;
 				}
+			},
+			touchstart : function(){
+				// 如果有voice类，说明是语音输入状态
+				if(inputClassList.contains("voice")){
+					chatInput.recordStart();
+					return;
+				}
+			},
+			recordcomplete : function(e){
+				messageCompletedEvent.setEventAttrs({
+					message : {
+						attachment : {
+							src : e.src
+						},
+						text : "",
+						time : new Date().getTime(),
+						type : "voice"
+					}
+				});
+				messageCompletedEvent.trigger(chatInput[0]);
+			}
+		});
+
+		jQun(window).attach({
+			touchend : function(){
+				chatInput.recordStop();
+			},
+			touchcancel : function(){
+				chatInput.recordStop();
 			}
 		});
 
@@ -482,7 +507,7 @@ this.ChatInput = (function(messageCompletedEvent, reader){
 					return;
 				}
 
-				if(!file.type.match(/^image\//)){
+				if(!file.name.match(/\.(png|jpg|jpeg|bmp|gif)$/)){
 					alert("请选择图像文件！");
 					this.value = "";
 					return;
@@ -499,8 +524,8 @@ this.ChatInput = (function(messageCompletedEvent, reader){
 			messageCompletedEvent.setEventAttrs({
 				message : {
 					attachment : {
-						src : this.result,
-						path : imagePath
+						base64 : this.result,
+						src : imagePath
 					},
 					text : "",
 					time : new Date().getTime(),
@@ -512,8 +537,30 @@ this.ChatInput = (function(messageCompletedEvent, reader){
 	};
 	ChatInput = new NonstaticClass(ChatInput, "Bao.UI.Control.Chat.ChatInput", Panel.prototype);
 
+	ChatInput.properties({
+		isRecording : false,
+		recordStart : function(){
+			if(this.isRecording)
+				return;
+
+			Global.mask.fillBody("", true);
+			Global.mask.show("voiceRecording");
+			Voice.recordStart(this[0]);
+			this.isRecording = true;
+		},
+		recordStop : function(){
+			if(!this.isRecording)
+				return;
+
+			Global.mask.hide();
+			Voice.recordStop();
+			this.isRecording = false;
+		}
+	});
+
 	return ChatInput.constructor;
 }(
+	Bao.Global,
 	// messageCompletedEvent
 	new jQun.Event("messagecompleted"),
 	// reader
@@ -546,6 +593,10 @@ this.ChatList = (function(ChatInput, ChatListContent, listPanelHtml){
 					isPraisedBySelf : false,
 					poster : poster
 				});
+
+				if(message.type === "image"){
+					message.attachment = { src : message.attachment.base64 };
+				}
 
 				chatListContent.appendMessageToGroup(message);
 			}
@@ -590,5 +641,6 @@ Chat.members(this);
 	Bao.API.DOM.Panel,
 	jQun.HTML,
 	Bao.Global,
+	Bao.API.Media.Voice,
 	jQun.set
 ));
