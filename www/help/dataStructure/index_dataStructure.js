@@ -25,7 +25,8 @@ with(this){
 	this.DS_attachment = {
 		id : 1, // number
 		type : "map", // string : "map", "voice" or "image"
-		src : "src.png" // string
+		src : "src.png", // string
+		from : "project" // string : "project" or "todo"
 	};
 
 	this.DS_message = {
@@ -57,28 +58,25 @@ with(this){
 		creator : DS_user,
 		creationTime : new Date().getTime(), // number : the milliseconds since 1970/01/01
 		lastMessage : "12345", // string
+		status : 1, // number : 1 or 2(1 ->> the project which user is join, 2 ->> the project which user is not join)
 		unread : 66, // number : the max is 99
 		desc : "abc" // string : description of the project
 	};
 
-	this.DS_toDoInfo = {
+	this.DS_todoInfo = {
 		id : 1,
 		title : "sss",
 		desc : "aaa",
+		user : DS_user,
 		attachments : [
 			DS_attachment,
 			// ...
 			DS_attachment
 		],
-		messages : [
-			DS_message,
-			// ...
-			DS_message
-		],
 		endTime : new Date().getTime()
 	};
 
-	this.DS_scheduleToDoInfo = {
+	this.DS_scheduleTodoInfo = {
 		title : "sss",
 		desc : "sadasda",
 		color : 1, // number : from 0 to 5(0 : orange, 1 : tan, 2 : cyan, 3 : blue, 4 : henna, 5 : purple)
@@ -89,10 +87,10 @@ with(this){
 
 	this.DS_schedule = {
 		time : 111, // number : time ticks
-		toDos : [
-			DS_scheduleToDoInfo,
+		todos : [
+			DS_scheduleTodoInfo,
 			// ...
-			DS_scheduleToDoInfo
+			DS_scheduleTodoInfo
 		]
 	};
 }

@@ -1,4 +1,4 @@
-﻿(function(Deep, NonstaticClass, StaticClass, PagePanel, CallServer){
+﻿(function(Deep, NonstaticClass, StaticClass, PagePanel, OverflowPanel, CallServer){
 this.GlobalSearch = (function(OverflowPanel, Panel, UserAnchorList, Global, forEach, config){
 	function GlobalSearch(selector, groupHtml){
 		///	<summary>
@@ -272,9 +272,9 @@ this.AboutBaoPiQi = (function(){
 	return AboutBaoPiQi.constructor;
 }());
 
-this.ToDo = (function(ChatList, OverflowPanel, Global){
-	function ToDo(selector, infoHtml){
-		var toDo = this, chatList = new ChatList(), overflowPanel = new OverflowPanel(this.find(">section")[0]);
+this.Todo = (function(ChatList, OverflowPanel, Global){
+	function Todo(selector, infoHtml){
+		var todo = this, chatList = new ChatList(), overflowPanel = new OverflowPanel(this.find(">section")[0]);
 
 		this.assign({
 			chatList : chatList,
@@ -286,7 +286,32 @@ this.ToDo = (function(ChatList, OverflowPanel, Global){
 
 		chatList.attach({
 			messageappended : function(e){
+				var message = e.message;
+
 				overflowPanel.bottom();
+
+				if(!message.isSending)
+					return;
+
+				var type = message.type, attachment = message.attachment;
+
+				attachment.resetFrom("todo");
+
+				CallServer.open(
+					"addCommentForTodo",
+					{
+						todoId : todo.id,
+						attachment : attachment,
+						text : message.text,
+						type : type
+					},
+					function(data){
+						if(type !== "voice")
+							return;
+
+						attachment.resetId(data.id);
+					}
+				);
 			},
 			clickpraise : function(e){
 				var message = e.message, loginUser = Global.loginUser;
@@ -294,7 +319,7 @@ this.ToDo = (function(ChatList, OverflowPanel, Global){
 				CallServer.open("praise", {
 					messageId : message.id,
 					userId : loginUser.id,
-					type : "toDo"
+					type : "todo"
 				}, function(){
 					message.addPraise(loginUser);
 				})
@@ -304,7 +329,7 @@ this.ToDo = (function(ChatList, OverflowPanel, Global){
 		this.find(">section>header").attach({
 			userclick : function(e, targetEl){
 				if(targetEl.between("dt>button").length > 0){
-					CallServer.open("toDoCompleted", { id : toDo.id }, function(data){
+					CallServer.open("todoCompleted", { id : todo.id }, function(data){
 						console.log(data);
 					}, true);
 					return;
@@ -312,30 +337,32 @@ this.ToDo = (function(ChatList, OverflowPanel, Global){
 			}
 		});
 	};
-	ToDo = new NonstaticClass(ToDo, "Bao.Page.Index", PagePanel.prototype);
+	Todo = new NonstaticClass(Todo, "Bao.Page.Index", PagePanel.prototype);
 
-	ToDo.override({
+	Todo.override({
 		title : "To Do"
 	});
 
-	ToDo.properties({
+	Todo.properties({
 		chatList : undefined,
 		fill : function(id){
-			var toDo = this, chatListContent = this.chatList.chatListContent;
+			var todo = this, chatListContent = this.chatList.chatListContent;
 		
-			CallServer.open("getToDo", { id : id }, function(data){
-				var figureEl = toDo.find(">section>figure");
+			CallServer.open("getTodo", { id : id }, function(data){
+				var figureEl = todo.find(">section>figure");
 
-				toDo.overflowPanel.setTop(0);
+				todo.overflowPanel.setTop(0);
 				chatListContent.clearAllMessages();
 				// 重置颜色
 				chatListContent.resetColor(project.color);
 
-				toDo.find(">section>header").innerHTML = toDo.infoHtml.render(data);
+				todo.find(">section>header").innerHTML = todo.infoHtml.render(data);
 
-				data.messages.forEach(function(msg){
-					this.appendMessageToGroup(msg);
-				}, chatListContent);
+				CallServer.open("getMessages", { id : id, type : "todo" }, function(messages){
+					messages.forEach(function(msg){
+						this.appendMessageToGroup(msg);
+					}, chatListContent);
+				});
 			});
 
 			this.id = id;
@@ -345,53 +372,70 @@ this.ToDo = (function(ChatList, OverflowPanel, Global){
 		overflowPanel : undefined
 	});
 
-	return ToDo.constructor;
+	return Todo.constructor;
 }(
 	Bao.UI.Control.Chat.ChatList,
 	Bao.API.DOM.OverflowPanel,
 	Bao.Global
 ));
 
-this.SendToDo = (function(Validation, Global, validationHandle){
-	function SendToDo(selector, infoHtml){
-		var sendToDo = this, titleBar = Global.titleBar,
+this.SendTodo = (function(UserManagementList, Validation, Global, validationHandle){
+	function SendTodo(selector){
+		var sendTodo = this, titleBar = Global.titleBar,
 		
 			titleValidation = new Validation(this.find('li[desc="title"]>input'), validationHandle),
 
-			dateValidation = new Validation(this.find('li[desc="endDate"]>input[type="text"]'), validationHandle);
+			dateValidation = new Validation(this.find('li[desc="endDate"]>input[type="text"]'), validationHandle),
+			
+			userManagementList = new UserManagementList("请选择该To Do的执行者");
 
 		this.assign({
 			dateValidation : dateValidation,
-			infoHtml : infoHtml,
-			titleValidation : titleValidation
+			titleValidation : titleValidation,
+			userManagementList : userManagementList
 		});
+
+		userManagementList.appendTo(this.header[0]);
+		userManagementList.setMaxLength(1);
 
 		// 提交按钮绑定事件
 		this.attach({
 			beforeshow : function(e){
-				titleBar.find('button[action="sendToDoCompleted"]').onuserclick = function(){
+				titleBar.find('button[action="sendTodoCompleted"]').onuserclick = function(){
+//                                    alert("touch")
+//                                        alert(dateValidation.validationEl.value);    
 					if(!titleValidation.validate())
 						return;
 
-					if(!dateValidation.validate())
+					if(!dateValidation.validate()){
 						return;
+                                        }
 
-					CallServer.open("sendToDo", {
-						attachment : [],
+					var users = userManagementList.getAllUsers();
+
+					if(users.length === 0){
+						alert("请至少选择一位用户才能发送To Do！");
+						return;
+					}
+
+					CallServer.open("sendTodo", {
+						attachments : [],
 						title : titleValidation.validationEl.value,
-						date : sendToDo.endDate.getTime(),
-						remind : sendToDo.remind ? 1 : 0,
-						desc : sendToDo.find("textarea").innerHTML
+						date : sendTodo.endDate.getTime(),
+						remind : sendTodo.remind ? 1 : 0,
+						desc : sendTodo.find("textarea").value,
+						userId : users[0],
+						projectId : sendTodo.projectId
 					}, function(data){
-						Global.history.go("toDo").fill(data.id);
+						Global.history.go("todo").fill(data.id);
 					});
 				};
 			},
 			userclick : function(e, targetEl){
-				if(targetEl.between('li[desc="remind"] button>span')){
+				if(targetEl.between('section[desc="remind"] button>span', this).length > 0){
 					var classList = targetEl.classList;
 
-					sendToDo.remind = !classList.contains("reminded");
+					sendTodo.remind = !classList.contains("reminded");
 					classList.toggle("reminded");
 					return;
 				}
@@ -401,7 +445,8 @@ this.SendToDo = (function(Validation, Global, validationHandle){
 		// 绑定日期控件事件
 		this.find('li>input[type="date"]').attach({
 			change : function(e){
-				var endDate = sendToDo = this.valueAsDate;
+//				var endDate = sendTodo = this.valueAsDate;
+				var endDate = this.valueAsDate;
 
 				this.previousElementSibling.value = endDate.toLocaleDateString();
 			},
@@ -410,48 +455,307 @@ this.SendToDo = (function(Validation, Global, validationHandle){
 			}
 		});
 	};
-	SendToDo = new NonstaticClass(SendToDo, "Bao.Page.Index.Deep.SendToDo", PagePanel.prototype);
+	SendTodo = new NonstaticClass(SendTodo, "Bao.Page.Index.Deep.SendTodo", PagePanel.prototype);
 
-	SendToDo.override({
+	SendTodo.override({
 		isNoTraces : true,
 		restore : function(){
 			var dateValidation = this.dateValidation;
 
+			this.userManagementList.clearUsers();
+			this.find('li[desc="title"]>input').value = "";
 			this.titleValidation.clearError();
 			dateValidation.clearError();
 			// 设置初始时间
 			dateValidation.validationEl.value = this.endDate.toLocaleDateString();
+			this.find('section[desc="remind"] button>span').classList.remove("reminded");
+			this.remind = false;
+			this.find("textarea").value = "";
 		},
 		title : "发送 To Do",
 		tools : [
-			{ urlname : "javascript:void(0);", action : "sendToDoCompleted" }
+			{ urlname : "javascript:void(0);", action : "sendTodoCompleted" }
 		]
 	});
 
-	SendToDo.properties({
+	SendTodo.properties({
 		dateValidation : undefined,
 		endDate : new Date(),
-		fill : function(id){
-			var sendToDo = this;
-
-			CallServer.open("getUser", { id : id }, function(data){
-				sendToDo.find(">header").innerHTML = sendToDo.infoHtml.render(data);
-			});
-		},
-		infoHtml : undefined,
+		projectId : -1,
 		// 完成时候是否提醒
 		remind : false,
-		titleValidation : undefined
+		resetProjectId : function(id){
+			this.projectId = id;
+		},
+		selectUser : function(userData){
+			var sendTodo = this;
+
+			this.userManagementList.userList.addUsers([userData]);
+		},
+		titleValidation : undefined,
+		userManagementList : undefined
 	});
 
-	return SendToDo.constructor;
+	return SendTodo.constructor;
 }(
+	Bao.UI.Control.List.UserManagementList,
 	Bao.API.DOM.Validation,
 	Bao.Global,
 	// validationHandle
 	function(inputEl){
 		return jQun.Validation.result(inputEl.value, inputEl.getAttribute("vtype"));
 	}
+));
+
+this.Archive = (function(AnchorList, Global){
+	function Archive(selector){
+		var archive = this, overflowPanel = new OverflowPanel(this.find(">section")[0]);
+
+		this.attach({
+			clickanchor : function(e){
+				e.stopPropagation();
+				Global.history.go("archivedProjectView").fill(e.anchor);
+			}
+		}, true);
+
+		CallServer.open("getAllArchives", null, function(archives){
+			archives.forEach(function(archive){
+				archive.key = archive.id;
+				archive.desc = new Date(archive.completeDate).toLocaleDateString();
+			});
+			
+			overflowPanel.innerHTML = "";
+			new AnchorList(archives, true).appendTo(overflowPanel[0]);
+
+			archives.forEach(function(archive){
+				overflowPanel.find('li[key="' + archive.id + '"]').classList.add("projectColor_" + archive.color);
+			});
+		});
+	};
+	Archive = new NonstaticClass(Archive, "Bao.Page.Index.Deep.Archive", PagePanel.prototype);
+
+	Archive.override({
+		title : "归档"
+	});
+
+	return Archive.constructor;
+}(
+	Bao.UI.Control.List.AnchorList,
+	Bao.Global
+));
+
+this.ArchivedProjectView = (function(AnchorList, Panel){
+	function TodoContent(contentHtml){
+		this.assign({
+			contentHtml : contentHtml
+		});
+	};
+	TodoContent = new NonstaticClass(TodoContent);
+
+	TodoContent.properties({
+		contentHtml : undefined,
+		create : function(id){
+			var dt;
+
+			this.data.every(function(d){
+				if(d.id == id){
+					dt = d;
+					return false;
+				}
+
+				return true;
+			});
+
+			return this.contentHtml.create(dt || {});
+		},
+		data : undefined,
+		resetData : function(data){
+			this.data = data;
+		}
+	});
+
+
+	function ArchivedProjectView(selector, attachmentsHtml, todoContentHtml){
+		var archivedProjectView = this,
+		
+			todoContent = new TodoContent.constructor(todoContentHtml);
+
+		this.assign({
+			attachmentsHtml : attachmentsHtml,
+			todoContent : todoContent
+		});
+
+		this.attach({
+			clickanchor : function(e){
+				var expendEl = archivedProjectView.find('li[key="' + e.anchor + '"]'),
+
+					classList = expendEl.classList;
+
+				e.stopPropagation();
+
+				if(classList.contains("expend")){
+					expendEl.find(">dl").remove();
+					classList.remove("expend");
+					return;
+				}
+
+				var el = archivedProjectView.find("li.expend");
+
+				if(el.length > 0){
+					el.find(">dl").remove();
+					el.classList.remove("expend");
+				}
+
+				todoContent.create(e.anchor).appendTo(expendEl[0]);
+				classList.add("expend");
+			}
+		}, true);
+
+		new OverflowPanel(this.header.find(">ul"));
+	};
+	ArchivedProjectView = new NonstaticClass(ArchivedProjectView, "Bao.Page.Deep.ArchivedProjectView", PagePanel.prototype);
+
+	ArchivedProjectView.override({
+		title : "查看归档"
+	});
+
+	ArchivedProjectView.properties({
+		attachmentsHtml : undefined,
+		fill : function(id){
+			var archiveProjectView = this;
+
+			CallServer.open("getArchivedProject", { id : id }, function(data){
+				var anchorList, anchorListData = [],
+					
+					sectionEl = archiveProjectView.section, todoList = data.todoList;
+
+				archiveProjectView.todoContent.resetData(todoList);
+
+				todoList.forEach(function(todo){
+					var t = this({}, todo);
+
+					this(t, {
+						key : todo.id,
+						desc : new Date(todo.endTime).toLocaleDateString()
+					});
+
+					anchorListData.push(t);
+				}, jQun.set);
+
+				archiveProjectView.header.find("ul").innerHTML = archiveProjectView.attachmentsHtml.render(data.project);
+				
+				sectionEl.innerHTML = "";
+				anchorList = new AnchorList(anchorListData, true);
+				anchorList.appendTo(sectionEl[0]);
+				new OverflowPanel(anchorList);
+			});
+		},
+		todoContent : undefined
+	});
+
+	return ArchivedProjectView.constructor;
+}(
+	Bao.UI.Control.List.AnchorList,
+	Bao.API.DOM.Panel
+));
+
+this.ProjectManagement = (function(UserManagementList, AnchorList, Global, anchorListData){
+	function ProjectManagement(selector){
+		var projectManagement = this,
+		
+			anchorList = new AnchorList(anchorListData),
+			
+			userManagementList = new UserManagementList("选择成员").appendTo(this.find(">header")[0]);
+
+		this.assign({
+			userManagementList : userManagementList
+		});
+
+		this.attach({
+			beforeshow : function(){
+				Global.titleBar.find('button[action="projectManagement_done"]').onuserclick = function(){
+					CallServer.open("editProjectInfo", {
+						userIds : userManagementList.userList.getAllUsers()
+					}, function(){
+						Global.history.go("singleProject").fill(projectManagement.id);
+					});
+				};
+			},
+			userclick : function(e, targetEl){
+				if(targetEl.between(">footer>button:first-child", this).length > 0){
+					if(confirm("确定将此项目归档吗？")){
+						CallServer.open("archiveProject", {
+							id : projectManagement.id
+						}, function(){
+							Global.history.go("archive");
+						});
+					}
+
+					return;
+				}
+
+				if(targetEl.between(">footer>button:last-child", this).length > 0){
+					if(confirm("确定将此项目删除吗？")){
+						CallServer.open("removeProject", {
+							id : projectManagement.id
+						}, function(){
+							Global.history.go("project");
+						});
+					}
+
+					return;
+				}
+			}
+		});
+
+		anchorList.attach({
+			clickanchor : function(e){
+				var anchor = e.anchor;
+
+				e.stopPropagation();
+
+				if(anchor === "sendTodo"){
+					Global.history.go(anchor).resetProjectId(projectManagement.id);
+					return;
+				}
+			}
+		}, true);
+
+		anchorList.appendTo(this.find(">section")[0]);
+	};
+	ProjectManagement = new NonstaticClass(ProjectManagement, "Bao.Page.Index.Deep.ProjectManagement", PagePanel.prototype);
+
+	ProjectManagement.override({
+		title : "项目管理",
+		tools : [{ urlname : "javascript:void(0);", action : "projectManagement_done" }]
+	});
+
+	ProjectManagement.properties({
+		fill : function(id){
+			var projectManagement = this;
+
+			CallServer.open("getSingleProject", { id : id }, function(data){
+				projectManagement.userManagementList.userList.addUsers(data.users);
+
+				Global.titleBar.resetTitle("项目管理：" + data.title);
+				projectManagement.id = id;
+			});
+		},
+		id : -1,
+		userManagementList : undefined
+	});
+
+	return ProjectManagement.constructor;
+}(
+	Bao.UI.Control.List.UserManagementList,
+	Bao.UI.Control.List.AnchorList,
+	Bao.Global,
+	// anchorListData
+	[
+		{ title : "发送 To Do", key : "sendTodo" } //,
+		// { title : "搜索记录", key : "" },
+		// { title : "项目二维码", key : "qrCode" }
+	]
 ));
 
 Deep.members(this);
@@ -461,5 +765,6 @@ Deep.members(this);
 	jQun.NonstaticClass,
 	jQun.StaticClass,
 	Bao.API.DOM.PagePanel,
+	Bao.API.DOM.OverflowPanel,
 	Bao.CallServer
 ));

@@ -1,9 +1,9 @@
 /*
  *  类库名称：jQun
  *  中文释义：骥群(聚集在一起的千里马)
- *  文档状态：1.0.5.9
- *  本次修改：ElementList增加removeAttribute方法
- *  开发浏览器信息：firefox 20.0+ 、 chrome 26.0+
+ *  文档状态：1.0.6.4
+ *  本次修改：对jQun、NonstaticClass、Static增加toString方法。
+ *  开发浏览器信息：firefox 20.0+ 、 chrome 26.0+、基于webkit的手机浏览器
  */
 
 (function(Object, Array, Function){
@@ -25,7 +25,7 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 		///	<summary>
 		///	返回一个通过指定选择器筛选出来的元素集合。
 		///	</summary>
-		///	<param name="_selector" type="string, element，array">选择器、html、dom元素或dom元素数组。</param>
+		///	<param name="_selector" type="string, element, array">选择器、html、dom元素或dom元素数组。</param>
 		if(jQun.isInstanceOf(this, arguments.callee)){
 			return this.creator.apply(this, arguments);
 		}
@@ -338,6 +338,12 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<param name="properties" type="object">包含一个或多个属性的键值对。</param>
 				///	<param name="_descriptor" type="object">被添加或修改属性的描述符。</param>
 				return defineProperties(this, properties, _descriptor);
+			},
+			toString : function(){
+				///	<summary>
+				///	对象字符串。
+				///	</summary>
+				return "[object jQun]";
 			}
 		});
 
@@ -415,6 +421,15 @@ this.NonstaticClass = NonstaticClass = (function(){
 	};
 	NonstaticClass = new jQun(NonstaticClass, "NonstaticClass");
 
+	NonstaticClass.override({
+		toString : function(){
+			///	<summary>
+			///	对象字符串。
+			///	</summary>
+			return "[NonstaticClass " + this.constructor.name + "]";
+		}
+	});
+
 	return NonstaticClass.constructor;
 }());
 
@@ -443,6 +458,15 @@ this.StaticClass = StaticClass = (function(){
 		return NewClass;
 	};
 	StaticClass = new jQun(StaticClass, "StaticClass");
+
+	StaticClass.override({
+		toString : function(){
+			///	<summary>
+			///	对象字符串。
+			///	</summary>
+			return "[StaticClass " + this.constructor.name + "]";
+		}
+	});
 
 	return StaticClass.constructor;
 }());
@@ -490,8 +514,9 @@ this.Browser = (function(){
 	Browser = new StaticClass(Browser, "jQun.Browser", {
 		agent : "unkown",
 		isMobile : false,
+		majorVersion : "0",
 		version : "0"
-	}, { enumerable : true });
+	});
 
 	return Browser;
 }());
@@ -632,15 +657,25 @@ this.Namespace = (function(){
 		///	<summary>
 		///	开辟一个命名空间。
 		///	</summary>
-		return Object.create(this.self);
+		
+		//return Object.create(this.self);
 	};
 	Namespace = new NonstaticClass(Namespace, "Namespace");
 
 	Namespace.properties({
+		/*
 		self : Namespace.properties.call(Object.create(null), {
 			constructor : Namespace.constructor,
 			members : Namespace.assign
 		})
+		*/
+		members : function(members){
+			///	<summary>
+			///	给该命名空间赋予成员。
+			///	</summary>
+			this.assign(members);
+			return this;
+		}
 	});
 
 	return Namespace.constructor;
@@ -836,7 +871,7 @@ this.RequestConnection = (function(Text, Cache, JSON, toUpperCase, getEncodedPar
 		isPost : false,
 		name : "",
 		url : ""
-	}, { enumerable : true });
+	});
 
 	RequestConnection.properties({
 		open : function(name, params, complete, responseType, isTesting){
@@ -953,7 +988,7 @@ this.RequestHeader = (function(){
 	RequestHeader.properties({
 		name : "Content-type",
 		value : "application/x-www-form-urlencoded"
-	}, { enumerable : true });
+	});
 
 	RequestHeader.properties({
 		addTo : function(request){
@@ -1035,7 +1070,7 @@ this.Ajax = (function(Storage, RequestHeader, RequestConnection){
 	};
 	Ajax = new StaticClass(Ajax, "jQun.Ajax", {
 		enabled : false
-	}, { enumerable : true });
+	});
 
 	Ajax.properties({
 		RequestHeader : RequestHeader,
@@ -1257,7 +1292,7 @@ this.CSSPropertyCollection = (function(){
 		}
 	});
 
-	forEach(getComputedStyle(document.createElement("div")), function(value, name, CSSStyle){
+	forEach(getComputedStyle(document.documentElement), function(value, name, CSSStyle){
 		// firefox、chrome 与 IE 的 CSSStyleDeclaration 结构都不一样
 		var cssName = isNaN(name - 0) ? name : value;
 
@@ -1561,7 +1596,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 	jQun.toArray
 ));
 
-this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, window, selectorRegx){
+this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, window, selectorRegx, setter){
 	function ElementList(_selector, _parent){
 		///	<summary>
 		///	通过指定选择器筛选元素。
@@ -1590,7 +1625,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 				elements = _parent.querySelectorAll(_selector);
 			} catch(e){
 				if(_parent === doc){
-					console.error('document不支持选择器："' + _selector + '"');
+					console.error('document 不支持选择器："' + _selector + '"');
 					return;
 				}
 
@@ -1652,6 +1687,16 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 
 			return list;
 		},
+		blur : function(){
+			///	<summary>
+			///	让聚焦元素的失去焦点。
+			///	</summary>
+			this.forEach(function(element){
+				element.blur();
+			});
+
+			return this;
+		},
 		del : function(name, _type){
 			///	<summary>
 			///	将指定属性从集合的所有元素中删除。
@@ -1671,6 +1716,34 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			this.forEach(function(element){
 				delete element[name];
 			});
+			return this;
+		},
+		find : function(_selector){
+			///	<summary>
+			///	通过选择器查找子孙元素。
+			///	</summary>
+			///	<param name="_selector" type="string">选择器。</param>
+			var source = ElementList.constructor.source, list = this.createList();
+
+			this.forEach(function(htmlElement){
+				source.call(list, _selector, htmlElement);
+			});
+
+			if(this.length < 2)
+				return list;
+
+			return list.distinct();
+		},
+		focus : function(){
+			///	<summary>
+			///	聚焦元素。
+			///	</summary>
+			var length = this.length;
+
+			if(length > 0){
+				this[length - 1].focus();
+			}
+
 			return this;
 		},
 		get : function(name, _type){
@@ -1700,22 +1773,6 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	</summary>
 			///	<param name="name" type="string">属性名。</param>
 			return window.getComputedStyle(this[0])[name];
-		},
-		find : function(_selector){
-			///	<summary>
-			///	通过选择器查找子孙元素。
-			///	</summary>
-			///	<param name="_selector" type="string">选择器。</param>
-			var source = ElementList.constructor.source, list = this.createList();
-
-			this.forEach(function(htmlElement){
-				source.call(list, _selector, htmlElement);
-			});
-
-			if(this.length < 2)
-				return list;
-
-			return list.distinct();
 		},
 		parent : function(){
 			///	<summary>
@@ -1794,6 +1851,15 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 	});
 
 	ElementList.properties({
+		article : {
+			get : function(){
+				///	<summary>
+				///	获取元素的章节部分(直接子元素标签：article)。
+				///	</summary>
+				return this.find(">article");
+			},
+			set : setter
+		},
 		children : {
 			get : function(){
 				///	<summary>
@@ -1824,6 +1890,33 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 				///	<param name="className" type="string">需要设置的class字符串。</param>
 				this.set("className", className);
 			}
+		},
+		footer : {
+			get : function(){
+				///	<summary>
+				///	获取元素的脚部(直接子元素标签：footer)。
+				///	</summary>
+				return this.find(">footer");
+			},
+			set : setter
+		},
+		header : {
+			get : function(){
+				///	<summary>
+				///	获取元素的头部(直接子元素标签：header)。
+				///	</summary>
+				return this.find(">header");
+			},
+			set : setter
+		},
+		section : {
+			get : function(){
+				///	<summary>
+				///	获取元素的段落部分(直接子元素标签：section)。
+				///	</summary>
+				return this.find(">section");
+			},
+			set : setter
 		}
 	}, { gettable : true, settable : true });
 
@@ -1834,7 +1927,15 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 	this.ClassListCollection,
 	window,
 	// selectorRegx
-	/([\#\.])([^\s\:\#\.\,\+\~\[\>\(\)]+)/g
+	/([\#\.])([^\s\:\#\.\,\+\~\[\>\(\)]+)/g,
+	// setter
+	function(element){
+		///	<summary>
+		///	设置元素的对应部分。
+		///	</summary>
+		///	<param name="element" type="element">需要设置元素的对应部分，标签应为对应标签。</param>
+		this.createList(element).insertTo(this[0], 0);
+	}
 ));
 
 this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty){
@@ -1904,7 +2005,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	隐藏元素。
 			///	</summary>
-			return this.set("display", "none", "css");
+			return this.setCSSPropertyValue("display", "none");
 		},
 		metrics : function(name, _value){
 			///	<summary>
@@ -1920,7 +2021,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 				_value += "px";
 			}
 
-			this.set(name, _value, "css");
+			this.setCSSPropertyValue(name, _value);
 			return this;
 		},
 		rect : function(_name){
@@ -1937,7 +2038,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	显示元素。
 			///	</summary>
 			///	<param name="_display" type="string">修改元素display的css值。</param>
-			return this.set("display", _display || "block", "css");
+			return this.setCSSPropertyValue("display", _display || "block");
 		},
 		width : function(w){
 			///	<summary>
@@ -1965,7 +2066,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 	}
 ));
 
-this.Event = (function(HTMLElementList, window, define, set, toArray){
+this.Event = (function(HTMLElementList, EventTarget, window, define, set, toArray){
 	function Event(name, _init, _type, _initEventArgs){
 		///	<summary>
 		///	DOM事件类。
@@ -1992,13 +2093,29 @@ this.Event = (function(HTMLElementList, window, define, set, toArray){
 			///	应该附加该事件的标签。
 			///	</summary>
 			///	<param name="target" type="string, element">标签名称。</param>
-			var name = this.name, attach = HTMLElementList.prototype.attach;
+			var t = [], name = this.name, attach = HTMLElementList.prototype.attach;
 
-			/* 以后用EventTarget优化此方法 */
+			if(typeof target === "string"){
+				if(target === "*"){
+					if(EventTarget){
+						t.push(EventTarget.prototype);
+					}
+					else {
+						t.push(Node.prototype, window.constructor.prototype);
+					}
+
+					t.push(HTMLElementList.prototype);
+				}
+				else {
+					t.push(document.createElement(target).constructor.prototype);
+				}
+			}
+			else {
+				t.push(target);
+			}
+
 			forEach(
-				typeof target === "string" ?
-					target === "*" ? [Node.prototype, Window.prototype, HTMLElementList.prototype] : [document.createElement(target).constructor.prototype] :
-					[target],
+				t,
 				function(tg){
 					define(tg, "on" + name, this,	{ settable : true, gettable : true });
 				},
@@ -2047,19 +2164,19 @@ this.Event = (function(HTMLElementList, window, define, set, toArray){
 	return Event.constructor;
 }(
 	this.HTMLElementList,
+	window.EventTarget,
 	window,
 	jQun.define,
 	jQun.set,
 	jQun.toArray
 ));
 
-this.HTML = (function(HTMLElementList, sRegx, fRegx, tReplace){
-	function HTML(str, _isId){
+this.HTML = (function(HTMLElementList, HTMLElement, sRegx, fRegx, tReplace){
+	function HTML(template){
 		///	<summary>
 		///	html模板。
 		///	</summary>
-		///	<param name="str" type="string">html模板源字符串。</param>
-		///	<param name="_isId" type="boolean">给定的字符串是否为id。</param>
+		///	<param name="template" type="string, HTMLElement, jQun.HTMLElementList">html模板源字符串或标签(一般为script标签)。</param>
 
 		// 此类代码还需优化
 		var arr = [], variables = {};
@@ -2069,7 +2186,7 @@ this.HTML = (function(HTMLElementList, sRegx, fRegx, tReplace){
 		arr.push(
 			// 使用Text类的replace替换参数
 			tReplace.call({
-				text : (_isId === true ? new HTMLElementList("#" + str).innerHTML : str)
+				text : (typeof template === "string" ? template : template.innerHTML)
 					// 给单引号加保护
 					.split("'").join("\\'")
 					// 替换掉特殊的空白字符
@@ -2156,6 +2273,7 @@ this.HTML = (function(HTMLElementList, sRegx, fRegx, tReplace){
 	return HTML.constructor;
 }(
 	this.HTMLElementList,
+	HTMLElement,
 	// sRegx => space(查找特殊的空白字符)
 	/[\r\t\n]/g,
 	// fRegx => for(查找for语句)

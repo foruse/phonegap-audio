@@ -30,8 +30,11 @@ this.Bao = (function(Bao){
 				Deep : new Namespace({ // ../../directoy/javascript/index/deep.js
 					AboutBaoPiQi : null,
 					Account : null,
+					Archive : null,
+					ArchivedProjectView : null,
+					ProjectManagement : null,
 					QRCode : null,
-					ToDo : null
+					Todo : null
 				}),
 				Guidance : new Namespace({ // ../../directory/javascript/index/guidance.js
 					CreateFirstProject : null,
@@ -51,13 +54,14 @@ this.Bao = (function(Bao){
 					AddProject : null,
 					BusinessCard : null,
 					SingleProject : null,
+					SystemContacts : null,
 					SystemOption : null
 				}),
 				SingleProject : new Namespace({ // ../../directoy/javascript/index/singleProject.js
 					Discussion : null,
 					Header : null,
 					Self : null,
-					ToDoList : null
+					TodoList : null
 				})
 			})
 		}),
@@ -78,7 +82,6 @@ this.Bao = (function(Bao){
 				Chat : new Namespace().members({ // ui/control/chat.js
 					Attachment : null,
 					ChatInput : null,
-					ChatList : null,
 					ChatListContent : null,
 					ImageBox : null,
 					Message : null,
@@ -96,6 +99,7 @@ this.Bao = (function(Bao){
 					UserAnchorList : null,
 					UserIndexList : null,
 					UserList : null,
+					UserManagementList : null,
 					UserSelectionList : null
 				}),
 				Time : new Namespace().members({ // ui/control/time.js

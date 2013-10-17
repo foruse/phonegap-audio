@@ -41,7 +41,7 @@ this.EventCollection = (function(Timer, IntervalTimer, isMobile, childGestureCon
 				var touch = e.touches[0], pageX = touch.pageX, pageY = touch.pageY;
 
 				userGesture.setEventAttrs("continuous", pageX - lastX, pageY - lastY);
-				userGesture.trigger(target);
+				userGesture.trigger(e.target);
 
 				lastX = pageX;
 				lastY = pageY;
@@ -107,11 +107,15 @@ this.EventCollection = (function(Timer, IntervalTimer, isMobile, childGestureCon
 		userclick : new Event("userclick", function(){
 			var userClick = this, abs = Math.abs;
 
-			windowEl.attach(isMobile ? {
-					click : function(e){
-						userClick.trigger(e.target);
-					}
-				} : {
+			windowEl.attach(
+				/* MY PROJECTS页面，iPhone不兼容，用原生态的click居然不能点击..........
+					isMobile ? {
+						click : function(e){
+							userClick.trigger(e.target);
+						}
+					} :
+				*/
+				{
 					fastgesture : function(e){
 						// 如果任何一方向上的偏移量大于10，就不算click
 						if(abs(e.gestureOffsetY) > 10 || abs(e.gestureOffsetX > 10))
@@ -244,8 +248,9 @@ this.OverflowPanel = (function(Panel, IntervalTimer, setTopEvent, leaveborder){
 		this.assign({
 			panelStyle : panelStyle
 		});
-
+		
 		this.set("overflow", "", "attr");
+		
 		panelStyle.position = "relative";
 
 		this.attach({
@@ -255,7 +260,7 @@ this.OverflowPanel = (function(Panel, IntervalTimer, setTopEvent, leaveborder){
 			},
 			continuousgesture : function(e){
 				var top = overflowPanel.getTop() + e.gestureOffsetY;
-
+				
 				if(e.isLastOfGestureType){
 					isLeaveborder = false;
 
@@ -312,7 +317,7 @@ this.OverflowPanel = (function(Panel, IntervalTimer, setTopEvent, leaveborder){
 		panelStyle : undefined,
 		setTop : function(top){
 			this.panelStyle.top = Math.round(top) + "px";
-
+			
 			setTopEvent.setEventAttrs({
 				overflowPanel : this
 			});

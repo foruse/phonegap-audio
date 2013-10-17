@@ -1,9 +1,11 @@
 ﻿.anchorList li {
-	height : 45px;
-	padding : 8px 18px 0 18px;
+	height : 50px;
+	padding : 8px 18px 5px 18px;
 }
 .anchorList[descriptstatus="hide"] li {
 	padding-top : 12px;
+	height : 45px;
+	padding-bottom : 0;
 }
 .anchorList li:last-child {
 	border : none;
@@ -17,7 +19,6 @@
 	position : absolute;
 }
 .anchorList aside {
-	min-width : 245px;
 	height : 100%;
 	right : 7px;
 	left : 0;
@@ -32,6 +33,8 @@
 }
 .anchorList aside dd {
 	height : 16px;
+	text-overflow : ellipsis;
+	overflow : hidden;
 }
 .anchorList[descriptstatus="hide"] aside dd {
 	display : none;
@@ -53,7 +56,7 @@
 }
 .anchorList a {
 	display : block;
-	background : url(../../common/image/width12.png) 0 -90px no-repeat;
+	background : url(../image/width12.png) 0 -90px no-repeat;
 	height : 100%;
 	width : 100%;
 }
@@ -167,6 +170,7 @@
 .userManagementList {
 	overflow : hidden;
 	min-height : 74px;
+	padding : 10px 5px;
 }
 .userManagementList dt {
 	width : 112px;
@@ -185,7 +189,7 @@
 	padding : 13px;
 	margin-right : 8px;
 	box-shadow : none;
-	background : url(../../../common/image/width24.png) 1px -149px no-repeat content-box content-box;
+	background : url(../image/width24.png) 1px -149px no-repeat content-box content-box;
 }
 .userManagementList dt > button:last-child {
 	background-position : 1px -169px;
@@ -215,6 +219,10 @@
 .levelAnchorList aside dd {
 	height : 10px;
 }
+.levelAnchorList > ul > li {
+	height : 45px;
+	padding-bottom : 0;
+}
 
 
 .userSelectionList > header , .userSelectionList .userIndexList aside {
@@ -233,14 +241,14 @@
 	padding-left : 18px;
 	line-height : 18px;
 	text-indent : 5px;
-	background : url(../../common/image/width24.png) 0 -200px no-repeat;
+	background : url(../image/width24.png) 0 -200px no-repeat;
 }
 .userSelectionList > header > button {
 	float : right;
 	position : relative;
 	top : -48px;
 	left : 22px;
-	background-image : url(../../../common/image/width24.png);
+	background-image : url(../image/width24.png);
 	background-position : 6px -219px;
 }
 .userSelectionList > article {
@@ -278,7 +286,7 @@
 	border : 12px solid #f1af0f;
 	border-radius : 48px;
 	margin-top : -15px;
-	background : #f1af0f url(../../common/image/width24.png) 3px -247px no-repeat;
+	background : #f1af0f url(../image/width24.png) 3px -247px no-repeat;
 }
 
 .inputSelectionList > header > input {

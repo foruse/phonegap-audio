@@ -10,7 +10,7 @@
 	margin : 0 auto;
 }
 .loadingBar[type="loading"] > dl > dt {
-	background : url(../image/width24.png) no-repeat 0 -75px;
+	background : url(../../../common/image/width24.png) no-repeat 0 -75px;
 	-webkit-animation : loading 1s steps(14) infinite;
 }
 @-webkit-keyframes loading {

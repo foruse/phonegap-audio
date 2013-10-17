@@ -8,13 +8,23 @@ this.Loader = (function(Storage, Index, HTML){
 			return new Index.Deep.AboutBaoPiQi("#aboutBaoPiQi");
 		},
 		account : function(){
-			return new Index.Deep.Account("#account", new HTML("account_html", true));
+			return new Index.Deep.Account("#account", new HTML(jQun("#account_html")));
 		},
 		addProject : function(){
 			return new Index.Secondary.AddProject("#addProject");
 		},
+		archive : function(){
+			return new Index.Deep.Archive("#archive");
+		},
+		archivedProjectView : function(){
+			return new Index.Deep.ArchivedProjectView(
+				"#archivedProjectView",
+				new HTML(jQun("#archivedProjectView_attachments_html")),
+				new HTML(jQun("#archivedProjectView_todo_html"))
+			);
+		},
 		businessCard : function(){
-			return new Index.Secondary.BusinessCard("#businessCard", new HTML("businessCard_html", true));
+			return new Index.Secondary.BusinessCard("#businessCard", new HTML(jQun("#businessCard_html")));
 		},
 		createFirstProject : function(){
 			this.load("guidance");
@@ -22,17 +32,17 @@ this.Loader = (function(Storage, Index, HTML){
 		},
 		discussion : function(){
 			this.load("singleProject");
-			return new Index.SingleProject.Discussion("#discussion", new HTML("discussion_info_html", true));
+			return new Index.SingleProject.Discussion("#discussion", new HTML(jQun("#discussion_info_html")));
 		},
 		globalSearch : function(){
-			return new Index.Deep.GlobalSearch("#globalSearch", new HTML("globalSearch_group_html", true));
+			return new Index.Deep.GlobalSearch("#globalSearch", new HTML(jQun("#globalSearch_group_html")));
 		},
 		guidance : function(){
 			return new Index.Guidance.Self("#guidance");
 		},
 		invitation : function(){
 			this.load("guidance");
-			return new Index.Guidance.Invitation("#invitation", new HTML("invitation_html", true));
+			return new Index.Guidance.Invitation("#invitation", new HTML(jQun("#invitation_html")));
 		},
 		load : function(name){
 			var pagePanel = this.pageStorage.get(name);
@@ -50,21 +60,24 @@ this.Loader = (function(Storage, Index, HTML){
 		pageStorage : new Storage(),
 		partner : function(){
 			this.load("spp");
-			return new Index.SPP.Partner("#partner", new HTML("spp_partnerGroups_html", true));
+			return new Index.SPP.Partner("#partner", new HTML(jQun("#spp_partnerGroups_html")));
 		},
 		project : function(){
 			this.load("spp");
-			return new Index.SPP.Project("#project", new HTML("spp_project_html", true));
+			return new Index.SPP.Project("#project", new HTML(jQun("#spp_project_html")));
+		},
+		projectManagement : function(){
+			return new Index.Deep.ProjectManagement("#projectManagement");
 		},
 		qrCode : function(){
-			return new Index.Deep.QRCode("#QRCode", new HTML("QRCode_html", true));
+			return new Index.Deep.QRCode("#QRCode", new HTML(jQun("#QRCode_html")));
 		},
 		schedule : function(){
 			this.load("spp");
-			return new Index.SPP.Schedule("#schedule", new HTML("spp_scheduleSign_html", true));
+			return new Index.SPP.Schedule("#schedule", new HTML(jQun("#spp_scheduleSign_html")));
 		},
-		sendToDo : function(){
-			return new Index.Deep.SendToDo("#sendToDo", new HTML("sendToDo_info_html", true));
+		sendTodo : function(){
+			return new Index.Deep.SendTodo("#sendTodo");
 		},
 		spp : function(){
 			return new Index.SPP.Self("#SPP");
@@ -72,19 +85,22 @@ this.Loader = (function(Storage, Index, HTML){
 		singleProject : function(){
 			return new Index.SingleProject.Self("#singleProject");
 		},
+		systemContacts : function(){
+			return new Index.Secondary.SystemContacts("#systemContacts", new HTML(jQun("#systemContacts_html")));
+		},
 		systemOption : function(){
 			return new Index.Secondary.SystemOption("#systemOption");
 		},
-		toDo : function(){
-			return new Index.Deep.ToDo("#toDo", new HTML("toDo_info_html", true));
+		todo : function(){
+			return new Index.Deep.Todo("#todo", new HTML(jQun("#todo_info_html")));
 		},
-		toDoList : function(){
+		todoList : function(){
 			this.load("singleProject");
-			return new Index.SingleProject.ToDoList("#toDoList");
+			return new Index.SingleProject.TodoList("#todoList");
 		},
 		workStream : function(){
 			this.load("singleProject");
-			return new Index.SingleProject.WorkStream("#workStream", new HTML("workStream_info_html", true));
+			return new Index.SingleProject.WorkStream("#workStream", new HTML(jQun("#workStream_info_html")));
 		}
 	});
 
@@ -104,14 +120,19 @@ this.History = (function(List, Loader, redirectEvent){
 			///	<summary>
 			///	回到上一个记录。
 			///	</summary>
-			this.go(this[this.length - 1].opener, true);
+			this.go(this[this.length - 2], true);
 		},
-		getNameByIndex : function(idx){
+		clear : function(_name){
 			///	<summary>
-			///	通过索引获取相对应历史记录名称。
+			///	清除所有记录。
 			///	</summary>
-			///	<param name="idx" type="number">对其添加或修改属性的对象。</param>
-			return idx < this.length && idx > -1 ? this[idx].self : undefined;
+			if(!_name){
+				return this.splice(0);
+			}
+
+			var idx = this.indexOf(_name);
+
+			return idx > -1 ? this.splice(idx, 1) : "";
 		},
 		go : function(name, _isBack){
 			///	<summary>
@@ -127,55 +148,41 @@ this.History = (function(List, Loader, redirectEvent){
 			// 如果是当前页，或者记录条数为0
 			if(lastIdx > -1){
 				if(idx === lastIdx){
-					return Loader.pageStorage[this[idx].self];
+					return Loader.pageStorage[this[idx]];
 				}
 				else {
 					// 隐藏上一个panel
-					Loader.pageStorage[this.getNameByIndex(lastIdx)].hide();
+					Loader.pageStorage[this[lastIdx]].hide();
 				}
 			}
 
-			var panel, old;
+			var panel;
 
 			redirectEvent.trigger(window);
 
 			if(idx > -1){
-				panel = Loader.pageStorage[this[idx].self];
+				panel = Loader.pageStorage[this[idx]];
+
+				if(_isBack){
+					this.splice(idx + 1);
+				}
+				else {
+					this.push(this.splice(idx, 1)[0]);
+				}
+
 				// 显示当前的panel
 				panel.show(null, _isBack);
-				old = this.splice(idx, 1);
-				lastIdx = lastIdx - 1;
 			}
 			else {
 				// 加载、初始化新panel信息
 				panel = Loader.load(name);
 				panel.show();
+				this.push(name);
 			}
-
-			this.push({
-				self : name,
-				opener : _isBack ? (old ? old.name : null) : this.getNameByIndex(lastIdx)
-			});
+			
 			return panel;
 		},
 		homePage : "project"
-	});
-
-	History.override({
-		indexOf : function(name){
-			var idx = -1;
-
-			this.every(function(item, i){
-				if(item.self === name){
-					idx = i;
-					return false;
-				}
-				
-				return true;
-			});
-
-			return idx;
-		}
 	});
 
 	return History.constructor;
@@ -235,10 +242,10 @@ this.Timer = (function(setTimeout, clearTimeout){
 			if(this.isEnabled)
 				return;
 
-			this.assign({
-				index : -1,
-				isEnabled : true
-			});
+			var timer = this;
+
+			this.index = -1;
+			this.isEnabled = true;
 
 			// 设置计时器
 			this.index = setTimeout(function(){
@@ -247,7 +254,7 @@ this.Timer = (function(setTimeout, clearTimeout){
 				if(!_ontimeout)
 					return;
 
-				_ontimeout();
+				_ontimeout.call(timer);
 			}.bind(this), this.timeout || 200);
 		}
 	});
@@ -267,7 +274,7 @@ this.IntervalTimer = (function(Timer){
 	IntervalTimer.override({
 		start : function(oninterval, _times){
 			///	<summary>
-			///	开始计时器，该计时器需要人为手动停止。
+			///	开始计时器，如果为无限循环，则该计时器需要人为手动停止。
 			///	</summary>
 			///	<param name="oninterval" type="function">间隔时间所执行的函数。</param>
 			///	<param name="_times" type="number">执行次数。</param>
@@ -293,7 +300,7 @@ this.IntervalTimer = (function(Timer){
 				}
 
 				// 执行间隔函数
-				oninterval(i);
+				oninterval.call(this, i);
 
 				// 如果该计时器在oninterval函数内被中断，就return
 				if(!intervalTimer.isEnabled)

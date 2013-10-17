@@ -5,7 +5,7 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 			dateData : data
 		}));
 
-		new LevelAnchorList(data.toDos).appendTo(this.find("dd")[0]);
+		new LevelAnchorList(data.todos).appendTo(this.find("dd")[0]);
 	};
 	Grouping = new NonstaticClass(Grouping, null, Panel.prototype);
 
@@ -20,12 +20,13 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 		// 初始化日程信息的滚动效果
 		this.attach({
 			continuousgesture : function(e){
-				return;
 				var date = new Date(dateTable.getFocused().get("time", "attr") - 0),
 				
 					top = scheduleContent.get("top", "css").split("px").join("") - 0 || 0;
-
+					
+				// 如果top小于0，说明滚动区域上方还有一部分未显示
 				if(top < 0){
+					// 如果高度加上top小于父容器高度，说明离开底部
 					if(scheduleContent.height() + top <= scheduleContent.parent().height()){
 						date.setDate(date.getDate() + 1);
 					}
@@ -34,19 +35,25 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 
 							pointEl = jQun(document.elementFromPoint(rect.left + scheduleContent.width() / 2, rect.top + 20)).between(">li", this);
 
-						if(pointEl[0] !== topLi){
+						// 如果对应日期元素切换（即日期切换），而且是向上滑动
+						if(pointEl[0] !== topLi && e.gestureOffsetY < 0){
 							topLi = pointEl[0];
 							date = new Date(pointEl.get("time", "attr") - 0);
 						}
 					}
 				}
+				// 如果滚动区域上方已经全部显示
 				else {
 					date.setDate(date.getDate() - 1);
 				}
 				
 				dateTable.focus(date);
+			},
+			clickanchor : function(e){
+				e.stopPropagation();
+				Global.history.go("todo").fill(e.anchor);
 			}
-		});
+		}, true);
 	};
 	ScheduleContent = new NonstaticClass(ScheduleContent, null, OverflowPanel.prototype);
 
@@ -78,7 +85,7 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 					return;
 				
 				asideEl.innerHTML = signHtml.render(dt);
-				asideAttr.set("todoslength", dt.toDos.length);
+				asideAttr.set("todoslength", dt.todos.length);
 			});
 		});
 
@@ -120,6 +127,11 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 						t = d.setDate(d.getDate() + 1);
 
 					if(jQun(scheduleItemEls[0]).get("time", "attr") == t){
+						var dt = lastData[time];
+
+						if(!dt)
+							return;
+
 						var el = new Grouping.constructor(lastData[time]);
 
 						el.insertTo(contentUl, 0);
@@ -132,7 +144,12 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 					t = d.setDate(d.getDate() - 2);
 
 					if(jQun(scheduleItemEls[scheduleItemEls.length - 1]).get("time", "attr") == t){
-						var el = new Grouping.constructor(lastData[time]);
+						var dt = lastData[time];
+
+						if(!dt)
+							return;
+
+						var el = new Grouping.constructor(dt);
 
 						el.appendTo(contentUl, 0);
 						scheduleItemEls.splice(0, 1);
@@ -149,6 +166,8 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 					}
 					date.setDate(date.getDate() + 1);
 				}
+
+				contentEl.setCSSPropertyValue("top", 0);
 			}
 		});
 		calendar.dateTable.focus(new Date());
@@ -175,7 +194,7 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 	Control.Time.Calendar,
 	Control.List.LevelAnchorList,
 	new jQun.HTML([
-		'<li time="{dateData.time}" todoslength="{dateData.toDos.length}">',
+		'<li time="{dateData.time}" todoslength="{dateData.todos.length}">',
 			'<dt class="whiteFont">',
 				'<span class="lightBgColor smallRadius">{dateData.localeDateString}</span>',
 			'</dt>',
@@ -207,12 +226,14 @@ this.Project = (function(){
 		
 		this.assign({
 			html : html,
-			batchLoad : batchLoad
+			batchLoad : batchLoad,
+			overflowPanel : new OverflowPanel(this.find(">ul"))
 		});
 
 		batchLoad.setParam("pageIndex", 0, 1);
 		batchLoad.setParam("pageSize", 10);
 		batchLoad.setParam("pageMax", -1);
+		batchLoad.setParam("othersOffset", 0);
 
 		this.attach({
 			beforeshow : function(){
@@ -238,8 +259,6 @@ this.Project = (function(){
 				}
 			}
 		});
-
-		new OverflowPanel(this.find(">ul"));
 	};
 	Project = new NonstaticClass(Project, null, PagePanel.prototype);
 
@@ -278,6 +297,7 @@ this.Project = (function(){
 
 			this.add({ projects : data });
 		},
+		batchLoad : undefined,
 		html : undefined,
 		load : function(_isRefresh){
 			///	<summary>
@@ -295,11 +315,12 @@ this.Project = (function(){
 			else {
 				batchLoad.restoreParams();
 				this.find(">ul").innerHTML = "";
+				this.overflowPanel.setTop(0);
 			}
 
 			batchLoad.callServer();
 		},
-		batchLoad : undefined
+		overflowPanel : undefined
 	});
 
 	return Project.constructor;
@@ -389,6 +410,10 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 			},
 			beforeshow : function(){
 				partner.load();
+
+				Global.titleBar.find('button[action="addPartner"]').onuserclick = function(){
+					Global.history.go("systemContacts");
+				};
 			}
 		});
 
@@ -398,7 +423,11 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 
 	Partner.override({
 		hideBackButton : true,
-		title : "MY PARTNERS 拍档"
+		title : "MY PARTNERS 拍档",
+		tools : [
+			{ urlname : "javascript:void(0);", action : "addPartner" },
+			{ urlname : "systemOption", action : "set" }
+		]
 	});
 
 	Partner.properties({

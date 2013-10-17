@@ -20,7 +20,8 @@ this.Common = Common = (function(){
 			return {
 				id : Number.id(),
 				type : type,
-				src : type === "voice" ? "javascript:void(0);" : "../../test/image/avatar/" + Number.random(16) + ".jpg"
+				src : type === "voice" ? "javascript:void(0);" : "../../test/image/avatar/" + Number.random(16) + ".jpg",
+				from : "project"
 			};
 		},
 		getAttachments : function(){
@@ -113,7 +114,9 @@ this.SingleProject = (function(){
 				creationTime : new Date().getTime(),
 				unread : Number.random(2) > 1 ? 0 : Number.random(),
 				desc : String.random(1000),
-				attachments : Common.getAttachments()
+				status : Number.random(4) > 2 ? 1 : 2,
+				attachments : Common.getAttachments(),
+				completeDate : new Date().setMonth(Number.random(10), Number.random(30))
 			};
 		}
 	})
@@ -126,25 +129,25 @@ this.Deep = (function(SingleProject){
 	Deep = new StaticClass(null, "Bao.Test.DummyData.Deep");
 
 	Deep.properties({
-		getToDoInfo : function(){
+		getTodoInfo : function(){
 			return {
 				id : Number.random(100),
 				color : Number.random(6),
 				title : String.random(),
 				desc : String.random(30),
 				attachments : Common.getAttachments(),
-				messages : SingleProject.getMessages(),
-				endTime : new Date().getTime()
+				endTime : new Date().getTime(),
+				user : Common.getUser()
 			};
 		},
-		getToDoInfoList : function(){
-			var toDoInfoList = [];
+		getTodoInfoList : function(){
+			var todoInfoList = [];
 
 			jQun.forEach(Number.random(10), function(){
-				toDoInfoList.push(this());
-			}, this.getToDoInfo);
+				todoInfoList.push(this());
+			}, this.getTodoInfo);
 
-			return toDoInfoList;
+			return todoInfoList;
 		}
 	});
 
@@ -184,7 +187,14 @@ this.SPP = (function(SingleProject, Deep){
 			}
 
 			for(var i = 0;i < _len;i++){
-				projects.push(SingleProject.getSingleProject());
+				var project = SingleProject.getSingleProject();
+
+				if(project.status === 2){
+					projects.push(project);
+				}
+				else {
+					projects.splice(0, 0, project);
+				}
 			}
 
 			return projects;
@@ -201,10 +211,10 @@ this.SPP = (function(SingleProject, Deep){
 			endDate.setMonth(beginDate.getMonth() + 3, 0);
 
 			for(var j = endDate.getTime();beginDate.getTime() < j;){
-				var toDos = [];
+				var todos = [];
 
 				jQun.forEach(Number.random(5), function(){
-					toDos.push({
+					todos.push({
 						title : String.random(),
 						desc : String.random(),
 						color : Number.random(6),
@@ -216,7 +226,7 @@ this.SPP = (function(SingleProject, Deep){
 
 				schedule.push({
 					time : beginDate.setDate(beginDate.getDate() + 1),
-					toDos : toDos
+					todos : todos
 				});
 			}
 

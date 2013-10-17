@@ -1,21 +1,36 @@
-﻿(function(Chat, NonstaticClass, Panel, HTML, Global, Voice, set){
+﻿(function(Chat, NonstaticClass, Panel, HTML, Event, Global, Voice, set){
 this.Attachment = (function(){
-	function Attachment(id, _src){
+	function Attachment(type, from, id, _src, _base64){
 		///	<summary>
 		///	附件。
 		///	</summary>
+		/// <param name="type" type="string">附件类型</param>
 		/// <param name="id" type="string">附件id</param>
+		/// <param name="from" type="string">附件的来源</param>
 		/// <param name="_src" type="string">附件src</param>
+		/// <param name="_base64" type="string">附件的64位字符串编码(目前仅用于图片)</param>
 		this.assign({
+			base64 : _base64 || (type === "image" ? _src : ""),
+			from : from,
 			id : id,
-			src : _src
+			src : _src,
+			type : type
 		});
 	};
 	Attachment = new NonstaticClass(Attachment, "Bao.UI.Control.Chat.Attachment");
 
 	Attachment.properties({
+		base64 : "",
+		from : "",
 		id : -1,
-		src : "javascript:void(0);"
+		resetFrom : function(from){
+			this.from = from;
+		},
+		resetId : function(id){
+			this.id = id;
+		},
+		src : "javascript:void(0);",
+		type : "image"
 	});
 
 	return Attachment.constructor;
@@ -62,7 +77,85 @@ this.ImageBox = (function(imageBoxHtml){
 	].join(""))
 ));
 
-this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, forEach, messageHtml, praiseHtml){
+this.ActiveVoice = (function(Attachment, round, lastActiveVoice){
+	function ActiveVoice(selector, attachment){
+		var activeVoice = this;
+		
+		this.assign({
+			attachment :　attachment,
+			buttonStyle : this.find(">button").style
+		});
+
+		this.attach({
+			userclick : function(e){
+				e.stopPropagation();
+				activeVoice[activeVoice.isPlaying ? "pause" : "play"]();
+			}
+		}, true);
+
+		this.play();
+	};
+	ActiveVoice = new NonstaticClass(ActiveVoice, "Bao.UI.Control.Chat.ActiveVoice", Panel.prototype);
+
+	ActiveVoice.properties({
+		attachment : new Attachment(),
+		buttonStyle : undefined,
+		isPlaying : false,
+		pause : function(){
+			this.isPlaying = false;
+			this.classList.remove("playing");
+			Voice.pause();
+		},
+		play : function(){
+			var activeVoice = this, buttonStyle = this.buttonStyle, attachment = this.attachment;
+
+			if(lastActiveVoice && lastActiveVoice !== this){
+				lastActiveVoice.stop();
+			}
+
+			Voice.play(attachment.id, attachment.from, function(i, max){
+				if(!activeVoice.isPlaying){
+					this.stop();
+					return;
+				}
+
+				buttonStyle.left = round(i * 100 / max) + "%";
+				activeVoice.position = i;
+				
+				if(i !== max){
+					return;
+				}
+
+				setTimeout(function(){
+					activeVoice.stop();
+				}, 1000);
+			}, this.position);
+
+			this.isPlaying = true;
+			this.classList.add("playing");
+			lastActiveVoice = this;
+		},
+		// 暂停点
+		position : 0,
+		stop : function(){
+			this.buttonStyle.left = 0;
+			this.position = 0;
+			this.isPlaying = false;
+			this.classList.remove("playing");
+			Voice.stop();
+		}
+	});
+
+	return ActiveVoice.constructor;
+}(
+	this.Attachment,
+	Math.round,
+	// lastActiveVoice
+	undefined
+));
+
+
+this.Message = (function(Attachment, ImageBox, ActiveVoice, clickDoEvent, clickPraiseEvent, forEach, messageHtml, praiseHtml){
 	function Message(msg){
 		///	<summary>
 		///	单个信息。
@@ -71,9 +164,10 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 		var message = this, attachment = msg.attachment;
 
 		this.assign({
-			attachment : attachment ? new Attachment(attachment.id, attachment.src) : undefined,
+			attachment : attachment ? new Attachment(msg.type, attachment.from, attachment.id, attachment.src, attachment.base64) : undefined,
 			color : msg.color,
 			id : msg.id,
+			isSending : msg.isSending,
 			poster : msg.poster,
 			text : msg.text,
 			time : msg.time,
@@ -96,9 +190,11 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 					return;
 				}
 
-				// 播放语音
-				if(targetEl.between(">a>button", this).length > 0){
-					Voice.play(targetEl.parent().getAttribute("voiceid"));
+				var voicePanel = targetEl.between(">a", this);
+
+				// 播放语音，同一个按钮只会进入这里一次，因为之后会被ActiveVoice类给截断冒泡
+				if(voicePanel.length > 0){
+					new ActiveVoice(voicePanel[0], message.attachment);
 					return;
 				}
 			}
@@ -175,6 +271,8 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 			/// <param name="id" type="number">称赞用户的id</param>
 			return this.find('.chatList_praise>p>a[userid="' + id + '"]').length > 0;
 		},
+		// 该信息是否处于正在发送状态
+		isSending : false,
 		// 发送人
 		poster : undefined,
 		removePraise : function(id){
@@ -195,6 +293,16 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 			
 			this.removeAttribute("praisedbyself");
 		},
+		sendCompleted : function(messageId, _attachmentId){
+			this.isSending = false;
+
+			this.id = messageId;
+
+			if(_attachmentId === undefined)
+				return;
+
+			this.attachment.id = _attachmentId;
+		},
 		// 信息文本
 		text : "",
 		// 信息发送时间
@@ -207,10 +315,11 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 }(
 	this.Attachment,
 	this.ImageBox,
+	this.ActiveVoice,
 	// clickDoEvent
-	new jQun.Event("clickdo"),
+	new Event("clickdo"),
 	// clickPraiseEvent
-	new jQun.Event("clickpraise"),
+	new Event("clickpraise"),
 	jQun.forEach,
 	// messageHtml
 	new HTML([
@@ -223,10 +332,10 @@ this.Message = (function(Attachment, ImageBox, clickDoEvent, clickPraiseEvent, f
 			'<figure>',
 				'<figcaption>',
 					'<span>{text}</span>',
-					'<a voiceid="{attachment.id}">',
+					'<a>',
 						'<button></button>',
 					'</a>',
-					'<img src="{?~ attachment.src}" />',
+					'<img src="{?~ attachment.base64}" />',
 				'</figcaption>',
 				'<nav class="whiteFont inlineBlock">',
 					'<button>do</button>',
@@ -286,7 +395,7 @@ this.MessageGroup = (function(MessageList, messageAppendedEvent, singleNumRegx, 
 		///	</summary>
 		var dt = new Date(time),
 
-			desc = "今天", t = this - dt, hours = dt.getHours();
+			desc = "今天", t = time - dt, hours = dt.getHours();
 				
 		switch(true){
 			case t < 0 :
@@ -335,6 +444,8 @@ this.MessageGroup = (function(MessageList, messageAppendedEvent, singleNumRegx, 
 			var msg = this.messageList.push(message);
 
 			msg.appendTo(this.find(">dd>ol")[0]);
+
+			messageAppendedEvent.setEventAttrs({ message : msg });
 			messageAppendedEvent.trigger(this[0]);
 			return msg;
 		},
@@ -447,26 +558,20 @@ this.ChatInput = (function(Global, messageCompletedEvent, reader){
 					inputClassList.toggle("voice");
 					return;
 				}
-			},
-			touchstart : function(){
-				// 如果有voice类，说明是语音输入状态
-				if(inputClassList.contains("voice")){
-					chatInput.recordStart();
+
+				if(targetEl.between(">p>input", this).length > 0){
+					targetEl.focus();
 					return;
 				}
 			},
-			recordcomplete : function(e){
-				messageCompletedEvent.setEventAttrs({
-					message : {
-						attachment : {
-							src : e.src
-						},
-						text : "",
-						time : new Date().getTime(),
-						type : "voice"
+			touchstart : function(e, targetEl){
+				if(targetEl.between(">p>button", this).length > 0){
+					// 如果有voice类，说明是语音输入状态
+					if(inputClassList.contains("voice")){
+						chatInput.recordStart();
+						return;
 					}
-				});
-				messageCompletedEvent.trigger(chatInput[0]);
+				}
 			}
 		});
 
@@ -483,14 +588,7 @@ this.ChatInput = (function(Global, messageCompletedEvent, reader){
 		this.find(">p>input").attach({
 			keyup : function(e){
 				if(e.keyCode === 13){
-					messageCompletedEvent.setEventAttrs({
-						message : {
-							text : this.value,
-							time : new Date().getTime(),
-							type : "text"
-						}
-					});
-					messageCompletedEvent.trigger(chatInput[0]);
+					chatInput.messageCompleted("text", this.value);
 					
 					this.value = "";
 					return;
@@ -521,40 +619,48 @@ this.ChatInput = (function(Global, messageCompletedEvent, reader){
 
 		// 选择文件
 		reader.onload = function(e){
-			messageCompletedEvent.setEventAttrs({
-				message : {
-					attachment : {
-						base64 : this.result,
-						src : imagePath
-					},
-					text : "",
-					time : new Date().getTime(),
-					type : "image"
+			chatInput.messageCompleted(
+				"image", 
+				"",
+				{
+					base64 : this.result,
+					src : imagePath
 				}
-			});
-			messageCompletedEvent.trigger(chatInput[0]);
+			);
 		};
 	};
 	ChatInput = new NonstaticClass(ChatInput, "Bao.UI.Control.Chat.ChatInput", Panel.prototype);
 
 	ChatInput.properties({
 		isRecording : false,
+		messageCompleted : function(type, _text, _attachment){
+			// 当用户输入完成，提交的时候触发
+			messageCompletedEvent.setEventAttrs({
+				message : {
+					attachment : _attachment,
+					text : _text,
+					time : new Date().getTime(),
+					type : type
+				}
+			});
+			messageCompletedEvent.trigger(this[0]);
+		},
 		recordStart : function(){
 			if(this.isRecording)
 				return;
 
+			this.isRecording = true;
 			Global.mask.fillBody("", true);
 			Global.mask.show("voiceRecording");
-			Voice.recordStart(this[0]);
-			this.isRecording = true;
+			Voice.recordStart();
 		},
 		recordStop : function(){
 			if(!this.isRecording)
 				return;
 
-			Global.mask.hide();
-			Voice.recordStop();
 			this.isRecording = false;
+			Global.mask.hide();
+			this.messageCompleted("voice", "", { src : Voice.recordStop() });
 		}
 	});
 
@@ -591,12 +697,9 @@ this.ChatList = (function(ChatInput, ChatListContent, listPanelHtml){
 
 				set(message, {
 					isPraisedBySelf : false,
+					isSending : true,
 					poster : poster
 				});
-
-				if(message.type === "image"){
-					message.attachment = { src : message.attachment.base64 };
-				}
 
 				chatListContent.appendMessageToGroup(message);
 			}
@@ -620,7 +723,7 @@ this.ChatList = (function(ChatInput, ChatListContent, listPanelHtml){
 				'<button></button>',
 				'<p>',
 					'<button class="smallRadius">按住说话</button>',
-					'<input class="smallRadius" type="text" placeholder="输入文字.." />',
+					'<input class="smallRadius" type="text" placeholder="输入文字.." stayput="" />',
 				'</p>',
 				'<aside>',
 					'<button></button>',
@@ -640,6 +743,7 @@ Chat.members(this);
 	jQun.NonstaticClass,
 	Bao.API.DOM.Panel,
 	jQun.HTML,
+	jQun.Event,
 	Bao.Global,
 	Bao.API.Media.Voice,
 	jQun.set

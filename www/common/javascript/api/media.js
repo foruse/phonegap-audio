@@ -1,65 +1,71 @@
 ﻿(function(Media, NonstaticClass, StaticClass){
-this.Voice = (function(Panel, VoiceMessage, recordCompleteEvent){
+this.Voice = (function(IntervalTimer, Models){
 	function Voice(){};
 	Voice = new StaticClass(Voice, "Bao.API.Media");
 
 	Voice.properties({
 		pause : function(){
-			if(!VoiceMessage)
+			if(!Models.VoiceMessage)
 				return;
 
-			VoiceMessage.pause();
+			Models.VoiceMessage.pause();
 		},
-		play : function(id){
-			if(!VoiceMessage)
-				return;
+		play : function(id, type, callback, _position){
+			if(!Models.VoiceMessage){
+				new IntervalTimer(1000).start(function(i){
+					i = i + (_position || 0);
 
-			VoiceMessage.play(id);
-		},
-		recordStart : function(target){
-			if(!VoiceMessage){
-				recordCompleteEvent.setEventAttrs({
-					src : ""
-				});
-				recordCompleteEvent.trigger(target);
+					callback.call(this, i, 5);
+				}, 5 - (_position || 0));
 				return;
 			}
 
+			Models.VoiceMessage.play(id, type, function(len){
+				new IntervalTimer(1000).start(function(i){
+					callback.call(this, i, len);
+				}, len);
+			});
+
+			if(_position){
+				Models.VoiceMessage.set_current_position(_position);
+			}
+		},
+		recordStart : function(){
+			if(!Models.VoiceMessage)
+				return;
+
 			var Voice = this;
 
-			VoiceMessage.record_start(function(src){
-				recordCompleteEvent.setEventAttrs({
-					src : src
-				});
-				recordCompleteEvent.trigger(target);
+			Models.VoiceMessage.record_start(function(src){
+				Voice.src = src;
 			});
 		},
-		recordStop : function(){
-			if(!VoiceMessage)
-				return;
+		recordStop : function(target){
+			if(Models.VoiceMessage){
+				Models.VoiceMessage.record_stop();
+			}
 
-			VoiceMessage.record_stop();
+			return this.src;
 		},
 		save : function(){
-			if(!VoiceMessage)
+			if(!Models.VoiceMessage)
 				return;
 
-			VoiceMessage.save();
+			Models.VoiceMessage.save();
 		},
+		src : "",
 		stop : function(){
-			if(!VoiceMessage)
+			if(!Models.VoiceMessage)
 				return;
 
-			VoiceMessage.stop();
+			Models.VoiceMessage.stop();
 		}
 	});
 
 	return Voice;
 }(
-	Bao.API.DOM.Panel,
-	(window.Models || {}).VoiceMessage,
-	// recordCompleteEvent
-	new jQun.Event("recordcomplete")
+	Bao.API.Management.IntervalTimer,
+	window.Models || {}
 ));
 
 Media.members(this);

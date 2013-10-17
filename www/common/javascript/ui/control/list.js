@@ -21,7 +21,7 @@ this.AnchorList = (function(Global, anchorListHtml, clickAnchorEvent){
 				clickAnchorEvent.setEventAttrs({
 					anchor : anchorEl.get("key", "attr")
 				});
-				clickAnchorEvent.trigger(this);
+				clickAnchorEvent.trigger(anchorEl[0]);
 			},
 			clickanchor : function(e){
 				Global.history.go(e.anchor);
@@ -46,7 +46,7 @@ this.AnchorList = (function(Global, anchorListHtml, clickAnchorEvent){
 										'<span>{?~data.title}</span>',
 										'<small>{?~data.time}</small>',
 									'</dt>',
-									'<dd>{?~data.desc}</dd>',
+									'<dd class="grayFont">{?~data.desc}</dd>',
 								'</dl>',
 							'</aside>',
 							'<p>',
@@ -238,12 +238,14 @@ this.UserIndexList = (function(OverflowPanel, UserList, panelHtml, listHtml){
 			///	</summary>
 			/// <param name="data" type="*">用户数据</param>
 			/// <param name="_avatarSize" type="string">头像大小</param>
+			var userIndexList = this;
+
 			this.innerHTML = listHtml.render(data);
 			this.set("top", "0", "css");
 
-			data.userListCollection.forEach(function(userList){
-				new UserList(_avatarSize).refresh(userList.users).appendTo(
-					this.find('li[letter="' + userList.firstLetter + '"] dd')[0]
+			data.userListCollection.forEach(function(userListData){
+				new UserList(_avatarSize).refresh(userListData.users).appendTo(
+					this.find('li[letter="' + userListData.firstLetter + '"] dd')[0]
 				);
 			}, this);
 
@@ -288,10 +290,14 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 		///	<summary>
 		///	用户选择列表。
 		///	</summary>
-		/// <param name="mask" type="Bao.UI.Fixed.Mask">遮罩</param>
+		/// <param name="text" type="string">选择信息的文本</param>
 		var userSelectionList = this, mask = Global.mask,
 		
 			userIndexList = new UserIndexList();
+
+		this.assign({
+			userIndexList : userIndexList
+		});
 
 		this.combine(selectUsersHtml.create({ text : text }));
 
@@ -303,7 +309,7 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 				var el = targetEl.between(">ol figure>p", this);
 
 				if(el.length > 0){
-					el.classList.toggle("selected");
+					userSelectionList.toggleUser(el.getAttribute("userid"));
 				}
 
 				e.stopPropagation();
@@ -311,9 +317,7 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 		});
 
 		this.attach({
-			userclick : function(e){
-				var targetEl = jQun(e.target);
-
+			userclick : function(e, targetEl){
 				if(targetEl.between(">*>button", this).length > 0){
 					var users = [];
 
@@ -349,6 +353,13 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 		});
 	};
 	UserSelectionList = new NonstaticClass(UserSelectionList, null, Panel.prototype);
+
+	UserSelectionList.properties({
+		toggleUser : function(id){
+			this.userIndexList.find('>ol figure>p[userid="' + id + '"]').classList.toggle("selected");
+		},
+		userIndexList : undefined
+	});
 	
 	return UserSelectionList.constructor;
 }(
@@ -453,15 +464,29 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 					// 初始化用户选择列表
 					var userSelectionList = new UserSelectionList(text);
 
+					userList.getAllUsers().forEach(function(userId){
+						userSelectionList.toggleUser(userId);
+					});
+
 					// 添加事件
 					userSelectionList.attach({
 						clickbutton : function(e){
 							if(e.buttonType === "ok"){
+								var users = e.users, maxLength = userManagementList.maxLength;
+
+								if(users.length > maxLength){
+									e.stopPropagation();
+									alert("只能至多选择" + maxLength + "位用户！");
+									return;
+								}
+
+								// 清除所有用户
+								userManagementList.clearUsers();
 								// 选择后，点击确认并添加用户
 								userList.addUsers(e.users);
 							}
 						}
-					});
+					}, true);
 					return;
 				}
 
@@ -483,6 +508,10 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 		},
 		getAllUsers : function(){
 			return this.userList.getAllUsers();
+		},
+		maxLength : Infinity,
+		setMaxLength : function(length){
+			this.maxLength = length;
 		},
 		userList : undefined
 	});
