@@ -6,10 +6,10 @@
         id        = "com.phonegap.hello-world"
         version   = "1.0.0">
 
-    <name>Xiao-Build</name>
+    <name>BaoPiQi</name>
 
     <description>
-        Xiao-Build
+        BaoPiQi
     </description>
 
     <author href="http://phonegap.com" email="support@phonegap.com">
