@@ -16,14 +16,14 @@ this.Voice = (function(IntervalTimer, Models){
 					i = i + (_position || 0);
 
 					callback.call(this, i, 5);
-				}, 5 - (_position || 0));
+				}, 5 - (_position || 0), true);
 				return;
 			}
 
 			Models.VoiceMessage.play(id, type, function(len){
 				new IntervalTimer(1000).start(function(i){
 					callback.call(this, i, len);
-				}, len);
+				}, len, true);
 			});
 		},
 		recordStart : function(){

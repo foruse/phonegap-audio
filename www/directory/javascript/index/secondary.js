@@ -181,7 +181,7 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 	})
 ));
 
-this.SystemOption = (function(AnchorList, Global, anchorData){
+this.SystemOption = (function(AnchorList, Global, localStorage, anchorData){
 	function SystemOption(selector){
 		///	<summary>
 		///	系统项。
@@ -194,6 +194,7 @@ this.SystemOption = (function(AnchorList, Global, anchorData){
 				if(targetEl.between(">footer>button", this).length > 0){
 					CallServer.open("logout", null, function(data){
 						Global.history.go("login");
+						localStorage.clear();
 					});
 					return;
 				}
@@ -210,6 +211,7 @@ this.SystemOption = (function(AnchorList, Global, anchorData){
 }(
 	Bao.UI.Control.List.AnchorList,
 	Bao.Global,
+	localStorage,
 	// anchorData
 	[
 		{ key : "globalSearch", title : "搜索全部" },

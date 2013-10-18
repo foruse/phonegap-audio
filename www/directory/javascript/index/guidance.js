@@ -75,8 +75,14 @@ this.LoginInfoManagement = (function(loginEvent, registerEvent){
 	LoginInfoManagement = new NonstaticClass(LoginInfoManagement, null, Panel.prototype);
 
 	LoginInfoManagement.properties({
+		clearInputValue : function(desc){
+			this.setInputValue("", desc);
+		},
 		loginBtn : undefined,
 		registerBtn : undefined,
+		setInputValue : function(value, desc){
+			this.find('>ul input[desc="' + desc + '"]').value = value;
+		},
 		showInfoErrorByIndex : function(i){
 			///	<summary>
 			///	通过input的索引显示信息错误。
@@ -111,7 +117,7 @@ this.LoginInfoManagement = (function(loginEvent, registerEvent){
 	new Event("register")
 ));
 
-this.Login = (function(OverflowPanel, LoginInfoManagement, loginEvent){
+this.Login = (function(OverflowPanel, LoginInfoManagement, localStorage, loginEvent){
 	function Login(selector){
 		///	<summary>
 		///	登陆页。
@@ -183,6 +189,10 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, loginEvent){
 
 				loginEvent.setEventAttrs({ loginUser : user });
 				loginEvent.trigger(window);
+
+				localStorage.user_email = email;
+				localStorage.user_pass = pwd;
+				loginInfoManagement.clearInputValue("pwd");
 			});
 		},
 		loginInfoManagement : undefined,
@@ -208,6 +218,18 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, loginEvent){
 
 				loginInfoManagement.showLogin();
 			}, true);
+		},
+		tryLogin : function(){
+			var email = localStorage.user_email, pwd = localStorage.user_pass;
+
+			if(!email || !pwd)
+				return false;
+
+			var loginInfoManagement = this.loginInfoManagement;
+
+			loginInfoManagement.setInputValue(email, "email");
+			loginInfoManagement.setInputValue(pwd, "pwd");
+			this.login(email, pwd);
 		}
 	});
 
@@ -219,6 +241,7 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, loginEvent){
 }(
 	Bao.API.DOM.OverflowPanel,
 	this.LoginInfoManagement,
+	localStorage,
 	// loginEvent
 	new Event("login")
 ));

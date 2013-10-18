@@ -73,6 +73,20 @@
 .chatList_message a.playing > button {
 	background : url(../image/width24.png) 0 -700px no-repeat;
 }
+.chatList_message a.downloading > button {
+	background-position : 0 -950px;
+	-webkit-animation : voiceDownloading steps(14) 1s infinite;
+}
+
+@-webkit-keyframes voiceDownloading {
+	from {
+		-webkit-transform : rotate(0deg);
+	}
+	to {
+		-webkit-transform : rotate(360deg);
+	}
+}
+
 .chatList_message:not([action="text"]) figcaption > span,
 .chatList_message:not([action="voice"]) figcaption > a,
 .chatList_message:not([action="image"]) figcaption > img {

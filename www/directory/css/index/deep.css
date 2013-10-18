@@ -441,6 +441,7 @@
 	background-color : transparent;
 	border : 1px solid #f1ba95;
 	color : #e16615;
+	display : none;
 }
 #projectManagement > footer > button:last-child {
 	margin-top : 5px;
@@ -448,7 +449,8 @@
 	border : 0 none;
 }
 #titleBar button[action="projectManagement_done"] {
-	background : #ffc000 url(../../../common/image/width24.png) no-repeat 7px -118px
+	background : #ffc000 url(../../../common/image/width24.png) no-repeat 7px -118px;
+	display : none;
 }
 
 #archive .anchorList > ul {

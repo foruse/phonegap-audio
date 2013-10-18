@@ -418,7 +418,7 @@ this.InputSelectionList = (function(UserSelectionList, Global, inputHtml){
 	new HTML('<input class="normalRadius" type="text" placeholder="请输入名称" />')
 ));
 
-this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, listHtml){
+this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, selecetUsersEvent, listHtml){
 	function UserManagementList(text, _userData){
 		///	<summary>
 		///	用户管理列表。
@@ -483,7 +483,9 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 								// 清除所有用户
 								userManagementList.clearUsers();
 								// 选择后，点击确认并添加用户
-								userList.addUsers(e.users);
+								userList.addUsers(users);
+								selecetUsersEvent.setEventAttrs({ users : users });
+								selecetUsersEvent.trigger(userManagementList[0]);
 							}
 						}
 					}, true);
@@ -521,6 +523,8 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 	this.UserList,
 	this.UserSelectionList,
 	Bao.API.DOM.OverflowPanel,
+	// selecetUsersEvent
+	new jQun.Event("selectusers"),
 	// listHtml
 	new HTML([
 		'<div class="userManagementList">',

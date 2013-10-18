@@ -272,12 +272,13 @@ this.IntervalTimer = (function(Timer){
 	IntervalTimer = new NonstaticClass(IntervalTimer, "Bao.API.Management.IntervalTimer", Timer.prototype);
 
 	IntervalTimer.override({
-		start : function(oninterval, _times){
+		start : function(oninterval, _times, _isDirectly){
 			///	<summary>
 			///	开始计时器，如果为无限循环，则该计时器需要人为手动停止。
 			///	</summary>
 			///	<param name="oninterval" type="function">间隔时间所执行的函数。</param>
 			///	<param name="_times" type="number">执行次数。</param>
+			///	<param name="_isDirectly" type="boolean">是否马上执行第一次操作，否则要等第一次间隔再执行。</param>
 			var intervalTimer = this,
 
 				// 记录当前执行了多少次
@@ -291,6 +292,10 @@ this.IntervalTimer = (function(Timer){
 			if(!_times){
 				i = NaN;
 				_times = -1;
+			}
+
+			if(_isDirectly){
+				oninterval.call(this, i);
 			}
 
 			start.call(this, function(){

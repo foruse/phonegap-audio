@@ -56,7 +56,7 @@ this.Global = (function(Fixed, Management, HTML, Browser, inputs, inputEvents){
 				});
 	
 				// 首先要登录才会用登录用户的数据
-				history.go("login");
+				history.go("login").tryLogin();
 				// history.go("login").login();
 			},
 			login : function(e){

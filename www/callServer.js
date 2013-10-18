@@ -129,6 +129,9 @@
             login: function(params, complete) {
                 Mdls.User.login(params, complete);
             },
+            logout: function(params, complete) {
+                Mdls.User.logout(complete);
+            },
             getProjects: function(params, complete) {
                 console.log(params)
                 Mdls.Project.read(params, function(data){
@@ -138,14 +141,17 @@
                 });
             },
             editProjectInfo: function(params, complete){
-                console.log(params)
+                console.log(params);
                 // for now
                 // userIds: Array[3]
                     //0: "undefined"
                     //1: "undefined"
                     //2: "undefined"
                 // project_id: ALSO NEEDED
-//                Mdls.Project.update(params, complete);
+                Mdls.Project.update({
+                    users       :   params.userIds,
+                    project_id  :   params.projectId
+                }, complete);
             },
             myInformation: function(_params, complete) {
                 // Mdls.User.read(function(data){

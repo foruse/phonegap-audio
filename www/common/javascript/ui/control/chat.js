@@ -103,17 +103,23 @@ this.ActiveVoice = (function(Attachment, round, lastActiveVoice){
 		isPlaying : false,
 		pause : function(){
 			this.isPlaying = false;
-			this.classList.remove("playing");
+			this.classList = "";
 			Voice.pause();
 		},
 		play : function(){
-			var activeVoice = this, buttonStyle = this.buttonStyle, attachment = this.attachment;
+			var activeVoice = this, classList = this.classList,
+			
+				buttonStyle = this.buttonStyle, attachment = this.attachment;
 
 			if(lastActiveVoice && lastActiveVoice !== this){
 				lastActiveVoice.stop();
 			}
 
+			classList.add("downloading");
+
 			Voice.play(attachment.id, attachment.from, function(i, max){
+				classList.remove("downloading");
+
 				if(!activeVoice.isPlaying){
 					this.stop();
 					return;
@@ -141,7 +147,7 @@ this.ActiveVoice = (function(Attachment, round, lastActiveVoice){
 			this.buttonStyle.left = 0;
 			this.position = 0;
 			this.isPlaying = false;
-			this.classList.remove("playing");
+			this.classList = "";
 			Voice.stop();
 		}
 	});

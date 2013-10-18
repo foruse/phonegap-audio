@@ -58,8 +58,8 @@ BROWSER_TEST_VERSION = function check_dev() {
     } else {
         device = "desktop";
     }
-//    return device === "desktop" ? true : false;
-    return true;
+    return device === "desktop" ? true : false;
+//    return true;
 }();
 
 Models = {}; // Models are needed to be created in the following method. As they are used before the device ready actually. They are filled later.
@@ -76,8 +76,9 @@ Models.UsersCounter = {
                 }
 
             };
-BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
+//BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
 
+onDeviceReady();
 
 function onDeviceReady() {
 
@@ -91,7 +92,8 @@ function onDeviceReady() {
             file_upload_url: "upload",
             sockets: ""
         },
-        server_url: "http://212.8.40.254:5959",
+        server_url: "http://115.28.131.52:3000",
+//        server_url: "http://212.8.40.254:5959",
 //        server_url: "http://192.168.200.110:3000",
         audio_format: "wav",
         root_dir: "BAO"//,
@@ -317,6 +319,7 @@ function onDeviceReady() {
 //                    },
 
                 login: function(data, callback) {
+//                    alert("logim")
 //                        var data = {
 //                            pwd: "123",
 //                            email: "test@mail.ru"
@@ -340,68 +343,90 @@ function onDeviceReady() {
 //                        alert("12")
 //                        callback(JSON.parse(SESSION.get("saved_user_data")))
 //                    }else{
-                    SOCKET.request("login", data, function(result) {
-                        console.log(result);
-                        if (result !== false) {
-                            if (result.user) {
-                                result.user.isNewUser = 0;
-//                                    SESSION.set("saved_user_data", JSON.stringify(result.user));
-                                SESSION.set("user_id", result.user.id);
-                                SESSION.set("user_name", result.user.name);
-                                SESSION.set("user_email", result.user.email);
-                                SESSION.set("user_pwd", result.user.pwd);
-                                callback(result);
-//                                    if (result.user.isNewUser == 1){
-//    //                                    alert("cool");
-//                                        API.update("xiao_users", {isNewUser: 0}, 'id="' + result.user.id + '"');
-//                                    }
-                                console.log(result);
-                                //                                callback(result);
-                            } else if (result.error) {
-                                console.log(result);
-                                callback(result);
-                            } else {
-                                console.log(result);
-                                callback({
-                                    status: -1,
-                                    error: {
-                                        type: "email",
-                                        idx: 1,
-                                        desc: "data is not correct"
-                                    }
-                                });
-                            }
-                        } else {
-                            alert("no internet");
-                        }
-                        //                            } else {
-                        //                                console.log(data)
-                        //                                //offline like this for now in development
-                        //                                if (SESSION.get("user_id") && SESSION.get("user_pwd") && SESSION.get("user_name") && SESSION.get("user_email")) {
-                        //                                    if (SESSION.get("user_pwd") == md5(data.pwd) && SESSION.get("user_email") == data.email) {
-                        //                                        Models.User.read(function(offline_user) {
-                        //
-                        //                                            callback({user: offline_user, status: 0});
-                        //                                        });
-                        ////                                        callback({
-                        ////                                            status: 0
-                        ////                                        });
-                        //                                    } else {
-                        //                                        callback({
-                        //                                            status: -1
-                        //                                        });
-                        //                                    }
-                        //                                } else {
-                        //                                    callback({
-                        //                                        status: -1
-                        //                                    });
-                        //                                }
-                        //                            }
-                    });
-//                    }
 
+                    if(SESSION.get("user_pass")){
+                        var old_user_data = SESSION.get("saved_user_data"),
+                            json_old_user_data = JSON.parse(old_user_data);
+                        console.log({
+                            status  :   0,
+                            user    :   json_old_user_data
+                        });
+                        callback({
+                            status  :   0,
+                            user    :   json_old_user_data
+                        });
+                    }else{
+                        SOCKET.request("login", data, function(result) {
+                            console.log(result);
+                            if (result !== false) {
+                                if (result.user) {
+                                    SERVER.SESSION._init_storage(1);
+                                    SERVER.DB._init_db(1);                   
+//                                    result.user.isNewUser = 0;
+                                    SESSION.set("saved_user_data", JSON.stringify(result.user));
+                                    SESSION.set("user_id", result.user.id);
+                                    SESSION.set("user_name", result.user.name);
+                                    SESSION.set("user_email", result.user.email);
+                                    SESSION.set("user_pwd", result.user.pwd);
+                                    callback(result);
+    //                                    if (result.user.isNewUser == 1){
+    //    //                                    alert("cool");
+    //                                        API.update("xiao_users", {isNewUser: 0}, 'id="' + result.user.id + '"');
+    //                                    }
+                                    console.log(result);
+                                    //                                callback(result);
+                                } else if (result.error) {
+                                    console.log(result);
+                                    callback(result);
+                                } else {
+                                    console.log(result);
+                                    callback({
+                                        status: -1,
+                                        error: {
+                                            type: "email",
+                                            idx: 1,
+                                            desc: "data is not correct"
+                                        }
+                                    });
+                                }
+                            } else {
+                                alert("no internet");
+                            }
+                            //                            } else {
+                            //                                console.log(data)
+                            //                                //offline like this for now in development
+                            //                                if (SESSION.get("user_id") && SESSION.get("user_pwd") && SESSION.get("user_name") && SESSION.get("user_email")) {
+                            //                                    if (SESSION.get("user_pwd") == md5(data.pwd) && SESSION.get("user_email") == data.email) {
+                            //                                        Models.User.read(function(offline_user) {
+                            //
+                            //                                            callback({user: offline_user, status: 0});
+                            //                                        });
+                            ////                                        callback({
+                            ////                                            status: 0
+                            ////                                        });
+                            //                                    } else {
+                            //                                        callback({
+                            //                                            status: -1
+                            //                                        });
+                            //                                    }
+                            //                                } else {
+                            //                                    callback({
+                            //                                        status: -1
+                            //                                    });
+                            //                                }
+                            //                            }
+                        });
+//                    }
+                    }
 
                 },
+                        
+                logout: function(callback){
+                    //session
+                    SESSION.clear();
+                    callback();
+                },
+                        
                 create: function(data, callback) {
 //                        data = {
 //                            name: "Igor",
@@ -1049,25 +1074,29 @@ function onDeviceReady() {
                     DB.from("xiao_project_partners as pp");
                     DB.where('pp.project_id ="'+params.project_id+'"');
                     API.read(function(data){
-                        var users = [], remove_array = [], add_array = [];
-                        data.forEach(function(el){
-                            users.push(el.user_id);
-                        });
-                        params.userIds.forEach(function(el){
-                            if(users.indexOf(el) === -1){
-                                remove_array.push(el);
+                        var db_users = data, all_new_users = params.users, remove_array = "", add_array = [];
+//                        data.forEach(function(el){
+//                            users.push(el.user_id);
+//                        });
+                        // if in db no such user ---> add it
+                        all_new_users.forEach(function(el){
+                            if(db_users.indexOf(el) === -1){
+                                add_array.push({
+                                    project_id  :   params.project_id,
+                                    user_id     :   el
+                                });
                             }
                         });
-                        users.forEach(function(el){
-                            if(params.userIds.indexOf(el) === -1){
-                                add_array.push(el);
+                        // if in new array of users no DB user ----> remove it
+                        db_users.forEach(function(el){
+                            if(all_new_users.indexOf(el) === -1){
+//                                remove_array.push(el);
+                                if(remove_array!="")remove_array+=",";
+                                remove_array+='"'+el+'"';
                             }
                         });
-                        // amke queries delete and add
-                        // amke queries delete and add
-                        // amke queries delete and add
-                        // amke queries delete and add
-                        // amke queries delete and add
+                        if(add_array.length > 0)API.batch_insert('xiao_project_partners', add_array);
+                        if(remove_array.length > 0)API.remove('xiao_project_partners', 'project_id = "'+params.project_id+'" AND user_id IN('+remove_array+')');
                     });
                 },
                 
@@ -1733,6 +1762,7 @@ function onDeviceReady() {
 
 
             document.dispatchEvent(a);
+            if(!BROWSER_TEST_VERSION)navigator.splashscreen.hide();
 
         }(
                 // PRIVATE
@@ -3201,14 +3231,14 @@ function onDeviceReady() {
                                                 //                SOCKET  : SERVER.SOCKET
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
-//                                                SESSION: SERVER.SESSION,
-//                                                DB: SERVER.DB._init_db(),
+                                                SESSION: SERVER.SESSION,
+                                                DB: SERVER.DB._init_db(),
                                                 // if it is needed to RECREATE DB AND STORAGE 
                                                 // uncomment lines below
                                                 // than comment again after refresh
 
-                                                SESSION: SERVER.SESSION._init_storage(1),
-                                                DB: SERVER.DB._init_db(1),
+//                                                SESSION: SERVER.SESSION._init_storage(1),
+//                                                DB: SERVER.DB._init_db(1),
                                                 PHONE: SERVER.PHONE
 
                                             };
