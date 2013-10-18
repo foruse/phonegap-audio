@@ -251,7 +251,7 @@ function onDeviceReady() {
                                 for (var i in data.users) {
                                     partners.push({
                                         group_id: insert_id,
-                                        user_id: data.users[i]
+                                        user_id: data.users[i].id
                                     });
                                 }
                                 DB.batch_insert('xiao_partner_group_users', partners, function() {
@@ -470,7 +470,11 @@ function onDeviceReady() {
                     if (id == this._last_play_id && this._last_play_path != null) {
                         console.log("PLAY SAME FILE!!!");
                         // if continue to play current media file
-                        PHONE.VoiceMessage.play(this._last_play_path);
+//                        PHONE.VoiceMessage.play(this._last_play_path, callback);
+                        PHONE.VoiceMessage.play(this._last_play_path, function(dur){
+                            callback(dur);
+//                            alert(dur)
+                        });
                     } else {
 //                        alert(id+" "+this._last_play_id);
                         // if new media file
@@ -490,7 +494,8 @@ function onDeviceReady() {
 //                                        PHONE.VoiceMessage.play(data['local_path'], function(dur){
                                         PHONE.VoiceMessage.play_and_get_duration(data['local_path'], function(dur){
 //                                            alert(dur);
-                                            callback(dur);
+                                            callback(Math.ceil(dur));
+//                                            alert(dur)
 //                                            callback(PHONE.VoiceMessage.getDuration());
                                         });
                                         _this._last_play_path = data.local_path;
@@ -505,7 +510,8 @@ function onDeviceReady() {
 //                                            PHONE.VoiceMessage.play(new_local_path, function(dur){
                                             PHONE.VoiceMessage.play_and_get_duration(new_local_path, function(dur){
 //                                                alert(dur);
-                                                callback(dur);
+                                                callback(Math.ceil(dur));
+//                                                alert(dur)
 //                                                callback(PHONE.VoiceMessage.getDuration());
                                             });
                                             _this._last_play_path = new_local_path;
@@ -578,12 +584,12 @@ function onDeviceReady() {
                 stop: function() {
                     // probably we will need to pass file name here
                     PHONE.VoiceMessage.stop();
-                    alert("stop");
+//                    alert("stop");
                 },
                 pause: function() {
                     // probably we will need to pass file name here
                     PHONE.VoiceMessage.pause();
-                    alert("pause");
+//                    alert("pause");
                 },
                 get_current_position : function(callback){
                     PHONE.VoiceMessage.getPlayTime(callback);
@@ -1293,7 +1299,8 @@ function onDeviceReady() {
                     DB.left_join("xiao_users AS u", "u.id = pc.user_id");
                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                     DB.where('pc.project_id ="' + project_id + '"');
-                    DB.order_by('pc.update_time');
+//                    DB.order_by('pc.update_time');
+                    DB.order_by('pc.time');
                     var login_user = SESSION.get("user_id");
 //                        DB.query(function(messages) {
                     API.read(function(messages) {
@@ -1351,7 +1358,8 @@ function onDeviceReady() {
                         DB.join("xiao_users AS u", "u.id = pc.user_id");
                         DB.join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('pc.id IN (' + in_m + ')');
-                        DB.order_by('pc.update_time');
+//                        DB.order_by('pc.update_time');
+                        DB.order_by('pc.time');
                         API._clear_tables_to_sync();
                         DB.query(function(messages) {
                             var mess_result = [];
@@ -1571,7 +1579,8 @@ function onDeviceReady() {
                     DB.left_join("xiao_users AS u", "u.id = tc.user_id");
                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                     DB.where('tc.todo_id ="' + project_id + '"');
-                    DB.order_by('tc.update_time');
+//                    DB.order_by('tc.update_time');
+                    DB.order_by('tc.time');
                     var login_user = SESSION.get("user_id");
 //                        DB.query(function(messages) {
                     API.read(function(messages) {
@@ -1631,7 +1640,8 @@ function onDeviceReady() {
                         DB.join("xiao_users AS u", "u.id = tc.user_id");
                         DB.join("xiao_companies AS c", "u.company_id = c.id");
                         DB.where('tc.id IN (' + in_m + ')');
-                        DB.order_by('tc.update_time');
+//                        DB.order_by('tc.update_time');
+                        DB.order_by('tc.time');
                         API._clear_tables_to_sync();
                         DB.query(function(messages) {
                             var mess_result = [];
@@ -2833,7 +2843,7 @@ function onDeviceReady() {
                                                                     fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
 //                                                                        inited_fs = dir;
                                                                         _this.fs = dir;
-                                                                        this.fs.getFile(new_file_name, {create: true, exclusive: false}, function(fileEntry) {
+                                                                        _this.fs.getFile(new_file_name, {create: true, exclusive: false}, function(fileEntry) {
                                                                             _this.file_path = fileEntry.fullPath;
                                                                             _this.short_name = fileEntry;
                                                                             callback(fileEntry.fullPath);
@@ -2952,7 +2962,7 @@ function onDeviceReady() {
                                                                 _this.last_record_path = file_path;
                                                                 callback(file_path);
                                                             });
-
+//                                                            alert("record start")
                                                         };
 
                                                         this.record_stop = function() {
@@ -2967,11 +2977,13 @@ function onDeviceReady() {
 //                                                                alert("afetr stop")
 
                                                             }
+//                                                            alert("record stop")
                                                         };
 
                                                         this.record_play = function(file) {
                                                             this.audio = new Media(file, this.log_success, this.log_error);
                                                             this.audio.play();
+//                                                            alert("record play")
                                                         };
 
                                                         this.play = function(file, callback) {
@@ -2979,7 +2991,7 @@ function onDeviceReady() {
 //                                                            this.audio = null;
 //                                                            this.audio = new Media(file, this.log_success, this.log_error);
                                                             this.audio.play();
-//                                                            if(callback)callback(this.audio.getDuration());
+                                                            if(callback)callback(this.audio.getDuration());
 //                                                            var _this = this;
 //                                                            console.log(this.file_path);
 //                                                            if (this.audio === null || this.file_path != file) {
@@ -2992,6 +3004,7 @@ function onDeviceReady() {
 //                                                                this.audio.play();
 //                                                            }
 
+//                                                            alert("play")
                                                         };
                                                         
                                                         this.play_and_get_duration = function(file, callback){
@@ -3018,16 +3031,19 @@ function onDeviceReady() {
                                                                     }
                                                                 }, 100);
                                                             }
+//                                                            alert("play with dur")
                                                         };
 
                                                         this.pause = function() {
                                                             if (this.audio !== null)
                                                                 this.audio.pause();
+//                                                            alert("pause")
                                                         };
 
                                                         this.stop = function() {
                                                             if (this.audio !== null) 
                                                                 this.audio.stop();
+//                                                            alert("stop")
                                                         };
 
                                                         this.getPlayTime = function(callback) {
@@ -3038,6 +3054,7 @@ function onDeviceReady() {
                                                                     function(err) {
 
                                                                     });
+//                                                            alert("getPlayTime")
                                                         };
                                                         
 //                                                        this.getDuration = function(){
@@ -3048,6 +3065,7 @@ function onDeviceReady() {
                                                         this.seekTo = function(pos){
                                                             if (this.audio !== null) 
                                                                 return this.audio.seekTo(pos);
+//                                                            alert("seekTo")
                                                         };
                                                         
                                                     }

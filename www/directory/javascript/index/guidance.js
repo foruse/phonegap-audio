@@ -127,6 +127,12 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, loginEvent){
 			loginInfoManagement : loginInfoManagement
 		});
 
+		this.attach({
+			beforeshow : function(){
+				Global.history.clear();
+			}
+		});
+
 		loginInfoManagement.attach({
 			login : function(e){
 				login.login(e.email, e.password);

@@ -102,6 +102,9 @@
 .calendar_month.focused li[datestatus="0"], .calendar_month.focused+li li[datestatus="-1"] {
 	color : #484848;
 }
+.calendar_month.focused li[day="6"], .calendar_month.focused li[day="0"]{
+	opacity : 0.7;
+}
 .calendar_month ol {
 	position : relative;
 	z-index : 2;

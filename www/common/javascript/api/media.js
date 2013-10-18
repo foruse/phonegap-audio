@@ -25,10 +25,6 @@ this.Voice = (function(IntervalTimer, Models){
 					callback.call(this, i, len);
 				}, len);
 			});
-
-			if(_position){
-				Models.VoiceMessage.set_current_position(_position);
-			}
 		},
 		recordStart : function(){
 			if(!Models.VoiceMessage)

@@ -162,6 +162,9 @@
 	padding : 0 5px;
 	overflow : hidden;
 }
+.chatList_praise > p:empty + sub {
+	display : none;
+}
 .chatList_praise > sub {
 	width : 5px;
 	height : 9px;

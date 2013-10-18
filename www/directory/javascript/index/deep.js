@@ -402,14 +402,11 @@ this.SendTodo = (function(UserManagementList, Validation, Global, validationHand
 		this.attach({
 			beforeshow : function(e){
 				titleBar.find('button[action="sendTodoCompleted"]').onuserclick = function(){
-//                                    alert("touch")
-//                                        alert(dateValidation.validationEl.value);    
 					if(!titleValidation.validate())
 						return;
 
-					if(!dateValidation.validate()){
+					if(!dateValidation.validate())
 						return;
-                                        }
 
 					var users = userManagementList.getAllUsers();
 
@@ -445,7 +442,6 @@ this.SendTodo = (function(UserManagementList, Validation, Global, validationHand
 		// 绑定日期控件事件
 		this.find('li>input[type="date"]').attach({
 			change : function(e){
-//				var endDate = sendTodo = this.valueAsDate;
 				var endDate = this.valueAsDate;
 
 				this.previousElementSibling.value = endDate.toLocaleDateString();

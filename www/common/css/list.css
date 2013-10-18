@@ -30,6 +30,10 @@
 }
 .anchorList aside dt > span {
 	vertical-align : top;
+	white-space : nowrap;
+	overflow : hidden;
+	text-overflow : ellipsis;
+	display : block;
 }
 .anchorList aside dd {
 	height : 16px;

@@ -178,7 +178,10 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 
 	Schedule.override({
 		hideBackButton : true,
-		title : "MY CALENDAR 日程"
+		title : "MY CALENDAR 日程",
+		tools : [
+			{ urlname : "systemOption", action : "set" }
+		]
 	});
 
 	Schedule.properties({

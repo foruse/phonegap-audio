@@ -289,11 +289,16 @@
 	margin-right : 31px;
 	overflow : hidden;
 }
+#tab_SPP li[tab="schedule"].focused {
+	background-color : #39a85a;
+}
 #tab_SPP li[tab="project"] {
 	border-color : #f1af0f;
+	background : url(../../../common/image/width24.png) 9px -847px no-repeat;
 }
 #tab_SPP li[tab="project"].focused {
 	background-color : #f1af0f;
+	background-position : 9px -897px;
 }
 #tab_SPP li[tab="partner"] {
 	border-color : #00b0d6;
@@ -310,18 +315,20 @@
 	padding : 9px;
 	background : url(../../../common/image/width24.png) 0 0 no-repeat content-box content-box;
 }
+#tab_SPP li.focused > button {
+	background-position : 0 -825px;
+}
 #tab_SPP li[tab="project"] > button {
-	background-position : 3px -25px;
+	position : relative;
+	top : 2px;
+	background-position : 3px -325px;
 }
 #tab_SPP li[tab="project"].focused > button {
-	background-position : 3px -325px;
+	background-position : 3px -25px;
 }
 #tab_SPP li[tab="partner"] > button {
 	background-position : 1px -50px;
 }
 #tab_SPP li[tab="partner"].focused > button {
 	background-position : 1px -350px;
-}
-#tab_SPP li[tab="project"] > button {
-	background-position : 3px -25px;
 }

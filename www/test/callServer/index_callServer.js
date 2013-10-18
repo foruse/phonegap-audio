@@ -9,7 +9,7 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 		open : function(name, params, _complete, _isUpload){
 			var LoadingBar = Wait.LoadingBar;
 
-			LoadingBar.show(_isUpload ? "正在上传数据.." : null);
+			//LoadingBar.show(_isUpload ? "正在上传数据.." : null);
 
 			open.call(CallServer, name, params, function(data, isCache, isSuccess){
 				if(isCache){
@@ -21,7 +21,7 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 				// 测试延迟设置
 				setTimeout(function(){
 					if(!isSuccess){
-						LoadingBar.error((_isUpload ? "上传" : "加载") + "数据失败..");
+						//LoadingBar.error((_isUpload ? "上传" : "加载") + "数据失败..");
 						return;
 					}
 
@@ -59,7 +59,8 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 		["getAllArchives",		"url",										"", true],
 		["getArchivedProject",	new Text("url?id={id}"),					"", true],
 
-		["addCommentForTodo",			new Text("url?text={text}&type={type}&projectId={projectId}"),	""]
+		["addCommentForTodo",			new Text("url?text={text}&type={type}&projectId={projectId}"),	""],
+		["logout",				"",											""]
 	], allHandlers);
 
 	return CallServer;

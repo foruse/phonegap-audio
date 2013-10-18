@@ -126,6 +126,7 @@ this.Discussion = (function(ProjectPanel, ChatList){
 					function(data){
 						if(type !== "voice")
 							return;
+
 						attachment.resetFrom("project");
 						attachment.resetId(data.id);
 					}

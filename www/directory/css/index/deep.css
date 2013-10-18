@@ -100,6 +100,9 @@
 	right : 5px;
 	top : 0;
 }
+#account section li:last-child {
+	display : none;
+}
 #account li:last-child > dl {
 	border : 0 none;
 }

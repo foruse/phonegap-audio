@@ -181,13 +181,24 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 	})
 ));
 
-this.SystemOption = (function(AnchorList, anchorData){
+this.SystemOption = (function(AnchorList, Global, anchorData){
 	function SystemOption(selector){
 		///	<summary>
 		///	系统项。
 		///	</summary>
 		/// <param name="selector" type="string">对应的元素选择器</param>
 		new AnchorList(anchorData).appendTo(this.find(">section")[0]);
+
+		this.attach({
+			userclick : function(e, targetEl){
+				if(targetEl.between(">footer>button", this).length > 0){
+					CallServer.open("logout", null, function(data){
+						Global.history.go("login");
+					});
+					return;
+				}
+			}
+		});
 	};
 	SystemOption = new NonstaticClass(SystemOption, "Bao.Page.Index.Secondary.SystemOption", PagePanel.prototype);
 
@@ -198,6 +209,7 @@ this.SystemOption = (function(AnchorList, anchorData){
 	return SystemOption.constructor;
 }(
 	Bao.UI.Control.List.AnchorList,
+	Bao.Global,
 	// anchorData
 	[
 		{ key : "globalSearch", title : "搜索全部" },

@@ -133,7 +133,7 @@
 
 #workStream > ul > li {
 	margin-top : 5px;
-	min-height : 62px;
+	min-height : 80px;
 }
 #workStream li > figure {
 	width : 62px;
@@ -153,5 +153,5 @@
 
 #titleBar button[action="projectManagement"] {
 	border : 8px solid #f1af0f;
-	background : url(../../../common/image/width12.png) no-repeat 0 -180px content-box content-box;
+	background : #f1af0f url(../../../common/image/width12.png) no-repeat 0 -175px content-box content-box;
 }
