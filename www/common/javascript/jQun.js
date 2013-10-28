@@ -1,8 +1,8 @@
 /*
  *  类库名称：jQun
  *  中文释义：骥群(聚集在一起的千里马)
- *  文档状态：1.0.6.4
- *  本次修改：对jQun、NonstaticClass、Static增加toString方法。
+ *  文档状态：1.0.6.5
+ *  本次修改：修改参数描述。
  *  开发浏览器信息：firefox 20.0+ 、 chrome 26.0+、基于webkit的手机浏览器
  */
 
@@ -25,7 +25,7 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 		///	<summary>
 		///	返回一个通过指定选择器筛选出来的元素集合。
 		///	</summary>
-		///	<param name="_selector" type="string, element, array">选择器、html、dom元素或dom元素数组。</param>
+		///	<param name="_selector" type="String, HTMLElement, Array">选择器、html、dom元素或dom元素数组。</param>
 		if(jQun.isInstanceOf(this, arguments.callee)){
 			return this.creator.apply(this, arguments);
 		}
@@ -41,10 +41,10 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	将属性添加到对象或修改现有属性的特性。
 				///	</summary>
-				///	<param name="obj" type="object">对其添加或修改属性的对象。</param>
-				///	<param name="name" type="string">需要添加或修改的属性名。</param>
+				///	<param name="obj" type="Object">对其添加或修改属性的对象。</param>
+				///	<param name="name" type="String">需要添加或修改的属性名。</param>
 				///	<param name="value" type="*">需要添加或修改的属性值。</param>
-				///	<param name="_descriptor" type="object">需要添加或修改的属性描述符。</param>
+				///	<param name="_descriptor" type="Object">需要添加或修改的属性描述符。</param>
 				var isAccessor, desc = { configurable : true, writable : true };
 
 				if(!_descriptor){
@@ -79,9 +79,9 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	将一个或多个属性添加到对象，并/或修改现有属性的特性。
 				///	</summary>
-				///	<param name="obj" type="object">对其添加或修改属性的对象。</param>
-				///	<param name="properties" type="object">包含一个或多个属性的键值对。</param>
-				///	<param name="_descriptor" type="object">需要添加或修改的属性描述符。</param>
+				///	<param name="obj" type="Object">对其添加或修改属性的对象。</param>
+				///	<param name="properties" type="Object">包含一个或多个属性的键值对。</param>
+				///	<param name="_descriptor" type="Object">需要添加或修改的属性描述符。</param>
 				forEach(properties, function(value, name){
 					define(obj, name, value, _descriptor);
 				});
@@ -93,8 +93,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	返回一个不包含所有指定属性名称的对象。
 				///	</summary>
-				///	<param name="obj" type="object">需要排除属性的对象。</param>
-				///	<param name="properties" type="array">需要排除的属性名称数组。</param>
+				///	<param name="obj" type="Object">需要排除属性的对象。</param>
+				///	<param name="properties" type="Array">需要排除的属性名称数组。</param>
 				var result = set({}, obj);
 
 				forEach(properties, function(name){
@@ -106,8 +106,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	遍历对象的所有枚举成员并对其执行指定操作函数。
 				///	</summary>
-				///	<param name="obj" type="object">需要遍历的对象。</param>
-				///	<param name="fn" type="function">指定操作的函数。</param>
+				///	<param name="obj" type="Object">需要遍历的对象。</param>
+				///	<param name="fn" type="Function">指定操作的函数。</param>
 				///	<param name="_this" type="*">指定操作函数的 this 对象。</param>
 				every(obj, function(){
 					fn.apply(this, arguments);
@@ -118,15 +118,15 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	判断对象是否为指定类构造函数的一级实例（即直接由该类实例化）。
 				///	</summary>
-				///	<param name="obj" type="object">用于判断的实例对象。</param>
-				///	<param name="constructor" type="function">指定的类。</param>
+				///	<param name="obj" type="Object">用于判断的实例对象。</param>
+				///	<param name="constructor" type="Function">指定的类。</param>
 				return Object.getPrototypeOf(obj) === constructor.prototype;
 			},
 			isPropertyOf : function(obj, property){
 				///	<summary>
 				///	检测对象自己是否具有指定属性或访问器。
 				///	</summary>
-				///	<param name="obj" type="object">一个可能具有指定属性或访问器的对象。</param>
+				///	<param name="obj" type="Object">一个可能具有指定属性或访问器的对象。</param>
 				///	<param name="property" type="*">用于检测的属性或访问器。</param>
 				var names = ["value", "get", "set"];
 
@@ -140,8 +140,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	深度合并对象中所有项，返回一个新的对象。
 				///	</summary>
-				///	<param name="obj" type="object, array">需要合并的项。</param>
-				///	<param name="args" type="object, array">其他需要合并的项列表。</param>
+				///	<param name="obj" type="Object, Array">需要合并的项。</param>
+				///	<param name="args" type="Object, Array">其他需要合并的项列表。</param>
 				if(obj instanceof Array)
 					return obj.concat.apply(obj, toArray(arguments, 1));
 
@@ -156,8 +156,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	将对象中的每个枚举元素进行再枚举并执行指定操作（双重嵌套的forEach）。
 				///	</summary>
-				///	<param name="obj" type="object">需要嵌套枚举并执行指定操作的对象（一般为json）。</param>
-				///	<param name="fn" type="function">指定的操作函数。</param>
+				///	<param name="obj" type="Object">需要嵌套枚举并执行指定操作的对象（一般为json）。</param>
+				///	<param name="fn" type="Function">指定的操作函数。</param>
 				///	<param name="_this" type="*">指定操作函数的 this 对象。</param>
 				if(fn === undefined){
 					fn = fn.bind(_this);
@@ -171,8 +171,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	添加或修改指定对象的属性。
 				///	</summary>
-				///	<param name="obj" type="object">需要添加或修改属性的对象。</param>
-				///	<param name="properties" type="object">需要添加或修改的属性集合。</param>
+				///	<param name="obj" type="Object">需要添加或修改属性的对象。</param>
+				///	<param name="properties" type="Object">需要添加或修改的属性集合。</param>
 				forEach(properties, function(val, name){
 					obj[name] = val;
 				});
@@ -183,9 +183,9 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	将类似数组的对象转化为数组。
 				///	</summary>
-				///	<param name="obj" type="object">需要转化为数组的对象。</param>
-				///	<param name="_start" type="number">进行截取，截取的起始索引。</param>
-				///	<param name="_start" type="number">需要截取的末尾索引。</param>
+				///	<param name="obj" type="Object">需要转化为数组的对象。</param>
+				///	<param name="_start" type="Number">进行截取，截取的起始索引。</param>
+				///	<param name="_start" type="Number">需要截取的末尾索引。</param>
 				return [].slice.call(obj, _start || 0, _end);
 			},
 			toString : toNative
@@ -204,7 +204,7 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	给该类的属性赋值。
 				///	</summary>
-				///	<param name="properties" type="object">包含一个或多个属性的键值对。</param>
+				///	<param name="properties" type="Object">包含一个或多个属性的键值对。</param>
 				forEach(properties, function(val, name){
 					if(val === undefined){
 						return;
@@ -253,9 +253,9 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	派生出一个类。
 				///	</summary>
-				///	<param name="_constructor" type="function">源构造函数。</param>
-				///	<param name="_name" type="string">构造函数的名称。</param>
-				///	<param name="_ParentClass" type="object">需要继承的父类</param>
+				///	<param name="_constructor" type="Function">源构造函数。</param>
+				///	<param name="_name" type="String">构造函数的名称。</param>
+				///	<param name="_ParentClass" type="jQun">需要继承的父类</param>
 				var Pseudo, argumentList = [];
 
 				if(!_constructor){
@@ -308,15 +308,15 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	判断该类是否是指定类的子孙类。
 				///	</summary>
-				///	<param name="AncestorClass" type="object, function">指定的类，或指定类的构造函数。</param>
+				///	<param name="AncestorClass" type="jQun, Function">指定的类，或指定类的构造函数。</param>
 				return this instanceof AncestorClass.constructor;
 			},
 			override : function(properties, _descriptor){
 				///	<summary>
 				///	重写一个或多个属性的值。
 				///	</summary>
-				///	<param name="properties" type="object">包含一个或多个属性的键值对。</param>
-				///	<param name="_descriptor" type="object">被添加或修改属性的描述符。</param>
+				///	<param name="properties" type="Object">包含一个或多个属性的键值对。</param>
+				///	<param name="_descriptor" type="Object">被添加或修改属性的描述符。</param>
 				return this.properties(properties, _descriptor);
 			},
 			ownClass : function(){
@@ -335,8 +335,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 				///	<summary>
 				///	将一个或多个属性添加到该类，并/或修改现有属性的特性。
 				///	</summary>
-				///	<param name="properties" type="object">包含一个或多个属性的键值对。</param>
-				///	<param name="_descriptor" type="object">被添加或修改属性的描述符。</param>
+				///	<param name="properties" type="Object">包含一个或多个属性的键值对。</param>
+				///	<param name="_descriptor" type="Object">被添加或修改属性的描述符。</param>
 				return defineProperties(this, properties, _descriptor);
 			},
 			toString : function(){
@@ -371,8 +371,8 @@ jQun = (function(argRegx, argListRegx, every, toNative){
 		///	<summary>
 		///	确定对象的所有枚举成员是否满足指定的测试。
 		///	</summary>
-		///	<param name="obj" type="object">需要测试成员的对象。</param>
-		///	<param name="fn" type="function">用于测试对象成员的测试函数。</param>
+		///	<param name="obj" type="Object">需要测试成员的对象。</param>
+		///	<param name="fn" type="Function">用于测试对象成员的测试函数。</param>
 		///	<param name="_this" type="*">指定测试函数的 this 对象。</param>
 		if(obj instanceof Array)
 			return obj.every(fn, _this);
@@ -414,9 +414,9 @@ this.NonstaticClass = NonstaticClass = (function(){
 		///	<summary>
 		///	派生出一个非静态类。
 		///	</summary>
-		///	<param name="_constructor" type="function">源构造函数。</param>
-		///	<param name="_name" type="string">构造函数的名称。</param>
-		///	<param name="_ParentClass" type="function">需要继承的父类</param>
+		///	<param name="_constructor" type="Function">源构造函数。</param>
+		///	<param name="_name" type="String">构造函数的名称。</param>
+		///	<param name="_ParentClass" type="Function">需要继承的父类</param>
 		return new jQun(_constructor, _name, _ParentClass || this.ownClass());
 	};
 	NonstaticClass = new jQun(NonstaticClass, "NonstaticClass");
@@ -438,10 +438,10 @@ this.StaticClass = StaticClass = (function(){
 		///	<summary>
 		///	派生出一个静态类。
 		///	</summary>
-		///	<param name="_constructor" type="function">源构造函数。</param>
-		///	<param name="_name" type="string">构造函数的名称。</param>
-		///	<param name="_properties" type="object">类的属性。</param>
-		///	<param name="_descriptor" type="object, array">被添加属性的描述符。</param>
+		///	<param name="_constructor" type="Function">源构造函数。</param>
+		///	<param name="_name" type="String">构造函数的名称。</param>
+		///	<param name="_properties" type="Object">类的属性。</param>
+		///	<param name="_descriptor" type="Object, Array">被添加属性的描述符。</param>
 		var NewClass = new jQun(_constructor, _name, this.ownClass());
 
 		NewClass.properties({
@@ -534,7 +534,7 @@ this.JSON = (function(){
 			///	<summary>
 			///	将字符串转化为json。
 			///	</summary>
-			///	<param name="jsonStr" type="string">需要转化为json的字符串。</param>
+			///	<param name="jsonStr" type="String">需要转化为json的字符串。</param>
 			try {
 				return window.JSON.parse(jsonStr);
 			} catch(e){
@@ -561,8 +561,8 @@ this.List = List = (function(addArrayMethods){
 			///	<summary>
 			///	交替性取出集合中的符合项。
 			///	</summary>
-			///	<param name="num" type="number">取模运算值。</param>
-			///	<param name="_remainder" type="number">余数。</param>
+			///	<param name="num" type="Number">取模运算值。</param>
+			///	<param name="_remainder" type="Number">余数。</param>
 			var list = this.createList();
 
 			_remainder = _remainder || 0;
@@ -585,7 +585,7 @@ this.List = List = (function(addArrayMethods){
 			///	<summary>
 			///	合并另一个集合。
 			///	</summary>
-			///	<param name="list" type="array">另一个集合。</param>
+			///	<param name="list" type="Array">另一个集合。</param>
 			this.push.apply(this, list);
 			return this;
 		},
@@ -686,7 +686,7 @@ this.Text = (function(tRegx){
 		///	<summary>
 		///	用于操作字符串文本的类。
 		///	</summary>
-		///	<param name="text" type="string">字符串文本。</param>
+		///	<param name="text" type="String">字符串文本。</param>
 		this.assign({
 			text : text instanceof Array ? text.join("") : text
 		});
@@ -704,7 +704,7 @@ this.Text = (function(tRegx){
 			///	<summary>
 			///	返回一个替换数据后的字符串。
 			///	</summary>
-			///	<param name="replacement" type="object, function">需要替换的数据或者自行替换的处理函数。</param>
+			///	<param name="replacement" type="Object, Function">需要替换的数据或者自行替换的处理函数。</param>
 			return this.text.replace(
 				tRegx,
 				typeof replacement === "function" ? replacement : function(str, modifier, word){
@@ -724,7 +724,7 @@ this.Text = (function(tRegx){
 			///	<summary>
 			///	 返回一个替换数据后的连接字符串。
 			///	</summary>
-			///	<param name="params" type="object">需要替换的数据或者自行替换的处理函数。</param>
+			///	<param name="params" type="Object, Function">需要替换的数据或者自行替换的处理函数。</param>
 			var encode = encodeURIComponent;
 
 			return this.replace(function(str, modifier, word){
@@ -781,7 +781,7 @@ this.Cache = (function(JSON, sessionStorage){
 		///	<summary>
 		///	缓存数据。
 		///	</summary>
-		/// <param name="name" type="string">缓存数据的标识名称</param>
+		/// <param name="name" type="String">缓存数据的标识名称</param>
 		this.assign({
 			name : name
 		});
@@ -793,7 +793,7 @@ this.Cache = (function(JSON, sessionStorage){
 			///	<summary>
 			///	删除某一条缓存数据。
 			///	</summary>
-			/// <param name="key" type="string">缓存数据的主键</param>
+			/// <param name="key" type="String">缓存数据的主键</param>
 			var storage = this.get();
 
 			delete storage[key];
@@ -803,7 +803,7 @@ this.Cache = (function(JSON, sessionStorage){
 			///	<summary>
 			///	获取某一条缓存数据。
 			///	</summary>
-			/// <param name="_key" type="string">缓存数据的主键</param>
+			/// <param name="_key" type="String">缓存数据的主键</param>
 			var storage = JSON.parse(sessionStorage.getItem(this.name));
 
 			if(!storage){
@@ -821,8 +821,8 @@ this.Cache = (function(JSON, sessionStorage){
 			///	<summary>
 			///	设置某一条缓存数据。
 			///	</summary>
-			/// <param name="key" type="string">缓存数据的主键</param>
-			/// <param name="value" type="object,string,number">缓存数据的值</param>
+			/// <param name="key" type="String">缓存数据的主键</param>
+			/// <param name="value" type="Object, String, Number, Boolean">缓存数据的值</param>
 			var storage = this.get();
 
 			storage[key] = value;
@@ -842,11 +842,11 @@ this.RequestConnection = (function(Text, Cache, JSON, toUpperCase, getEncodedPar
 		///	<summary>
 		///	ajax请求连接。
 		///	</summary>
-		///	<param name="name" type="string">连接名称。</param>
-		///	<param name="url" type="string">连接url。</param>
-		///	<param name="type" type="string">发送数据的方式("POST"、"GET")。</param>
-		///	<param name="_handler" type="function">接收数据后的处理函数。</param>
-		///	<param name="_cacheable" type="boolean">是否缓存数据。</param>
+		///	<param name="name" type="String">连接名称。</param>
+		///	<param name="url" type="String">连接url。</param>
+		///	<param name="type" type="String">发送数据的方式("POST"、"GET")。</param>
+		///	<param name="_handler" type="Function">接收数据后的处理函数。</param>
+		///	<param name="_cacheable" type="Boolean">是否缓存数据。</param>
 		var cache;
 
 		_cacheable = _cacheable === true;
@@ -878,11 +878,11 @@ this.RequestConnection = (function(Text, Cache, JSON, toUpperCase, getEncodedPar
 			///	<summary>
 			///	开打一个ajax连接。
 			///	</summary>
-			///	<param name="name" type="string">连接名称。</param>
-			///	<param name="params" type="object">url的替换参数及post方法的传递参数。</param>
-			///	<param name="complete" type="function">异步完成后所执行的回调函数。</param>
-			///	<param name="responseType" type="string">返回的数据格式。</param>
-			///	<param name="isTesting" type="boolean">是否在测试环境中。</param>
+			///	<param name="name" type="String">连接名称。</param>
+			///	<param name="params" type="Object">url的替换参数及post方法的传递参数。</param>
+			///	<param name="complete" type="Function">异步完成后所执行的回调函数。</param>
+			///	<param name="responseType" type="String">返回的数据格式。</param>
+			///	<param name="isTesting" type="Boolean">是否在测试环境中。</param>
 			var url = this.url, cache = this.cache,
 
 				isJSON = responseType === "JSON",
@@ -964,7 +964,7 @@ this.RequestConnection = (function(Text, Cache, JSON, toUpperCase, getEncodedPar
 		///	<summary>
 		///	获取post方法的参数字符串。
 		///	</summary>
-		///	<param name="params" type="object">参数。</param>
+		///	<param name="params" type="Object">参数。</param>
 		var arr = [];
 
 		forEach(params, function(value, name){
@@ -995,7 +995,7 @@ this.RequestHeader = (function(){
 			///	<summary>
 			///	向指定的ajax请求添加头部信息。
 			///	</summary>
-			///	<param name="name" type="object">ajax请求。</param>
+			///	<param name="name" type="Object">ajax请求。</param>
 			request.setRequestHeader(this.name, this.value);
 			return this;
 		},
@@ -1003,8 +1003,8 @@ this.RequestHeader = (function(){
 			///	<summary>
 			///	重新设置请求头部信息。
 			///	</summary>
-			///	<param name="name" type="string">名称。</param>
-			///	<param name="value" type="string">值。</param>
+			///	<param name="name" type="String">名称。</param>
+			///	<param name="value" type="String">值。</param>
 			this.name = name;
 			this.value = value;
 			return this;
@@ -1032,21 +1032,21 @@ this.Storage = (function(){
 			///	<summary>
 			///	删除一项储存数据。
 			///	</summary>
-			///	<param name="key" type="string">数据主键。</param>
+			///	<param name="key" type="String">数据主键。</param>
 			return delete this[key];
 		},
 		get : function(key){
 			///	<summary>
 			///	获取数据。
 			///	</summary>
-			///	<param name="key" type="string">数据主键。</param>
+			///	<param name="key" type="String">数据主键。</param>
 			return this[key];
 		},
 		set : function(key, value){
 			///	<summary>
 			///	设置数据。
 			///	</summary>
-			///	<param name="key" type="string">数据主键。</param>
+			///	<param name="key" type="String">数据主键。</param>
 			///	<param name="value" type="*">数据值。</param>
 			this[key] = value;
 			return this;
@@ -1082,9 +1082,9 @@ this.Ajax = (function(Storage, RequestHeader, RequestConnection){
 			///	<summary>
 			///	开打一个ajax连接。
 			///	</summary>
-			///	<param name="name" type="string">连接名称。</param>
-			///	<param name="params" type="object">url的替换参数及post方法的传递参数。</param>
-			///	<param name="_complete" type="function">异步完成后所执行的回调函数。</param>
+			///	<param name="name" type="String">连接名称。</param>
+			///	<param name="params" type="Object">url的替换参数及post方法的传递参数。</param>
+			///	<param name="_complete" type="Function">异步完成后所执行的回调函数。</param>
 			var requstConnection = this.requestStorage.get(name);
 
 			if(!requstConnection){
@@ -1103,8 +1103,8 @@ this.Ajax = (function(Storage, RequestHeader, RequestConnection){
 			///	<summary>
 			///	存储ajax连接信息。
 			///	</summary>
-			///	<param name="allSettings" type="array">ajax连接信息。</param>
-			///	<param name="_handlers" type="function">所有的数据格式转换函数。</param>
+			///	<param name="allSettings" type="Array">ajax连接信息。</param>
+			///	<param name="_handlers" type="Function">所有的数据格式转换函数。</param>
 			var requestStorage = this.requestStorage
 
 			if(!_handlers){
@@ -1125,7 +1125,7 @@ this.Ajax = (function(Storage, RequestHeader, RequestConnection){
 			///	<summary>
 			///	设置返回数据的格式。
 			///	</summary>
-			///	<param name="type" type="string">数据的格式("text"、"json"、"arraybuffer"、"blob"或"document")。</param>
+			///	<param name="type" type="String">数据的格式("text"、"json"、"arraybuffer"、"blob"或"document")。</param>
 			this.responseType = type.toLowerCase();
 		}
 	});
@@ -1142,7 +1142,7 @@ this.ElementPropertyCollection = ElementPropertyCollection = (function(){
 		///	<summary>
 		///	所有元素属性的基类。
 		///	</summary>
-		///	<param name="elementList" type="array">元素列表（由 ElementList 类或其子孙类的实例）。</param>
+		///	<param name="elementList" type="jQun.ElementList">元素列表（由 jQun.ElementList 类或其子孙类的实例）。</param>
 		var name = this.propertyName;
 
 		this.assign({
@@ -1187,7 +1187,7 @@ this.AttributeCollection = (function(){
 			///	<summary>
 			///	判断是否包含指定名称的属性。
 			///	</summary>
-			///	<param name="name" type="string">属性的名称。</param>
+			///	<param name="name" type="String">属性的名称。</param>
 			return !this.sources.every(function(element){
 				return element.getAttribute(name) == null;
 			});
@@ -1196,14 +1196,14 @@ this.AttributeCollection = (function(){
 			///	<summary>
 			///	通过指定名称获取属性。
 			///	</summary>
-			///	<param name="name" type="string">需要获取属性的名称。</param>
+			///	<param name="name" type="String">需要获取属性的名称。</param>
 			return this.sources[0].getAttribute(name);
 		},
 		set : function(name, value){
 			///	<summary>
 			///	设置集合中所有元素的属性。
 			///	</summary>
-			///	<param name="name" type="string">需要设置属性的名称。</param>
+			///	<param name="name" type="String">需要设置属性的名称。</param>
 			///	<param name="value" type="*">需要设置属性的值。</param>
 			this.sources.forEach(function(element){
 				element.setAttribute(name, value);
@@ -1214,7 +1214,7 @@ this.AttributeCollection = (function(){
 			///	<summary>
 			///	移除具有指定名称的属性。
 			///	</summary>
-			///	<param name="name" type="string">需要移除属性的名称。</param>
+			///	<param name="name" type="String">需要移除属性的名称。</param>
 			this.sources.forEach(function(element){
 				element.removeAttribute(name);
 			});
@@ -1224,8 +1224,8 @@ this.AttributeCollection = (function(){
 			///	<summary>
 			///	移除指定的旧属性，添加指定的新属性。
 			///	</summary>
-			///	<param name="oldAttrName" type="string">需要移除属性的名称。</param>
-			///	<param name="newAttrName" type="string">需要添加属性的名称。</param>
+			///	<param name="oldAttrName" type="String">需要移除属性的名称。</param>
+			///	<param name="newAttrName" type="String">需要添加属性的名称。</param>
 			///	<param name="newAttrValue" type="*">需要添加属性的值。</param>
 			this.sources.forEach(function(element){
 				element.removeAttribute(oldAttrName);
@@ -1271,14 +1271,14 @@ this.CSSPropertyCollection = (function(){
 			///	<summary>
 			///	获取集合中第一个元素的CSS属性。
 			///	</summary>
-			///	<param name="name" type="string">CSS属性名。</param>
+			///	<param name="name" type="String">CSS属性名。</param>
 			return this[0][name];
 		},
 		set : function(name, value){
 			///	<summary>
 			///	设置集合中所有元素的CSS属性。
 			///	</summary>
-			///	<param name="properties" type="object">CSS属性键值对。</param>
+			///	<param name="properties" type="Object">CSS属性键值对。</param>
 			this.forEach(function(style){
 				style[name] = value;
 			});
@@ -1332,22 +1332,22 @@ this.ChildrenCollection = (function(){
 			///	<summary>
 			///	添加一个子节点。
 			///	</summary>
-			///	<param name="node" type="object">需要添加的子节点。</param>
+			///	<param name="node" type="Node">需要添加的子节点。</param>
 			return this.insert(node);
 		},
 		contains : function(node){
 			///	<summary>
 			///	返回一个布尔值，该值表示该集合内的所有子节点是否包含指定的子节点。
 			///	</summary>
-			///	<param name="node" type="object">可能包含的子节点。</param>
+			///	<param name="node" type="Node">可能包含的子节点。</param>
 			return this.valueOf().contains(node);
 		},
 		insert : function(node, _idx){
 			///	<summary>
 			///	在指定的索引处插入节点。
 			///	</summary>
-			///	<param name="node" type="object">需要插入的节点。</param>
-			///	<param name="_idx" type="object">指定的索引处。</param>
+			///	<param name="node" type="Node">需要插入的节点。</param>
+			///	<param name="_idx" type="Number">指定的索引处。</param>
 			var sources = this.sources;
 
 			sources.insertTo.call([node], sources[0], _idx);
@@ -1384,7 +1384,7 @@ this.ClassListCollection = (function(){
 			///	<summary>
 			///	为集合中每一个元素添加指定的单个class。
 			///	</summary>
-			///	<param name="className" type="string">指定的单个class。</param>
+			///	<param name="className" type="String">指定的单个class。</param>
 			this.forEach(function(classList){
 				classList.add(className);
 			});
@@ -1394,7 +1394,7 @@ this.ClassListCollection = (function(){
 			///	<summary>
 			///	判断集合中是否有一个元素包含指定的class。
 			///	</summary>
-			///	<param name="className" type="string">指定的单个class。</param>
+			///	<param name="className" type="String">指定的单个class。</param>
 			return !this.every(function(classList){
 				return !classList.contains(className);
 			});
@@ -1403,7 +1403,7 @@ this.ClassListCollection = (function(){
 			///	<summary>
 			///	为集合中每一个元素移除指定的单个class。
 			///	</summary>
-			///	<param name="className" type="string">指定的单个class。</param>
+			///	<param name="className" type="String">指定的单个class。</param>
 			this.forEach(function(classList){
 				classList.remove(className);
 			});
@@ -1413,8 +1413,8 @@ this.ClassListCollection = (function(){
 			///	<summary>
 			///	为集合中每一个元素移除指定的旧class，添加指定的新class。
 			///	</summary>
-			///	<param name="oldClass" type="string">指定的旧class。</param>
-			///	<param name="newClass" type="string">指定的新class。</param>
+			///	<param name="oldClass" type="String">指定的旧class。</param>
+			///	<param name="newClass" type="String">指定的新class。</param>
 			this.forEach(function(classList){
 				classList.remove(oldClass);
 				classList.add(newClass);
@@ -1425,7 +1425,7 @@ this.ClassListCollection = (function(){
 			///	<summary>
 			///	自行判断集合中每一个元素是否含有指定的class：有则移除，无则添加。
 			///	</summary>
-			///	<param name="className" type="string">指定的单个class。</param>
+			///	<param name="className" type="String">指定的单个class。</param>
 			this.forEach(function(classList){
 				classList.toggle(className);
 			});
@@ -1471,7 +1471,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 				///	<summary>
 				///	初始化属性。
 				///	</summary>
-				///	<param name="attrs" type="object">属性键值对。</param>
+				///	<param name="attrs" type="Object">属性键值对。</param>
 				var pseudo = { sources : this },
 					emptyAttr = emptyAttrCollection;
 
@@ -1487,7 +1487,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	将集合中所有节点添加至指定的父节点。
 			///	</summary>
-			///	<param name="parentNode" type="node">指定的父节点。</param>
+			///	<param name="parentNode" type="Node">指定的父节点。</param>
 			this.insertTo(parentNode);
 			return this;
 		},
@@ -1495,10 +1495,10 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	向集合中所有元素注册事件侦听器。
 			///	</summary>
-			///	<param name="events" type="object">事件侦听器键值对。</param>
-			///	<param name="_capture" type="boolean">侦听器是否运行于捕获阶段。</param>
-			///	<param name="_priority" type="number">优先级，数字越大，优先级越高。</param>
-			///	<param name="_useWeakReference" type="boolean">是否是属于强引用。</param>
+			///	<param name="events" type="Object">事件侦听器键值对。</param>
+			///	<param name="_capture" type="Boolean">侦听器是否运行于捕获阶段。</param>
+			///	<param name="_priority" type="Number">优先级，数字越大，优先级越高。</param>
+			///	<param name="_useWeakReference" type="Boolean">是否是属于强引用。</param>
 			var nodeList = this, otherArgs = toArray(arguments, 1);
 			
 			forEach(events, function(fn, type){
@@ -1520,7 +1520,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	移除集合中所有节点的事件侦听器。
 			///	</summary>
-			///	<param name="events" type="object">事件侦听器键值对。</param>
+			///	<param name="events" type="Object">事件侦听器键值对。</param>
 			this.forEach(function(node){
 				forEach(events, function(fn, type){
 					node.removeEventListener(type, fn);
@@ -1532,7 +1532,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	判断指定节点是否是该集合中某个节点的后代节点。
 			///	</summary>
-			///	<param name="childNode" type="node">指定的节点。</param>
+			///	<param name="childNode" type="Node">指定的节点。</param>
 			return !this.every(function(node){
 				return !node.contains(childNode);
 			});
@@ -1541,7 +1541,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	将集合中所有节点插入至指定的节点之前。
 			///	</summary>
-			///	<param name="targetNode" type="node">指定节点。</param>
+			///	<param name="targetNode" type="Node">指定节点。</param>
 			this.forEach(function(node){
 				this.insertBefore(node, targetNode);
 			}, targetNode.parentNode);
@@ -1552,8 +1552,8 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	将集合中所有节点插入至指定索引的节点之前。
 			///	</summary>
-			///	<param name="parentNode" type="node">指定的父节点。</param>
-			///	<param name="_idx" type="number">指定节点的索引值。</param>
+			///	<param name="parentNode" type="Node">指定的父节点。</param>
+			///	<param name="_idx" type="Number">指定节点的索引值。</param>
 			if(_idx !== undefined){
 				var childNodes = parentNode.childNodes;
 
@@ -1582,7 +1582,7 @@ this.NodeList = (function(AttributeCollection, toArray){
 			///	<summary>
 			///	将集合中所有节点去替换指定的节点。
 			///	</summary>
-			///	<param name="targetNode" type="node">指定的节点。</param>
+			///	<param name="targetNode" type="Node">指定的节点。</param>
 			this.insertBefore(targetNode);
 			this.remove.call([targetNode]);
 
@@ -1601,8 +1601,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 		///	<summary>
 		///	通过指定选择器筛选元素。
 		///	</summary>
-		///	<param name="_selector" type="string, object">选择器或dom元素。</param>
-		///	<param name="_parent" type="object">指定查询的父节点。</param>
+		///	<param name="_selector" type="String, Element">选择器或dom元素。</param>
+		///	<param name="_parent" type="Element">指定查询的父节元素。</param>
 		if(!_selector)
 			return;
 
@@ -1655,8 +1655,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	创建个新的元素集合。
 			///	</summary>
-			///	<param name="_selector" type="string, object">选择器、html或dom元素。</param>
-			///	<param name="_parent" type="object">指定查询的父节点。</param>
+			///	<param name="_selector" type="String, Element">选择器、html或dom元素。</param>
+			///	<param name="_parent" type="Element">指定查询的父节点。</param>
 			return new ElementList.constructor(_selector, _parent);
 		}
 	});
@@ -1666,8 +1666,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	在该集合内的每一个元素与指定的祖先元素之间，查找其他符合条件的元素。
 			///	</summary>
-			///	<param name="_selector" type="string">指定查找的祖先元素选择器。</param>
-			///	<param name="_ancestor" type="object">指定的一个祖先元素。</param>
+			///	<param name="_selector" type="String">指定查找的祖先元素选择器。</param>
+			///	<param name="_ancestor" type="Element">指定的一个祖先元素。</param>
 			var list = this.createList(), els = this.createList(_selector || "*", _ancestor);
 
 			this.forEach(function(element){
@@ -1701,8 +1701,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	将指定属性从集合的所有元素中删除。
 			///	</summary>
-			///	<param name="name" type="string">需要删除的属性名。</param>
-			///	<param name="_type" type="string">需要删除的属性种类。</param>
+			///	<param name="name" type="String">需要删除的属性名。</param>
+			///	<param name="_type" type="String">需要删除的属性种类。</param>
 			if(_type === "css"){
 				this.style[name] = "";
 				return this;
@@ -1722,7 +1722,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	通过选择器查找子孙元素。
 			///	</summary>
-			///	<param name="_selector" type="string">选择器。</param>
+			///	<param name="_selector" type="String">选择器。</param>
 			var source = ElementList.constructor.source, list = this.createList();
 
 			this.forEach(function(htmlElement){
@@ -1750,8 +1750,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	获取集合中第一个元素的属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
-			///	<param name="_type" type="string">需要获取的属性种类。</param>
+			///	<param name="name" type="String">属性名。</param>
+			///	<param name="_type" type="String">需要获取的属性种类。</param>
 			if(_type === "css")
 				return this.getCSSPropertyValue(name);
 
@@ -1764,14 +1764,14 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	获取集合中第一个元素的特性属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
+			///	<param name="name" type="String">属性名。</param>
 			return emptyAttrCollection.get.call({ sources : this }, name);
 		},
 		getCSSPropertyValue : function(name){
 			///	<summary>
 			///	获取集合中第一个元素的css属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
+			///	<param name="name" type="String">属性名。</param>
 			return window.getComputedStyle(this[0])[name];
 		},
 		parent : function(){
@@ -1794,7 +1794,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	根据指定名称，移除集合中每一个元素的特性属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
+			///	<param name="name" type="String">属性名。</param>
 			emptyAttrCollection.remove.call({ sources : this }, name);
 			return this;
 		},
@@ -1803,9 +1803,9 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	设置集合中所有元素的属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
+			///	<param name="name" type="String">属性名。</param>
 			///	<param name="value" type="*">属性值。</param>
-			///	<param name="_type" type="string">需要设置的属性种类。</param>
+			///	<param name="_type" type="String">需要设置的属性种类。</param>
 			if(_type){
 				this[_type === "css" ? "setCSSPropertyValue" : "setAttribute"](name, value);
 				return this;
@@ -1820,8 +1820,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	设置集合中每一个元素的特性属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
-			///	<param name="value" type="string">属性值。</param>
+			///	<param name="name" type="String">属性名。</param>
+			///	<param name="value" type="String">属性值。</param>
 			emptyAttrCollection.set.call({ sources : this }, name, value);
 			return this;
 		},
@@ -1829,8 +1829,8 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 			///	<summary>
 			///	设置集合中每一个元素的css属性。
 			///	</summary>
-			///	<param name="name" type="string">属性名。</param>
-			///	<param name="value" type="string">属性值。</param>
+			///	<param name="name" type="String">属性名。</param>
+			///	<param name="value" type="String">属性值。</param>
 			this.forEach(function(element){
 				element.style[name] = value;
 			});
@@ -1871,7 +1871,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 				///	<summary>
 				///	移除所有现有子元素，添加指定的子元素。
 				///	</summary>
-				///	<param name="elements" type="array">需要添加的子元素集合。</param>
+				///	<param name="elements" type="Array, jQun.NodeList">需要添加的子元素集合。</param>
 				this.children.remove();
 				this.constructor(elementList).appendTo(this[0]);
 			}
@@ -1887,7 +1887,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 				///	<summary>
 				///	设置集合中所有元素的class属性。
 				///	</summary>
-				///	<param name="className" type="string">需要设置的class字符串。</param>
+				///	<param name="className" type="String">需要设置的class字符串。</param>
 				this.set("className", className);
 			}
 		},
@@ -1933,7 +1933,7 @@ this.ElementList = (function(NodeList, ChildrenCollection, ClassListCollection, 
 		///	<summary>
 		///	设置元素的对应部分。
 		///	</summary>
-		///	<param name="element" type="element">需要设置元素的对应部分，标签应为对应标签。</param>
+		///	<param name="element" type="Element">需要设置元素的对应部分，标签应为对应标签。</param>
 		this.createList(element).insertTo(this[0], 0);
 	}
 ));
@@ -1969,8 +1969,8 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	创建个新的HTML元素集合。
 			///	</summary>
-			///	<param name="_selector" type="string, object">选择器、html或dom元素。</param>
-			///	<param name="_parent" type="object">指定查询的父节点。</param>
+			///	<param name="_selector" type="String, Object">选择器、html或dom元素。</param>
+			///	<param name="_parent" type="Element">指定查询的父节元素。</param>
 			return new HTMLElementList.constructor(_selector, _parent);
 		}
 	});
@@ -1987,7 +1987,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 				///	<summary>
 				///	设置集合中每一个元素的style属性。
 				///	</summary>
-				///	<param name="cssText" type="string">需要设置的style属性字符串。</param>
+				///	<param name="cssText" type="String">需要设置的style属性字符串。</param>
 				emptyAttrCollection.set.call({ sources : this }, "style", cssText);
 			}
 		}
@@ -1998,7 +1998,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	获取或设置集合中每一个元素的高。
 			///	</summary>
-			///	<param name="h" type="string, number">元素的高。</param>
+			///	<param name="h" type="String, Number">元素的高。</param>
 			return this.metrics("height", h);
 		},
 		hide : function(){
@@ -2011,8 +2011,8 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	获取或设置元素指定盒模型属性值。
 			///	</summary>
-			///	<param name="name" type="string">盒模型属性名称。</param>
-			///	<param name="_value" type="string, number">盒模型属性值。</param>
+			///	<param name="name" type="String">盒模型属性名称。</param>
+			///	<param name="_value" type="String, Number">盒模型属性值。</param>
 			if(_value === undefined){
 				return this.get(name, "css").split(/[^\d\.]*/).join("") - 0;
 			}
@@ -2028,7 +2028,7 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	获取第一个元素的客户端属性。
 			///	</summary>
-			///	<param name="_name" type="string">需要只返回单个属性值的属性名称。</param>
+			///	<param name="_name" type="String">需要只返回单个属性值的属性名称。</param>
 			var rect = this[0].getBoundingClientRect();
 
 			return _name in rect ? rect[_name] : rect;
@@ -2037,14 +2037,14 @@ this.HTMLElementList = (function(ElementList, CSSPropertyCollection, addProperty
 			///	<summary>
 			///	显示元素。
 			///	</summary>
-			///	<param name="_display" type="string">修改元素display的css值。</param>
+			///	<param name="_display" type="String">修改元素display的css值。</param>
 			return this.setCSSPropertyValue("display", _display || "block");
 		},
 		width : function(w){
 			///	<summary>
 			///	获取或设置集合中每一个元素的宽。
 			///	</summary>
-			///	<param name="w" type="string, number">元素的宽。</param>
+			///	<param name="w" type="String, Number">元素的宽。</param>
 			return this.metrics("width", w);
 		}
 	});
@@ -2071,9 +2071,9 @@ this.Event = (function(HTMLElementList, EventTarget, window, define, set, toArra
 		///	<summary>
 		///	DOM事件类。
 		///	</summary>
-		///	<param name="name" type="string">事件名称。</param>
-		///	<param name="_init" type="function">事件初始化函数。</param>
-		///	<param name="_type" type="string">事件类型(MouseEvent、UIEvent、WheelEvent等)。</param>
+		///	<param name="name" type="String">事件名称。</param>
+		///	<param name="_init" type="Function">事件初始化函数。</param>
+		///	<param name="_type" type="String">事件类型(MouseEvent、UIEvent、WheelEvent等)。</param>
 		this.assign({
 			initEventArgs : [name].concat(_initEventArgs ? toArray(arguments, 3) : [true, true]),
 			name : name,
@@ -2092,7 +2092,7 @@ this.Event = (function(HTMLElementList, EventTarget, window, define, set, toArra
 			///	<summary>
 			///	应该附加该事件的标签。
 			///	</summary>
-			///	<param name="target" type="string, element">标签名称。</param>
+			///	<param name="target" type="String, Node">标签名称。</param>
 			var t = [], name = this.name, attach = HTMLElementList.prototype.attach;
 
 			if(typeof target === "string"){
@@ -2141,7 +2141,7 @@ this.Event = (function(HTMLElementList, EventTarget, window, define, set, toArra
 			///	<summary>
 			///	设置事件属性。
 			///	</summary>
-			///	<param name="attrs" type="object">属性键值对。</param>
+			///	<param name="attrs" type="Object">属性键值对。</param>
 			this.eventAttrs = attrs;
 			return this;
 		},
@@ -2150,7 +2150,7 @@ this.Event = (function(HTMLElementList, EventTarget, window, define, set, toArra
 			///	<summary>
 			///	触发事件。
 			///	</summary>
-			///	<param name="target" type="element">触发该事件的元素。</param>
+			///	<param name="target" type="Node">触发该事件的节点。</param>
 			var type = this.type, event = new window[type](this.name);
 
 			event["init" + type].apply(event, this.initEventArgs);
@@ -2176,7 +2176,7 @@ this.HTML = (function(HTMLElementList, HTMLElement, sRegx, fRegx, tReplace){
 		///	<summary>
 		///	html模板。
 		///	</summary>
-		///	<param name="template" type="string, HTMLElement, jQun.HTMLElementList">html模板源字符串或标签(一般为script标签)。</param>
+		///	<param name="template" type="String, HTMLElement, jQun.HTMLElementList">html模板源字符串或标签(一般为script标签)。</param>
 
 		// 此类代码还需优化
 		var arr = [], variables = {};
@@ -2250,7 +2250,7 @@ this.HTML = (function(HTMLElementList, HTMLElement, sRegx, fRegx, tReplace){
 			///	<summary>
 			///	将模板转化为html元素。
 			///	</summary>
-			///	<param name="data" type="object, array">需要渲染的数据。</param>
+			///	<param name="data" type="Object, Array">需要渲染的数据。</param>
 			var htmlElementList = new HTMLElementList(""), parent = document.createElement("div");
 
 			parent.innerHTML = this.render(_data);
@@ -2264,7 +2264,7 @@ this.HTML = (function(HTMLElementList, HTMLElement, sRegx, fRegx, tReplace){
 			///	<summary>
 			///	渲染模板。
 			///	</summary>
-			///	<param name="_data" type="object, array">需要渲染的数据。</param>
+			///	<param name="_data" type="Object, Array">需要渲染的数据。</param>
 			return new Function("jQun", this.template).call(_data || {}, jQun);
 		},
 		template : ""

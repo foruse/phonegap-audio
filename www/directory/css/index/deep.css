@@ -129,9 +129,9 @@
 }
 #account > header aside {
 	left : 0;
-	width : 62px;
-	height : 62px;
-	padding : 14px 11px;
+	width : 64px;
+	height : 64px;
+	padding : 13px 10px;
 	box-sizing : content-box;
 	border-top : 0 none;
 	border-left : 0 none;
@@ -147,6 +147,14 @@
 }
 #account > header dd {
 	left : 60px;
+}
+#account .largeAvatarPanel > input {
+	position : relative;
+	top : -64px;
+	opacity : 0;
+}
+#account .largeAvatarPanel > input[readonly] {
+	display : none;
 }
 #account > footer, #account > footer > ul {
 	display : none;
@@ -356,9 +364,9 @@
 }
 
 #sendTodo {
-	padding : 0 10px;
+	padding : 10px;
 }
-#sendTodo > * {
+#sendTodo > *:not(:first-child) {
 	margin-top : 5px;
 }
 #sendTodo > header {
@@ -409,8 +417,20 @@
 	opacity : 1;
 }
 #sendTodo > section textarea {
-	min-height : 140px;
-	max-height : 140px;
+	min-height : 100px;
+	max-height : 100px;
+}
+#sendTodo > section[desc="attachment"] > ul {
+	background-color : #fff;
+	display : inline-block;
+	padding : 5px;
+}
+#sendTodo > section[desc="attachment"] > ul:empty {
+	display : none;
+}
+#sendTodo > section[desc="attachment"] > footer {
+	text-align : right;
+	margin-top : 5px;
 }
 #titleBar button[action="sendTodoCompleted"] {
 	background-color : #f1af10;

@@ -115,7 +115,7 @@
 }
 .discussion_info aside {
 	padding : 5px;
-	display : inline-block;
+	display : none;
 }
 .discussion_info aside:empty {
 	display : none;
@@ -136,7 +136,7 @@
 	min-height : 80px;
 }
 #workStream li > figure {
-	width : 62px;
+	width : 64px;
 	height : 80px;
 }
 #workStream li figcaption {

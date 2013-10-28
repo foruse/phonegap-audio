@@ -43,14 +43,15 @@
 //
 // PLEASE MENTION THAT SOCKET no interten method should be improved with .on("error"  ...etc   ---> in production
 
-
-
+var CURRENT_DEVICE;
 BROWSER_TEST_VERSION = function check_dev() {
     var ua = navigator.userAgent.toLowerCase();
     if (ua.match(/(iphone|ipod|ipad)/i)) {
         device = "ios";
+        CURRENT_DEVICE = "ios";
     } else if (ua.match(/android/i)) {
         device = "android";
+        CURRENT_DEVICE = "android";
     } else if (ua.match(/blackberry/i)) {
         device = "blackberry";
     } else if (ua.match(/windows phone os 7.5/i)) {
@@ -63,7 +64,7 @@ BROWSER_TEST_VERSION = function check_dev() {
 }();
 
 Models = {}; // Models are needed to be created in the following method. As they are used before the device ready actually. They are filled later.
-Models.UsersCounter = {
+Models.UsersCounter = {  // moved out here while login is not finished
                 // uncomment all the stuff below for PRODUCTION
                 read: function(callback) {
 //                    SOCKET.request("counter", {}, function(result) {
@@ -79,9 +80,10 @@ Models.UsersCounter = {
 //BROWSER_TEST_VERSION ? onDeviceReady() : document.addEventListener("deviceready", onDeviceReady, false);
 
 onDeviceReady();
-
+//Models.VoiceMessage.record_start(function(data){console.log(data);})
+//Models.VoiceMessage.record_stop();
+//Models.ProjectChat.send_message({project_id:"20131022135459bTtL3QFT_xiao_projects", content:"",type:"voice", local_path:"file:///storage/emulated/0/BAO/20131023131801u5d32Igor.amr"},function(data){console.log(data);})
 function onDeviceReady() {
-
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
@@ -93,28 +95,27 @@ function onDeviceReady() {
             sockets: ""
         },
         server_url: "http://115.28.131.52:3000",
-//        server_url: "http://212.8.40.254:5959",
 //        server_url: "http://192.168.200.110:3000",
-        audio_format: "wav",
-        root_dir: "BAO"//,
-//        route: function(url) {
-//            return  this.server_url + this.routes[url];
-//        }
+//        server_url: "http://212.8.40.254:5959",
+//        audio_format: "wav",
+        audio_format: CURRENT_DEVICE === "ios" ? "wav" : "amr",
+        root_dir: "BAO",
+        default_user_avatar: "../../common/image/avatar_default.jpg"
     };
 
-    var ROUTE = function(url) {
+    var ROUTE = function(url) { //server route helper
         return  CONFIG.server_url + "/" + CONFIG.routes[url];
     };
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
     // APPLICATION CONFIGS
 
-        var a = document.createEvent("HTMLEvents");
-        a.initEvent("appload", true, true);
+        var a = document.createEvent("HTMLEvents"); //fire up frontend part Event ---> event created
+        a.initEvent("appload", true, true); //init event -----------------> see the last line in the App_model--->the event is dispatched there
 
         App_model = function(SERVER) {
             /* Private */
-            var API = SERVER.API,
+            var API = SERVER.API,  //redefine all the stuff here for more simple usage
                     DB = SERVER.DB,
                     SESSION = SERVER.SESSION,
                     PHONE = SERVER.PHONE,
@@ -157,6 +158,7 @@ function onDeviceReady() {
                 invite_via_sms: function() {
                     // Kyle told not to use any stuff for sms
                     // just basic phone send sms features --> so in HTML <a href="sms:+380978822222222"
+                    // or phonegap plugin
                 }
             };
 
@@ -179,7 +181,7 @@ function onDeviceReady() {
                     if (typeof(id) === "function") {// no id
                         callback = id;
                         // all partners
-                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
+                        DB.select("u.id, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_company_partners AS p");
                         DB.join("xiao_users AS u", "u.id = p.user_id");
                         DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -189,7 +191,7 @@ function onDeviceReady() {
                         API.read(callback);
                     } else if (id) {
                         // partner by id
-                        DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
+                        DB.select("u.id, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                         DB.from("xiao_users AS u");
                         DB.join("xiao_company_partners AS p", "p.company_id = u.id");
                         DB.join("xiao_companies AS c", "p.company_id = c.id");
@@ -221,7 +223,7 @@ function onDeviceReady() {
                     API.read(callback);
                 },
                 get_group_users: function(id, callback) {
-                    DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
+                    DB.select("u.id, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                     DB.from("xiao_partner_groups AS g");
                     DB.join("xiao_partner_group_users AS gu", "gu.group_id = g.id");
                     DB.join("xiao_users AS u", "u.id = gu.user_id");
@@ -268,11 +270,12 @@ function onDeviceReady() {
 
             };
             Models.User = {
+                
                 update: function(data, callback) {
 
 //                        data = {
 //                            name: "Igor",
-//                            avatar: "src?sdsd/../fsdfsd",
+//                            avatar: "src?sdsd/../fsdfsd",     --->    local_path
 //                            pinyin: "x",
 //                            pwd: "testuser_123",
 //                            email: "testuser_123",
@@ -283,13 +286,18 @@ function onDeviceReady() {
 //                            isNewUser: 1,
 //                            company_id: 1
 //                        };
+                    if("avatar" in data){
+                        data.local_path = data.avatar;
+                        delete data.avatar;
+                        data.server_path = ""; //  ----->>   HOOK TO KNOW in sync THAT avatar was updated
+                    }
                     callback ?
                             API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"', callback) :
                             API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"');
                 },
                 read: function(callback) {
                     // get user data
-                    DB.select("u.id, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
+                    DB.select("u.id, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                     DB.from("xiao_users AS u");
                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                     DB.where('u.id ="' + SESSION.get("user_id") + '"');
@@ -430,13 +438,18 @@ function onDeviceReady() {
                 create: function(data, callback) {
 //                        data = {
 //                            name: "Igor",
-//                            avatar: "src?sdsd/../fsdfsd",
+//                            avatar: "src?sdsd/../fsdfsd",    ----> local_path
 //                            pwd: "testuser_123",
 //                            email: "testuser_123",
 //                            adress: "testuser_123",
 //                            phoneNum: "testuser_123",
 //                            position: "testuser_123"
 //                        };
+                    if("avatar" in data){
+                        data.local_path = data.avatar;
+                        delete data.avatar;
+                        data.server_path = "";
+                    }
                     SOCKET.request("registration", data, function(result) {
                         if (result !== false) {
                             if (result.user) {
@@ -495,18 +508,16 @@ function onDeviceReady() {
                     if (id == this._last_play_id && this._last_play_path != null) {
                         console.log("PLAY SAME FILE!!!");
                         // if continue to play current media file
-//                        PHONE.VoiceMessage.play(this._last_play_path, callback);
                         PHONE.VoiceMessage.play(this._last_play_path, function(dur){
-                            callback(dur);
-//                            alert(dur)
+//                            callback(Math.ceil(dur));
+                            PHONE.VoiceMessage.getPlayTime(function(pos){
+                                callback(Math.ceil(dur), Math.ceil(pos));
+                            });
                         });
                     } else {
-//                        alert(id+" "+this._last_play_id);
                         // if new media file
                         // we check db if this file exists in local fs
                         if(type != "project" && type != "todo"){console.log("type:");console.log(type);alert(type);alert("no type");return;}
-//                        switch (type) {
-//                            case "project":
                                 DB.select('pc.id, pc.local_path, pc.server_path');
                                 DB.from('xiao_'+type+'_comments AS pc');
                                 DB.where('pc.id="' + id + '"');
@@ -516,12 +527,11 @@ function onDeviceReady() {
                                     if (data.local_path != "" && data.local_path != undefined) {
                                         console.log("file exists");
                                         // if this file exists in local db then there is a local path in the db
-//                                        PHONE.VoiceMessage.play(data['local_path'], function(dur){
                                         PHONE.VoiceMessage.play_and_get_duration(data['local_path'], function(dur){
-//                                            alert(dur);
-                                            callback(Math.ceil(dur));
-//                                            alert(dur)
-//                                            callback(PHONE.VoiceMessage.getDuration());
+//                                            callback(Math.ceil(dur));
+                                            PHONE.VoiceMessage.getPlayTime(function(pos){
+                                                callback(Math.ceil(dur), Math.ceil(pos));
+                                            });
                                         });
                                         _this._last_play_path = data.local_path;
                                         _this._last_play_id = id;
@@ -530,80 +540,19 @@ function onDeviceReady() {
                                         PHONE.VoiceMessage.download(data['server_path'], function(new_local_path) {
                                             console.log("new_local_path");
                                             console.log(new_local_path);
-//                                            PHONE.VoiceMessage.play(new_local_path);
-//                                            callback(PHONE.VoiceMessage.getDuration());
-//                                            PHONE.VoiceMessage.play(new_local_path, function(dur){
                                             PHONE.VoiceMessage.play_and_get_duration(new_local_path, function(dur){
-//                                                alert(dur);
-                                                callback(Math.ceil(dur));
-//                                                alert(dur)
-//                                                callback(PHONE.VoiceMessage.getDuration());
+//                                                callback(Math.ceil(dur));
+                                                PHONE.VoiceMessage.getPlayTime(function(pos){
+                                                    callback(Math.ceil(dur), Math.ceil(pos));
+                                                });
                                             });
                                             _this._last_play_path = new_local_path;
                                             _this._last_play_id = id;
                                             DB.update('xiao_'+type+'_comments', {local_path: new_local_path}, 'id="' + id + '"');
                                         });
-                                        // if local_path is empty we need to download file from server
-                                        // and then play
-        //                                        PHONE.VoiceMessage.play(_this._last_play_path);
                                     }
                                 });
                                 API._clear_tables_to_sync();
-//                                break;
-//                            
-//                            case "todo":
-//                                DB.select('pc.id, pc.local_path, pc.server_path');
-//                                DB.from('xiao_project_comments AS pc');
-//                                DB.where('pc.id="' + id + '"');
-//                                DB.row(function(data) {
-//                                    console.log("PLAY data");
-//                                    console.log(data);
-//                                    if (data.local_path != "" && data.local_path != undefined) {
-//                                        console.log("file exists");
-//                                        // if this file exists in local db then there is a local path in the db
-//                                        PHONE.VoiceMessage.play(data['local_path']);
-//                                        _this._last_play_path = data.local_path;
-//                                    } else {
-//                                        console.log("no file");
-//                                        PHONE.VoiceMessage.download(data['server_path'], function(new_local_path) {
-//                                            console.log("new_local_path");
-//                                            console.log(new_local_path);
-//                                            PHONE.VoiceMessage.play(new_local_path);
-//                                            _this._last_play_path = new_local_path;
-//                                            DB.update("xiao_project_comments", {local_path: new_local_path}, 'id="' + id + '"');
-//                                        });
-//                                        // if local_path is empty we need to download file from server
-//                                        // and then play
-//        //                                        PHONE.VoiceMessage.play(_this._last_play_path);
-//                                    }
-//                                });
-//                                API._clear_tables_to_sync();
-//                                break;
-//                                
-//                            default:
-//                                alert("no type");
-//                                return;
-//                        
-//                        }
-                        /*
-                         API.read(function(data){
-                         console.log(data);
-                         if(data.local_path != ""){
-                         // if this file exists in local db then there is a local path in the db
-                         _this._last_play_path = data.local_path;
-                         PHONE.VoiceMessage.play(_this._last_play_path);
-                         }else{
-                         // if local_path is empty we need to download file from server
-                         // and then play
-                         PHONE.VoiceMessage.play(_this._last_play_path);
-                         }
-                         }); */
-                        //       Models.Voice.play(path)
-                        //    }else{
-                        //      Models.File.download(id, function(path){
-                        //          Models.Voice.play(path)
-                        //      })  
-                        //    }
                     }
                 },
                 stop: function() {
@@ -627,6 +576,34 @@ function onDeviceReady() {
                 }
 
             };
+            
+            Models.Picture = {
+                camera: function(callback){
+                    PHONE.Photos.camera(callback);
+                },
+                album: function(callback){
+                    PHONE.Photos.album(callback);
+                },
+                download: function(table, id, callback){
+                    DB.select('server_path');
+                    DB.from('xiao_'+table);
+                    DB.where('id = "'+id+'"');
+                    DB.col(function(server_path){
+                        if(server_path && server_path != ""){
+                            PHONE.Files.download(server_path, function(local_path){
+                                callback(local_path);
+                                DB.update('xiao_'+table, {local_path:local_path}, 'id = "'+id+'"', function(){
+                                    API._remove_from_sync('xiao_'+table);
+                                });
+                            });
+                        }else{
+                            callback(false);
+                        }
+                    });
+                    API._clear_tables_to_sync();
+                }
+            };
+            
             Models.Project = {
                 create: function(data, callback) {
                     // data is following:
@@ -697,7 +674,7 @@ function onDeviceReady() {
                         // get inside project page
                         var result = {};
                         API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
-                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                             DB.join("xiao_users AS u", "u.id = pp.user_id");
@@ -715,7 +692,7 @@ function onDeviceReady() {
                                         creationTime: partners[0].creationTime,
                                         completeDate: partners[0].completeDate,
                                         unread: 0,
-                                        descr: partners[0].descr,
+                                        desc: partners[0].descr,
                                         attachments: []
                                     };
                                     project.users = [];
@@ -738,7 +715,7 @@ function onDeviceReady() {
                                 }
                                 make_callback({project: project});
                             });
-                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_users AS u", "u.id = p.creator_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -766,7 +743,7 @@ function onDeviceReady() {
                                 make_callback({creator: cr_user});
                             });
 
-                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                            DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                             DB.join("xiao_users AS u", "u.id = p.creator_id");
@@ -842,21 +819,24 @@ function onDeviceReady() {
                                     res.users = result.users;
                                     res.attachments = [];
                                     callback(res);
+                                    DB.update("xiao_project_comments", {read:"1"}, 'project_id = "'+ params.id +'" ', function(){
+                                        API._remove_from_sync("xiao_project_comments");
+                                    });
                                 }
                             }
                         });
                     } else {
                         // get ALL projects page
-//                        if (params.pageIndex === this.last_page_index && params.pageIndex !== 1)
-//                            return;
-//                        this.last_page_index = params.pageIndex;
+                        if (params.pageIndex === this.last_page_index && params.pageIndex !== 1)
+                            return;
+                        this.last_page_index = params.pageIndex;
                         if ("pageIndex" in params && "pageSize" in params) {
                             var result = [], logged_user = SESSION.get("user_id");
 //                            console.log(params)
                             params.othersOffset = (params.othersOffset ? params.othersOffset : 0);
                             API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies"], function() {
                                 // get all projects with ME
-                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 1 as status");
+                                DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 1 as status");
                                 DB.from("xiao_project_partners AS pp");
 //                                DB.from("xiao_projects AS p");
                                 DB.join("xiao_projects AS p", "pp.project_id = p.id");
@@ -864,6 +844,7 @@ function onDeviceReady() {
                                 DB.join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('pp.user_id = "' + logged_user + '"');
                                 DB.group_by('p.id');
+//                                DB.having('pp.user_id = "' + logged_user + '"');
                                 DB.limit(params.pageSize, (params.pageIndex - 1) * params.pageSize);
 
                                 DB.query(function(projects) {
@@ -871,15 +852,13 @@ function onDeviceReady() {
                                     if (others_limit > 0) {
                                         //if project length < page size(8) 
                                         // then GET also some projects without me
-                                        DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 2 as status");
-                                        DB.from("xiao_project_partners AS pp");
-//                                        DB.from("xiao_projects AS p");
-                                        DB.join("xiao_projects AS p", "pp.project_id = p.id");
-                                        DB.join("xiao_users AS u", "u.id = p.creator_id");
-                                        DB.join("xiao_companies AS c", "u.company_id = c.id");
+                                        DB.select("DISTINCT p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 2 as status");
+                                        DB.from("xiao_projects AS p");
+                                        DB.left_join("xiao_project_partners AS pp", "pp.project_id = p.id");
+                                        DB.left_join("xiao_users AS u", "u.id = p.creator_id");
+                                        DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                         DB.group_by('p.id');
-                                        DB.having('pp.user_id <> "' + logged_user + '"');
-//                                        DB.limit(params.pageSize - projects.length, (params.pageIndex - 1) * params.pageSize);
+                                        DB.having('p.id NOT IN ( SELECT project_id FROM xiao_project_partners WHERE user_id = "' + logged_user + '" )');
                                         DB.limit(others_limit, params.othersOffset);
                                         DB.query(function(projects_others) {
                                             projects = projects.concat(projects_others); // add not status 2 project to the end
@@ -887,75 +866,109 @@ function onDeviceReady() {
 
                                                 projects.forEach(function(pr) {
 
-                                                    DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                                                    DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                                     DB.from("xiao_projects AS p");
                                                     DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                                     DB.join("xiao_users AS u", "u.id = p.creator_id");
                                                     DB.join("xiao_companies AS c", "u.company_id = c.id");
                                                     DB.where('p.id ="' + pr.id + '"');
-
                                                     DB.query(function(partners) {
-                                                        DB.select("COUNT(pc.read) as unread");
+                                                        
+                                                        DB.select('COUNT(pc.read) as unread');
                                                         DB.from("xiao_project_comments AS pc");
                                                         DB.where('pc.project_id ="' + pr.id + '"');
                                                         DB.where('pc.read ="0"');
-//                                                        DB.group_by('pc.read');
+                                                        DB.col(function(unread1) {
+                                                            
+                                                            DB.select('COUNT(tc.read) AS unread');
+                                                            DB.from('xiao_todo_comments AS tc');
+                                                            DB.join('xiao_todos AS t','tc.todo_id = t.id');
+                                                            DB.where('t.project_id = "'+pr.id+'"');
+                                                            DB.where('tc.read = "0"');
+                                                            DB.where('(t.user_id = "'+logged_user+'" OR t.creator_id = "'+logged_user+'" )');
+                                                            
+                                                            DB.col(function(unread2) {
+                                                            
+                                                                DB.select("pc.content, pc.type");
+                                                                DB.from("xiao_project_comments AS pc");
+                                                                DB.where('pc.project_id ="' + pr.id + '"');
+                                                                DB.order_by_desc('pc.time');                                                            
+                                                                DB.row(function(last_message) {
+//                                                                    if(typeof(last_message) !== "undefined"){
+//                                                                        switch(last_message.type){
+//                                                                            case "voice":
+//                                                                                last_message.content = "new_voice_message";
+//                                                                                break;
+//                                                                            case "image":
+//                                                                                last_message.content = "new_voice_message";
+//                                                                                break;
+//                                                                            default:
+//                                                                                break;
+//                                                                        } 
+//                                                                    }else{
+//                                                                        last_message = {content : ""};
+//                                                                    }
+                                                                    if(typeof(last_message) === "undefined"){
+                                                                        last_message = {content : "", type:"text"};
+                                                                    }
+                                                                    result.push({
+                                                                        status: pr.status,
+                                                                        id: pr.id,
+                                                                        level: pr.level,
+                                                                        title: pr.title,
+                                                                        color: pr.color,
+                                                                        creationTime: pr.creationTime,
+                                                                        completeDate: pr.completeDate,
+//                                                                        unread: unread,
+                                                                        unread: parseInt(unread1,10)+parseInt(unread2,10),
+                                                                        desc: pr.descr,
+                                                                        lastMessage: last_message,
+//                                                                        lastMessage: last_message.content,
+                                                                        creator: {
+                                                                            id: pr.uid,
+                                                                            name: pr.name,
+                                                                            pinyin: pr.pinyin,
+                                                                            avatar: pr.avatar,
+                                                                            company: pr.company,
+                                                                            companyAdress: pr.companyAdress,
+                                                                            position: pr.position,
+                                                                            phoneNum: pr.phoneNum,
+                                                                            email: pr.email,
+                                                                            adress: pr.adress,
+                                                                            isNewUser: pr.isNewUser,
+                                                                            isLeader: "1",
+                                                                            QRCode: pr.QRCode
+                                                                        },
+                                                                        users: partners
+                                                                    });
+                                                                    if (result.length == projects.length) {
+                                                                        if (params.pageSize - projects.length === 0) {
+                                                                            DB.select("create_projects");
+                                                                            DB.from("xiao_users");
+                                                                            DB.where('id="' + SESSION.get('user_id') + '"');
+                                                                            DB.col(function(createProjects) {
+                                                                                callback({
+                                                                                    projects: result,
+                                                                                    pageIndex: params.pageIndex,
+                                                                                    pageSize: params.pageSize,
+        //                                                                            createProjects: createProjects,
+                                                                                    othersOffset: params.othersOffset + others_limit,
+                                                                                    emptyFolders: params.pageSize - projects.length
+                                                                                });
+                                                                            });
 
-                                                        DB.col(function(unread) {
-                                                            result.push({
-                                                                status: pr.status,
-                                                                id: pr.id,
-                                                                level: pr.level,
-                                                                title: pr.title,
-                                                                color: pr.color,
-                                                                creationTime: pr.creationTime,
-                                                                completeDate: pr.completeDate,
-                                                                unread: unread,
-                                                                descr: pr.descr,
-                                                                lastMessage: "12345",
-                                                                creator: {
-                                                                    id: pr.uid,
-                                                                    name: pr.name,
-                                                                    pinyin: pr.pinyin,
-                                                                    avatar: pr.avatar,
-                                                                    company: pr.company,
-                                                                    companyAdress: pr.companyAdress,
-                                                                    position: pr.position,
-                                                                    phoneNum: pr.phoneNum,
-                                                                    email: pr.email,
-                                                                    adress: pr.adress,
-                                                                    isNewUser: pr.isNewUser,
-                                                                    isLeader: "1",
-                                                                    QRCode: pr.QRCode
-                                                                },
-                                                                users: partners
+                                                                        } else {
+                                                                            callback({
+                                                                                projects: result,
+                                                                                pageIndex: params.pageIndex,
+                                                                                pageSize: params.pageSize,
+                                                                                othersOffset: params.othersOffset + others_limit,
+                                                                                emptyFolders: params.pageSize - projects.length
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                });
                                                             });
-                                                            if (result.length == projects.length) {
-                                                                if (params.pageSize - projects.length === 0) {
-                                                                    DB.select("create_projects");
-                                                                    DB.from("xiao_users");
-                                                                    DB.where('id="' + SESSION.get('user_id') + '"');
-                                                                    DB.col(function(createProjects) {
-                                                                        callback({
-                                                                            projects: result,
-                                                                            pageIndex: params.pageIndex,
-                                                                            pageSize: params.pageSize,
-//                                                                            createProjects: createProjects,
-                                                                            othersOffset: params.othersOffset + others_limit,
-                                                                            emptyFolders: params.pageSize - projects.length
-                                                                        });
-                                                                    });
-
-                                                                } else {
-                                                                    callback({
-                                                                        projects: result,
-                                                                        pageIndex: params.pageIndex,
-                                                                        pageSize: params.pageSize,
-                                                                        othersOffset: params.othersOffset + others_limit,
-                                                                        emptyFolders: params.pageSize - projects.length
-                                                                    });
-                                                                }
-                                                            }
                                                         });
 
                                                         API._clear_tables_to_sync();
@@ -985,73 +998,105 @@ function onDeviceReady() {
 
                                         projects.forEach(function(pr) {
 
-                                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                                            DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                             DB.from("xiao_projects AS p");
                                             DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                             DB.join("xiao_users AS u", "u.id = p.creator_id");
                                             DB.join("xiao_companies AS c", "u.company_id = c.id");
                                             DB.where('p.id ="' + pr.id + '"');
-//                                            DB.group_by('p.id');
-
                                             DB.query(function(partners) {
+                                                
                                                 DB.select("COUNT(pc.read) as unread");
                                                 DB.from("xiao_project_comments AS pc");
                                                 DB.where('pc.project_id ="' + pr.id + '"');
                                                 DB.where('pc.read ="0"');
-//                                                DB.group_by('pc.read');
+                                                DB.col(function(unread1) {
+                                                    
+                                                    DB.select('COUNT(tc.read) AS unread');
+                                                    DB.from('xiao_todo_comments AS tc');
+                                                    DB.join('xiao_todos AS t','tc.todo_id = t.id');
+                                                    DB.where('t.project_id = "'+pr.id+'"');
+                                                    DB.where('tc.read = "0"');
+                                                    DB.where('(t.user_id = "'+logged_user+'" OR t.creator_id = "'+logged_user+'" )');
+                                                    DB.col(function(unread2) {
+                                                    
+                                                        DB.select("pc.content, pc.type");
+                                                        DB.from("xiao_project_comments AS pc");
+                                                        DB.where('pc.project_id ="' + pr.id + '"');
+                                                        DB.order_by_desc('pc.time');                                                            
+                                                        DB.row(function(last_message) {
+//                                                            if(typeof(last_message) !== "undefined"){
+//                                                                switch(last_message.type){
+//                                                                    case "voice":
+//                                                                        last_message.content = "new_voice_message";
+//                                                                        break;
+//                                                                    case "image":
+//                                                                        last_message.content = "new_voice_message";
+//                                                                        break;
+//                                                                    default:
+//                                                                        break;
+//                                                                } 
+//                                                            }else{
+//                                                                last_message = {content : ""};
+//                                                            }
+                                                            if(typeof(last_message) === "undefined"){
+                                                                last_message = {content : "", type:"text"};
+                                                            }
+                                                            result.push({
+                                                                status: pr.status,
+                                                                id: pr.id,
+                                                                level: pr.level,
+                                                                title: pr.title,
+                                                                color: pr.color,
+                                                                creationTime: pr.creationTime,
+                                                                unread: unread1+unread2,
+//                                                                unread: unread,
+                                                                descr: pr.descr,
+//                                                                lastMessage: last_message.content,
+                                                                lastMessage: last_message,
+                                                                creator: {
+                                                                    id: pr.uid,
+                                                                    name: pr.name,
+                                                                    pinyin: pr.pinyin,
+                                                                    avatar: pr.avatar,
+                                                                    company: pr.company,
+                                                                    companyAdress: pr.companyAdress,
+                                                                    position: pr.position,
+                                                                    phoneNum: pr.phoneNum,
+                                                                    email: pr.email,
+                                                                    adress: pr.adress,
+                                                                    isNewUser: pr.isNewUser,
+                                                                    isLeader: "1",
+                                                                    QRCode: pr.QRCode
+                                                                },
+                                                                users: partners
+                                                            });
+                                                            if (result.length == projects.length) {
+                                                                if (params.pageSize - projects.length === 0) {
+                                                                    DB.select("create_projects");
+                                                                    DB.from("xiao_users");
+                                                                    DB.where('id="' + SESSION.get('user_id') + '"');
+                                                                    DB.col(function(createProjects) {
+                                                                        callback({
+                                                                            projects: result,
+                                                                            pageIndex: params.pageIndex,
+                                                                            pageSize: params.pageSize,
+        //                                                                    createProjects: createProjects,
+                                                                            emptyFolders: params.pageSize - projects.length
+                                                                        });
+                                                                    });
 
-                                                DB.col(function(unread) {
-                                                    result.push({
-                                                        status: pr.status,
-                                                        id: pr.id,
-                                                        level: pr.level,
-                                                        title: pr.title,
-                                                        color: pr.color,
-                                                        creationTime: pr.creationTime,
-                                                        unread: unread,
-                                                        descr: pr.descr,
-                                                        lastMessage: "12345",
-                                                        creator: {
-                                                            id: pr.uid,
-                                                            name: pr.name,
-                                                            pinyin: pr.pinyin,
-                                                            avatar: pr.avatar,
-                                                            company: pr.company,
-                                                            companyAdress: pr.companyAdress,
-                                                            position: pr.position,
-                                                            phoneNum: pr.phoneNum,
-                                                            email: pr.email,
-                                                            adress: pr.adress,
-                                                            isNewUser: pr.isNewUser,
-                                                            isLeader: "1",
-                                                            QRCode: pr.QRCode
-                                                        },
-                                                        users: partners
+                                                                } else {
+                                                                    callback({
+                                                                        projects: result,
+                                                                        pageIndex: params.pageIndex,
+                                                                        pageSize: params.pageSize,
+                                                                        emptyFolders: params.pageSize - projects.length
+                                                                    });
+                                                                }
+                                                            }
+                                                        });
                                                     });
-                                                    if (result.length == projects.length) {
-                                                        if (params.pageSize - projects.length === 0) {
-                                                            DB.select("create_projects");
-                                                            DB.from("xiao_users");
-                                                            DB.where('id="' + SESSION.get('user_id') + '"');
-                                                            DB.col(function(createProjects) {
-                                                                callback({
-                                                                    projects: result,
-                                                                    pageIndex: params.pageIndex,
-                                                                    pageSize: params.pageSize,
-//                                                                    createProjects: createProjects,
-                                                                    emptyFolders: params.pageSize - projects.length
-                                                                });
-                                                            });
-
-                                                        } else {
-                                                            callback({
-                                                                projects: result,
-                                                                pageIndex: params.pageIndex,
-                                                                pageSize: params.pageSize,
-                                                                emptyFolders: params.pageSize - projects.length
-                                                            });
-                                                        }
-                                                    }
                                                 });
 
                                                 API._clear_tables_to_sync();
@@ -1114,11 +1159,16 @@ function onDeviceReady() {
                      */
                     callback ? API.remove("xiao_projects", 'id="' + id + '"', callback) : API.remove("xiao_projects", 'id="' + id + '"');
                 },
+                
+                archive: function(id, callback){
+                    
+                },
+                
                 getArchive: function(params, callback) {
                     if (params !== null && params.id !== null) {
                         var result = {};
                         API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies", "xiao_todos"], function() {
-                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                             DB.join("xiao_users AS u", "u.id = pp.user_id");
@@ -1159,7 +1209,7 @@ function onDeviceReady() {
                                 }
                                 make_callback({project: project});
                             });
-                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_users AS u", "u.id = p.creator_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -1187,7 +1237,7 @@ function onDeviceReady() {
                                 make_callback({creator: cr_user});
                             });
 
-                            DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                            DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                             DB.from("xiao_projects AS p");
                             DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                             DB.join("xiao_users AS u", "u.id = p.creator_id");
@@ -1235,7 +1285,7 @@ function onDeviceReady() {
                     } else {
                         var result = [];
                         API._sync(["xiao_projects", "xiao_project_partners", "xiao_users", "xiao_project_comments", "xiao_companies", "xiao_todos"], function() {
-                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 1 as status");
+                            DB.select("p.id, p.level, p.title, p.color, p.creator_id, p.creationTime, p.completeDate, p.descr, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, 1 as status");
                             DB.from("xiao_project_partners AS pp");
 //                                DB.from("xiao_projects AS p");
                             DB.join("xiao_projects AS p", "pp.project_id = p.id");
@@ -1251,7 +1301,7 @@ function onDeviceReady() {
 
                                     projects.forEach(function(pr) {
 
-                                        DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
+                                        DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, pp.isLeader");
                                         DB.from("xiao_projects AS p");
                                         DB.join("xiao_project_partners AS pp", "pp.project_id = p.id");
                                         DB.join("xiao_users AS u", "u.id = p.creator_id");
@@ -1319,11 +1369,13 @@ function onDeviceReady() {
 
             };
             Models.ProjectChat = {
-                _inited_chats: [],
+//                _inited_chats: [],
                 chat_init: function(project_id, callback) {
-
+                    console.log("chat_init");
+//                    if(this._inited_chats.indexOf(project_id) > 0 )return;
+//                    this._inited_chats.push(project_id);
                     // existing messages
-                    DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, pc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                    DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, pc.read, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                     DB.from("xiao_project_comments AS pc");
                     DB.left_join("xiao_users AS u", "u.id = pc.user_id");
                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
@@ -1333,6 +1385,7 @@ function onDeviceReady() {
                     var login_user = SESSION.get("user_id");
 //                        DB.query(function(messages) {
                     API.read(function(messages) {
+                        console.log("1__________-messages")
                         var mess_result = [], unread = 0;
                         if (messages.length > 0) {
                             messages.forEach(function(mess) {
@@ -1362,7 +1415,7 @@ function onDeviceReady() {
                                         from: "project"
                                     },
                                     praise: [],
-                                    time: mess.update_time,
+                                    time: new Date(mess.time).getTime(),
                                     type: mess.type
                                 });
                             });
@@ -1377,12 +1430,13 @@ function onDeviceReady() {
 //                        if (this._inited_chats.lastIndexOf(project_id) === -1)
                     SOCKET.updatechat({type: "project", id: project_id}, function(socket_messages) { // new messages ARRAY
                         console.log("UPDATE CHAT EVENT");
+                        console.log(socket_messages)
                         var in_m = "";
                         socket_messages.forEach(function(m, i) {
                             in_m += (i != 0 ? "," : "");
                             in_m += '"' + m.id + '"';
                         });
-                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                         DB.from("xiao_project_comments AS pc");
                         DB.join("xiao_users AS u", "u.id = pc.user_id");
                         DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -1421,7 +1475,7 @@ function onDeviceReady() {
                                         from: "project"
                                     },
                                     praise: [],
-                                    time: mess.update_time,
+                                    time: new Date(mess.time).getTime(),
                                     type: mess.type
                                 });
                             });
@@ -1434,12 +1488,29 @@ function onDeviceReady() {
 //                    alert("sending mesage...");
                     console.log("sending mesage...");
                     message['user_id'] = SESSION.get("user_id"); // push user_id to message data
+                    message['read'] = '1';
                     API.insert("xiao_project_comments", message, function(insert_id) {
                         message['id'] = insert_id;
                         console.log('API.insert("xiao_project_comments"');
                         console.log(message);
                         callback(message);
                     });
+//                    else{
+//                        console.log("Image!!")
+//                        console.log(message);
+//                        console.log(message.local_path);
+//                        PHONE.Files.base64image_to_file(message.local_path, message.fake_path, function(decoded_file_path){
+//                            console.log("base64image_to_file callback");
+//                            message.local_path = decoded_file_path;
+//                            delete message.fake_path;
+//                            API.insert("xiao_project_comments", message, function(insert_id) {
+//                                message['id'] = insert_id;
+//                                console.log('API.insert("xiao_project_comments"');
+//                                console.log(message);
+//                                callback(message);
+//                            });
+//                        });
+//                    }
 //                        alert(SESSION.get("user_id"));
                 }
 
@@ -1515,38 +1586,14 @@ function onDeviceReady() {
                             DB.join("xiao_projects as p", 'p.id = t.project_id');
                             DB.where('t.id = "' + params.id + '"');
                             DB.row(function(data){
-                                if(typeof(a) !== "undefined"){
+                                if(typeof(data) !== "undefined"){
                                     console.log("data")
                                     console.log(data)
-                                    DB.select("u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
+                                    DB.select("u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                                     DB.from("xiao_users as u");
                                     DB.join("xiao_companies AS c", "u.company_id = c.id");
                                     DB.where('u.id="'+data.user_id+'"');
                                     DB.row(function(user_data){
-                                        console.log({
-                                            id    : data.id,
-                                            title : data.title,
-                                            desc  : data.descr,
-                                            color : data.color,
-                                            user : {
-                                                id: user_data.uid,
-                                                name: user_data.name,
-                                                pinyin: user_data.pinyin,
-                                                avatar: user_data.avatar,
-                                                company: user_data.company,
-                                                companyAdress: user_data.companyAdress,
-                                                position: user_data.position,
-                                                phoneNum: user_data.phoneNum,
-                                                email: user_data.email,
-                                                adress: user_data.adress,
-                                                isNewUser: user_data.isNewUser,
-                                                isLoginUser: login_user == user_data.uid,
-        //                                            isLeader: leader,
-                                                QRCode: user_data.QRCode
-                                            },
-                                            attachments : [],
-                                            endTime : data.endTime
-                                        });
                                         callback({
                                             id    : data.id,
                                             title : data.title,
@@ -1571,6 +1618,8 @@ function onDeviceReady() {
                                             attachments : [],
                                             endTime : data.endTime
                                         });
+                                        API._clear_tables_to_sync();
+                                        API.update("xiao_todo_comments",{read:"1"}, 'todo_id = "'+ params.id +'" ');
                                     });
                                 }else{
                                     callback(false);
@@ -1603,7 +1652,7 @@ function onDeviceReady() {
 //                    alert("todochat init")
 
                     // existing messages
-                    DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.update_time, tc.read, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                    DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, tc.read, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                     DB.from("xiao_todo_comments AS tc");
                     DB.left_join("xiao_users AS u", "u.id = tc.user_id");
                     DB.left_join("xiao_companies AS c", "u.company_id = c.id");
@@ -1646,7 +1695,7 @@ function onDeviceReady() {
                                         from: "todo"
                                     },
                                     praise: [],
-                                    time: mess.update_time,
+                                    time: new Date(mess.time).getTime(),
                                     type: mess.type
                                 });
                             });
@@ -1664,7 +1713,7 @@ function onDeviceReady() {
                             in_m += (i != 0 ? "," : "");
                             in_m += '"' + m.id + '"';
                         });
-                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.update_time, u.id as uid, u.name, u.pinyin, u.avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
+                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, u.id as uid, u.name, u.pinyin, u.local_path as avatar, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id");
                         DB.from("xiao_todo_comments AS tc");
                         DB.join("xiao_users AS u", "u.id = tc.user_id");
                         DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -1704,7 +1753,7 @@ function onDeviceReady() {
                                         from: "todo"
                                     },
                                     praise: [],
-                                    time: mess.update_time,
+                                    time: new Date(mess.time).getTime(),
                                     type: mess.type
                                 });
                             });
@@ -1772,8 +1821,8 @@ function onDeviceReady() {
                                             //            var SERVER = {
                                             SERVER = {
                                                 SOCKET: {
-                                                    socket: null,
-                                                    init: function() {
+                                                    socket: null,  // current socket Object is stores here after init
+                                                    init: function() { // function is used to init io object (socket.io lib)
                                                         this.socket = io.connect(ROUTE("sockets"));
                                                         this.socket.on('connect_failed', function() {
                                                             console.log("fail");
@@ -1781,70 +1830,90 @@ function onDeviceReady() {
                                                             console.log("fail");
                                                         });
                                                         return this;
+                                                        // need to make more exeptions here on error ...reconnect  etc
                                                     },
-                                                    sync: function(data, callback) {
-//                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets'));
-//                                                        data.connection_code = this.connection_code();
-//                                                        this.socket.emit("sync", data);
-//                                                        io.sockets[sockets_route].open === false ? callback(false) : "";
-//                                                        this.socket.on("sync_result" + data.connection_code, callback);
-
-                                                        this.request("sync", data, callback);
-                                                    },
-                                                    // connection code is used to make application safe from double socket events
-                                                    // normally they shouldn't appear
-                                                    connection_code: function() {
+                                                            
+                                                    
+                                                    
+                                                    connection_code: function() {// connection code is used to make application safe from double socket events---> normally they shouldn't appear
                                                         return _random(12, _random(3, "_ccode"));
                                                     },
-                                                    _inited_chats: {
+                                                    _inited_chats: { // used to store inited chats ..also for avoid double events
                                                         project: [],
                                                         todo: []
                                                     },
-                                                    updatechat: function(connect_data, callback) { // in data we specify id and type
-//                                                        console.log(connect_data)
-//                                                        console.log(typeof(connect_data.id))
-//                                                        console.log(this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id))
+                                                            
+                                                    request: function(url, data, callback) {  // the MAIN Routing method
+                                                        var connection_code = this.connection_code();
+                                                        this.socket.emit(url, {
+                                                            body: data,
+                                                            connection_code: connection_code
+                                                        });
+                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets'));
+                                                        this.socket.on(url + "_result" + connection_code, callback);
+                                                        if(typeof(io) === "undefined")return callback(false);
+                                                        io.sockets[sockets_route].open === false ? callback(false) : this.socket.on(url + data.connection_code, callback);
+                                                        // need more exeptions here
+                                                        // need more exeptions here
+                                                        // need more exeptions here
+                                                    },
+                                                    
+                                                    //  ALL below :
+                                                    //  SOCKET.IO METHODS in the application
+                                                    // all methods triggeres request method
+                                                    sync: function(data, callback) { // the main application method used to post data to server
+                                                        this.request("sync", data, callback);
+                                                    },
+                                                    updatechat: function(connect_data, callback) { // another method used to update chat
+                                                        // in data we specify id and type
+                                                        console.log("_____________updatechat")
                                                         if (connect_data.id && this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id) === -1) {
 //                                                            console.log("update chat INITED");
                                                             this._inited_chats[connect_data['type']].push(connect_data.id);
 //                                                            console.log(this._inited_chats)
                                                             this.socket.emit('addroom', connect_data);
                                                             this.socket.on("updatechat", function(data) { // data just contain message that we need to sync DB
-//                                                                console.log("updatechat data");
-//                                                                console.log(data);
-//                                                            SERVER.DB.batch_insert_with_id("xiao_project_comments", data, function() {
-                                                                SERVER.DB.batch_insert_or_ignore_with_id("xiao_project_comments", data, function() {
-                                                                    callback(data);
-                                                                });
+                                                                console.log("updatechat data");
+                                                                console.log(data);
+
+                                                                // FAST FIX ---> On SERVER Array changed to Object ---> the same here below
+                                                                // FAST FIX ---> On SERVER Array changed to Object ---> the same here below
+                                                                // FAST FIX ---> On SERVER Array changed to Object ---> the same here below
+                                                                // FAST FIX ---> On SERVER Array changed to Object ---> the same here below
+                                                                // FAST FIX ---> On SERVER Array changed to Object ---> the same here below
+                                                                
+                                                                // so data ---> [data]
+                                                                    
+                                                                if("project_id" in data){
+                                                                    SERVER.DB.batch_insert_or_ignore_with_id("xiao_project_comments", [data], function() {
+                                                                        SERVER.API._remove_from_sync("xiao_project_comments", function(){
+                                                                            callback([data]);
+                                                                        });
+                                                                    });
+                                                                }
+                                                                if("todo_id" in data){
+                                                                    SERVER.DB.batch_insert_or_ignore_with_id("xiao_todo_comments", [data], function() {
+                                                                        SERVER.API._remove_from_sync("xiao_todo_comments", function(){
+                                                                            callback([data]);
+                                                                        });
+                                                                    });
+                                                                }
                                                             });
                                                         }
-                                                    },
-                                                    request: function(url, data, callback) {
-//                                                        alert("req")
-//                                                        console.log(url)
-//                                                        console.log(data)
-                                                        var connection_code = this.connection_code();
-                                                        this.socket.emit(url, {
-                                                            body: data,
-                                                            connection_code: connection_code
-                                                        });
-//                                                        if (callback) {
-                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets'));
-                                                        this.socket.on(url + "_result" + connection_code, callback);
-                                                        
-                                                        io.sockets[sockets_route].open === false ? callback(false) : this.socket.on(url + data.connection_code, callback);
-//                                                        }
                                                     }
+                                                    
 
                                                 },
                                                 // DB        
                                                 // DB        
                                                 // DB
-                                                DB: function(db) {
-
+                                                DB: function(db) { // works with local SQLite DB 
+                                                    // DB is normally triggered via API
+                                                    // but we often need to make several DB opeartion and then sync all the stuff at one time
+                                                    // in this case we use manually API._sync after all
 
                                                     return {
-                                                        _sql: "",
+                                                        _sql: "", // saves current sql query
                                                         select: function(data) {
                                                             var select = (data ? data : "*");
                                                             return this._sql = 'SELECT ' + select + ' ';
@@ -1868,6 +1937,9 @@ function onDeviceReady() {
                                                         order_by: function(order) {
                                                             return this._sql += ' ORDER BY ' + order;
                                                         },
+                                                        order_by_desc: function(order) {
+                                                            return this._sql += ' ORDER BY ' + order + ' DESC';
+                                                        },
                                                         group_by: function(group) {
                                                             return this._sql += ' GROUP BY ' + group;
                                                         },
@@ -1883,19 +1955,26 @@ function onDeviceReady() {
                                                         row: function(callback) {
                                                             // return one row
                                                             this._executeSQL(this._sql + ' LIMIT 1', function(data) {
+//                                                                data.length > 0 ? callback(data[0]) : callback([]);
                                                                 callback(data[0]);
                                                             });
                                                         },
                                                         col: function(callback) {
                                                             // return one col
                                                             this._executeSQL(this._sql + ' LIMIT 1', function(data) {
-                                                                for (var i in data[0]) {
-                                                                    callback(data[0][i]);
-                                                                    return;
+                                                                
+                                                                if(data.length > 0 ){
+                                                                    for (var i in data[0]) {
+                                                                        callback(data[0][i]);
+    //                                                                    return;
+                                                                        break;
+                                                                    }
+                                                                }else{
+                                                                    callback([]);
                                                                 }
                                                             });
                                                         },
-                                                        _executeSQL: function(sql, callback) {
+                                                        _executeSQL: function(sql, callback) { // main DB method which makes query to DB
 //                                                            console.log(sql);
                                                             function querySuccess(tx, results) {
                                                                 var len = results.rows.length, db_result = [];
@@ -2202,6 +2281,37 @@ function onDeviceReady() {
                                                             }) : this._executeSQL(sql)
                                                                     );
                                                         },
+//                                                        _for_sync_insert_batch_on_duplicate_update: function(table, data, callback) {
+//                                                            var _this = this, len = data.length;
+//                                                            this.batch_insert_or_ignore(table, data, function() {
+//                                                                data.forEach(function(row, i) {
+//                                                                    
+//                                                                    if (table === "xiao_project_comments" || table === "xiao_todo_comments" ||
+//                                                                        table === "xiao_project_attachments" || table === "xiao_todo_attachments" ||
+//                                                                        table === "xiao_users" ) {
+//                                                                    
+//                                                                        switch (table) {
+//                                                                            case "xiao_project_comments":
+//                                                                                if(row['type'] === "image"){
+//                                                                                    SERVER.PHONE.Files.download(row['server_path'])
+//                                                                                }else{
+//                                                                                    
+//                                                                                }
+//                                                                                break;
+//                                                                            case "xiao_todo_comments":
+//                                                                                
+//                                                                                break;
+//                                                                        }
+//                                                                            if (i == len - 1) {
+//                                                                                _this.update(table, row, 'id = "' + row.id + '"', callback);
+//                                                                            } else {
+//                                                                                _this.update(table, row, 'id = "' + row.id + '"');
+//                                                                            }
+//                                                                    }
+//                                                                    
+//                                                                });
+//                                                            });
+//                                                        },
                                                         insert_batch_on_duplicate_update: function(table, data, callback) {
                                                             var _this = this, len = data.length;
                                                             this.batch_insert_or_ignore(table, data, function() {
@@ -2214,9 +2324,12 @@ function onDeviceReady() {
                                                                 });
                                                             });
                                                         },
-                                                        _make_id: function(table) {
+                                                        _make_id: function(table) {//method we use to generate local id
                                                             return _random(8, "_" + table);
                                                         },
+                                                                
+                                                        // _init_tables is an array we store all the tables names ---> we use this array to init tables and to save sync time of them to lcoalStorage
+                                                        // so very important to add each new table here
                                                         _init_tables: ['xiao_company_partners', 'xiao_projects', 'xiao_users', 'xiao_project_partners',
                                                             'xiao_partner_groups', 'xiao_partner_group_users', 'xiao_project_comments',
                                                             'xiao_companies', 'xiao_todos', 'xiao_todo_comments', 'xiao_project_attachments'],
@@ -2282,7 +2395,8 @@ function onDeviceReady() {
                                                                     id INTEGER NULL,\n\
                                                                     name varchar(255) NOT NULL,\n\
                                                                     email varchar(100) NOT NULL,\n\
-                                                                    avatar varchar(255) NULL,\n\
+                                                                    server_path TEXT NULL,\n\
+                                                                    local_path varchar(255) DEFAULT "'+CONFIG.default_user_avatar+'",\n\
                                                                     pinyin varchar(255) NULL,\n\
                                                                     QRCode varchar(255) NULL,\n\
                                                                     adress varchar(255) NULL,\n\
@@ -2359,7 +2473,7 @@ function onDeviceReady() {
                                                                     todo_id VARCHAR(255) NOT NULL,\n\
                                                                     user_id INTEGER NOT NULL,\n\
                                                                     time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,\n\
-                                                                    update_time TIMESTAMP NULL DEFAULT NULL,\n\
+                                                                    update_time VARCHAR(255) NULL,\n\
                                                                     read INTEGER DEFAULT 0,\n\
                                                                     deleted INTEGER DEFAULT 0,\n\
                                                                     company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
@@ -2377,6 +2491,23 @@ function onDeviceReady() {
                                                                     company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
                                                                     UNIQUE(id))'
                                                                         );
+                                                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_todo_attachments (\n\
+                                                                    server_id VARCHAR(255) NULL DEFAULT NULL,\n\
+                                                                    id VARCHAR(255) NOT NULL,\n\
+                                                                    type VARCHAR(255) DEFAULT NULL,\n\
+                                                                    server_path MEDIUMTEXT DEFAULT NULL,\n\
+                                                                    local_path MEDIUMTEXT DEFAULT NULL,\n\
+                                                                    todo_id VARCHAR(255) DEFAULT NULL,\n\
+                                                                    update_time TIMESTAMP NULL DEFAULT NULL,\n\
+                                                                    company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
+                                                                    UNIQUE(id))'
+                                                                        );
+                                                                            
+                                                                //  very important to add each new table to this._init_tables array
+                                                                //  very important to add each new table to this._init_tables array
+                                                                //  very important to add each new table to this._init_tables array
+                                                                //  very important to add each new table to this._init_tables array
+                                                                            
 
                                                                 //                                tx.executeSql('CREATE TABLE IF NOT EXISTS xiao_project_comment_adds (\n\
                                                                 //                                                server_id VARCHAR(255) NULL,\n\
@@ -2403,9 +2534,11 @@ function onDeviceReady() {
                                                                     row_id varchar(255) NOT NULL)'
                                                                         );
                                                                 if (clear) {
-                                                                    _this._init_tables.forEach(function(cur) {
-                                                                        var sql = 'CREATE TRIGGER update_' + cur + ' AFTER UPDATE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
-                                                                        tx.executeSql(sql);
+                                                                    _this._init_tables.forEach(function(cur) { // triggers are used to paste data to sync table
+                                                                        if(cur !== "xiao_todo_comments" && cur !== "xiao_project_comments"){
+                                                                            var sql = 'CREATE TRIGGER update_' + cur + ' AFTER UPDATE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
+                                                                            tx.executeSql(sql);
+                                                                        }
                                                                         var sql = 'CREATE TRIGGER insert_' + cur + ' AFTER INSERT ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id) VALUES("' + cur + '", NEW.id); END; ';
                                                                         tx.executeSql(sql);
 //                                                                        var sql = 'CREATE TRIGGER delete_' + cur + ' BEFORE DELETE ON ' + cur + ' FOR EACH ROW BEGIN INSERT INTO sync(table_name, row_id, deleted_flag) VALUES("' + cur + '", OLD.id, "1"); END; ';
@@ -2419,7 +2552,6 @@ function onDeviceReady() {
                                                                 console.log(err);
                                                             }
                                                             console.log("inited");
-
                                                             return this;
                                                         }
                                                     };
@@ -2434,10 +2566,11 @@ function onDeviceReady() {
                                                 // API
                                                 // API
                                                 API: {
-                                                    _tables_to_sync: [],
-                                                    _clear_tables_to_sync: function(table) {
+                                                    _tables_to_sync: [], //used in all DB select methods
+                                                    _clear_tables_to_sync: function(table) { // used to remove a table from sync array above
                                                         table ? delete this._tables_to_sync[table] : this._tables_to_sync = [];
                                                     },
+                                                            
                                                     /* methods to make queries to DB object */
                                                     /* methods to make queries to DB object */
                                                     /* methods to make queries to DB object */
@@ -2451,20 +2584,19 @@ function onDeviceReady() {
                                                         });
                                                     },
                                                     read: function(callback) {
-                                                        //                        console.log(SERVER.DB);
                                                         // WHEN READ sync first then EXECUTE SQL
                                                         this._sync(this._tables_to_sync, function() {
                                                             SERVER.DB.query(callback);
                                                         });
                                                     },
                                                     row: function(callback) {
-                                                        //                      // return one row
+                                                        // return one row
                                                         this._sync(this._tables_to_sync, function() {
                                                             SERVER.DB.row(callback);
                                                         });
                                                     },
                                                     col: function(callback) {
-                                                        //                      // return one row
+                                                        // return one col
                                                         this._sync(this._tables_to_sync, function() {
                                                             SERVER.DB.col(callback);
                                                         });
@@ -2535,131 +2667,64 @@ function onDeviceReady() {
                                                     /* END methods to make queries to DB object */
                                                     /* END methods to make queries to DB object */
 
-//                        _sync    :   function(tables, callback){
-//                            var sync_data = [], _this = this, user_data = SERVER.SESSION.local_data();
-//                            tables.forEach(function(table_name, table_num){
-//                                if(table_name  == "xiao_project_comments" || table_name == "xiao_todo_comments" ){
-//                                    _this._sync_chat(table_name);
-//                                }else{
-//                                    var sql= 'SELECT * FROM sync as s INNER JOIN '+table_name+' as t ON s.row_id = t.id WHERE s.table_name ="'+table_name+'"';
-//                                    SERVER.DB._executeSQL(sql, function(data){
-//                                        sync_data.push({
-//                                            name        :   table_name,
-//                                            last_sync   :   SERVER.SESSION._get_sync_time(table_name),
-//                                            updated     :   data, // move here
-//                                            deleted     :   []
-//                                        });
-//                                        if(table_num == (tables.length-1)){
-//                                            _this._tables_to_sync = []; // new // for now here
-//                                            // if this is the last table needed to be synced
-//                                            _this._request( CONFIG.route("sync"),
-//                                            {
-//                                                tables  :   sync_data,
-//                                                info    :   user_data
-//                                            },
-//                                            function(server){
-//                                                console.log(server);
-//                                                if(server){
-//                                                    console.log("server");
-//                                                    var changes = server.response;
-//                                                    changes.forEach(function(ij, num){
-//                                                         // apply changes
-//                                                        if( (ij.updated && ij.updated.length > 0) ||
-//                                                            (ij.deleted && ij.deleted.length > 0)
-//                                                        ){
-//                                                            //if need to UPDATE or CREATE something  ~~~ GOES IN ONE METHOD with replace
-//                                                            if(ij.updated.length > 0){
-//                                                                // need remove
-//                                                                // need remove
-//                                                                // need remove
-//                                                        /*        if(ij.table == "xiao_project_comments"){
-//                                                                    SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function(data){
-//                                                                        _this._sync_clear(ij.table,  server.info.time);
-//                                                                        if( num == (changes.length-1) ){
-//                                                                            return (callback ? callback() : true);
-//                                                                        }
-//                                                                    });
-//                                                                // need remove
-//                                                                // need remove
-//                                                                // need remove
-//                                                                }else{ */
-//                                                                    SERVER.DB.batch_replace(ij.table, ij.updated, function(data){
-//                                                                        _this._sync_clear(ij.table,  server.info.time);
-//                                                                        if( num == (changes.length-1) ){
-//                                                                            return (callback ? callback() : true);
-//                                                                        }
-//                                                                    });
-////                                                                }
-//                                                            }
-//                                                        }else{
-//                                                            if(num == (changes.length-1)){
-//                                                                console.log(tables);
-//                                                                _this._sync_clear(ij.table,  server.info.time);
-//                                                                return (callback ? callback() : true);
-//                                                            }
-//                                                        }
-//                                                    });
-//                                                }else{
-//                                                    console.log("no server");
-//                                                    return (callback ? callback() : false);
-//                                                }
-//                                            });
-//                                        }
-//                                    });
-//                                }
-//                            });
-//                        },
 
-
-                                                    _check_local_DB_and_fs: function(table_name, callback) {
-                                                        var result = {},
+                                                    _check_local_DB_and_fs: function(table_name, callback) { //method is used to check local updates before sync
+                                                        // it checks local db and file system
+                                                        var result = {updated: []}, counter = 0,
                                                                 sql = 'SELECT * FROM sync as s INNER JOIN ' + table_name + ' as t ON s.row_id = t.id WHERE s.table_name ="' + table_name + '"',
                                                                 sql_del = 'SELECT * FROM sync_delete WHERE table_name ="' + table_name + '"';
                                                         SERVER.DB._executeSQL(sql, function(data) {
-                                                            if (table_name == "xiao_project_comments" || table_name == "xiao_todo_comments" || table_name == "xiao_project_attachments") {
-                                                                data.length > 0 ? data.forEach(function(el, i) {
-                                                                    // if audio we need to proceed uload 
-                                                                    if (el.type == "voice" || el.type == "image") {
-//                                                                        SERVER.PHONE.VoiceMessage.upload(el.local_path, "voice", function(server_path) {
+                                                            counter = data.length;
+                                                            data.length > 0 ? data.forEach(function(el, i) {
+                                                                
+                                                                if (table_name === "xiao_project_comments" || table_name === "xiao_todo_comments" ||
+                                                                    table_name === "xiao_project_attachments" || table_name === "xiao_todo_attachments"
+                                                                ) {
+                                                                    
+                                                                    if (el.type === "image" || el.type === "voice") {
+                                                                        
                                                                         SERVER.PHONE.Files.upload(el.local_path, el.type, function(server_path) {
-                                                                            data[i].server_path = server_path;
-                                                                            var new_data = data[i];
-                                                                            var datadata = {};
-                                                                            for (var ijk in new_data) {
-                                                                                datadata[ijk] = new_data[ijk];
-                                                                            }
-                                                                            datadata['server_path'] = server_path;
-                                                                            make_callback({updated: [datadata]});
+                                                                            el['server_path'] = server_path;
+                                                                            result.updated.push(el);
+                                                                            make_callback_v2();
                                                                         });
-                                                                    } else if (el.type == "text") {
-                                                                        if (i == (data.length - 1)) {
-                                                                            make_callback({updated: data});
-                                                                        }
+                                                                        
+                                                                    }else if (el.type === "text") {
+                                                                        result.updated.push(el);
+                                                                        make_callback_v2();
                                                                     }
-                                                                    // filter removing local_path from array
-
-                                                                }) : make_callback({updated: data});
-                                                            } else {
-                                                                make_callback({updated: data});
-                                                            }
-
+                                                                    
+                                                                }else if(table_name === "xiao_users"){
+                                                                    
+                                                                    if (el.local_path !== CONFIG.default_user_avatar && el.server_path == "") {
+                                                                        // if the file is not default avatar and we have a "" as server_path then we need to upload
+                                                                        SERVER.PHONE.Files.upload(el.local_path, el.type, function(server_path) {
+                                                                            el['server_path'] = server_path;
+                                                                            result.updated.push(el);
+                                                                            make_callback_v2();
+                                                                        });
+                                                                    } else {
+                                                                        result.updated.push(el);
+                                                                        make_callback_v2();
+                                                                    }
+                                                                    
+                                                                }else{
+                                                                    result.updated.push(el);
+                                                                    make_callback_v2();
+                                                                }
+                                                                
+                                                            }) : make_callback_v2();
+                                                            
                                                         });
-
+                                                        
                                                         SERVER.DB._executeSQL(sql_del, function(del_data) {
-                                                            make_callback({deleted: del_data});
+                                                            result.deleted = del_data;
+                                                            make_callback_v2();
                                                         });
 
-                                                        function make_callback(data) {
-
-                                                            if (data.updated) {
-                                                                result.updated = data.updated;
-                                                            }
-
-                                                            if (data.deleted) {
-                                                                result.deleted = data.deleted;
-                                                            }
-
-                                                            if (result.deleted && result.updated) {
+                                                        function make_callback_v2(){
+                                                            --counter;
+                                                            if (result.deleted && result.updated && counter <= 0) {
                                                                 callback({
                                                                     name: table_name,
                                                                     last_sync: SERVER.SESSION._get_sync_time(table_name),
@@ -2668,8 +2733,86 @@ function onDeviceReady() {
                                                                 });
                                                             }
                                                         }
+                                                            
+                                                            //////////////////////////
+                                                            //////////////////////////
+                                                            //////////////////////////
+//                                                            if (table_name === "xiao_project_comments" || table_name === "xiao_todo_comments" || table_name === "xiao_project_attachments" || table_name === "xiao_todo_attachments") {
+//                                                                data.length > 0 ? data.forEach(function(el, i) {
+//                                                                    // if audio we need to proceed upload 
+//                                                                    if (el.type === "image" || el.type === "voice") {
+//                                                                        SERVER.PHONE.Files.upload(el.local_path, el.type, function(server_path) {
+//                                                                            data[i].server_path = server_path;
+//                                                                            var new_data = data[i];
+//                                                                            var datadata = {};
+//                                                                            for (var ijk in new_data) {
+//                                                                                datadata[ijk] = new_data[ijk];
+//                                                                            }
+//                                                                            datadata['server_path'] = server_path;
+//                                                                            make_callback({updated: [datadata]});
+//                                                                        });
+//                                                                    } else if (el.type == "text") {
+//                                                                        if (i == (data.length - 1)) {
+//                                                                            make_callback({updated: data});
+//                                                                        }
+//                                                                    }
+//                                                                    // filter removing local_path from array
+//
+//                                                                }) : make_callback({updated: data});
+//                                                            }else if(table_name === "xiao_users"){
+//                                                                // we need to upload user avatars
+//                                                                data.length > 0 ? data.forEach(function(el, i) {
+//                                                                    if (el.local_path !== CONFIG.default_user_avatar && el.server_path == "") {
+//                                                                        // if the file is not default avatar and we have a "" as server_path then we need to upload
+//                                                                        SERVER.PHONE.Files.upload(el.local_path, el.type, function(server_path) {
+//                                                                            data[i].server_path = server_path;
+//                                                                            var new_data = data[i];
+//                                                                            var datadata = {};
+//                                                                            for (var ijk in new_data) {
+//                                                                                datadata[ijk] = new_data[ijk];
+//                                                                            }
+//                                                                            datadata['server_path'] = server_path;
+//                                                                            make_callback({updated: [datadata]});
+//                                                                        });
+//                                                                    } else {
+//                                                                        if (i == (data.length - 1)) {
+//                                                                            make_callback({updated: data});
+//                                                                        }
+//                                                                    }
+//                                                                    // filter removing local_path from array
+//
+//                                                                }) : make_callback({updated: data});
+//                                                                
+//                                                            }else{
+//                                                                make_callback({updated: data});
+//                                                            }
+//
+//                                                        });
+//
+//                                                        SERVER.DB._executeSQL(sql_del, function(del_data) {
+//                                                            make_callback({deleted: del_data});
+//                                                        });
+//
+//                                                        function make_callback(data) {
+//                                                            if (data.updated) {
+//                                                                result.updated = data.updated;
+//                                                            }
+//                                                            if (data.deleted) {
+//                                                                result.deleted = data.deleted;
+//                                                            }
+//                                                            if (result.deleted && result.updated) {
+//                                                                callback({
+//                                                                    name: table_name,
+//                                                                    last_sync: SERVER.SESSION._get_sync_time(table_name),
+//                                                                    updated: result.updated, // move here
+//                                                                    deleted: result.deleted
+//                                                                });
+//                                                            }
+//                                                        }
                                                     },
-                                                    _sync: function(tables, callback) {
+                                                    _sync: function(tables, callback) { // the main application method
+                                                        // used to sync local db and remote
+                                                        // also used to sync chat messages
                                                         var sync_data = [], _this = this;
                                                         tables.forEach(function(table_name, table_num) {
                                                             _this._check_local_DB_and_fs(table_name, function(data) {
@@ -2680,7 +2823,7 @@ function onDeviceReady() {
                                                             });
                                                         });
                                                     },
-                                                    _make_socket_request: function(sync_data, callback) {
+                                                    _make_socket_request: function(sync_data, callback) {//used to post socket request with all updates to server or request them
                                                         var _this = this;
                                                         this._tables_to_sync = [];
                                                         console.log("SERVER REQUEST: ");
@@ -2706,7 +2849,10 @@ function onDeviceReady() {
                                                                             });
                                                                         }
                                                                         if (ij.updated.length > 0) {
-                                                                            if (ij.table == "xiao_project_comments" || ij.table == "xiao_todo_comments" || ij.table == "xiao_project_attachments") {
+                                                                            if(ij.table === "xiao_project_comments" || ij.table === "xiao_todo_comments" ||
+                                                                                ij.table === "xiao_project_attachments" || ij.table === "xiao_todo_attachments" ||
+                                                                                ij.table === "xiao_users"
+                                                                            ){
                                                                                 SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function() {
                                                                                     make_callback();
                                                                                 });
@@ -2738,6 +2884,11 @@ function onDeviceReady() {
                                                         SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "' + table + '"');
                                                         SERVER.SESSION._update_sync_time(table, time);
                                                     },
+                                                            
+                                                    _remove_from_sync: function(table, callback){
+                                                        callback ? SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "' + table + '"', callback) : SERVER.DB._executeSQL('DELETE FROM sync WHERE table_name = "' + table + '"');
+                                                    },
+                                                    
                                                     _sync_delete_clear: function(table, time) {
                                                         if (table) {
                                                             SERVER.DB._executeSQL('DELETE FROM sync_delete WHERE table_name = "' + table + '"');
@@ -2755,8 +2906,8 @@ function onDeviceReady() {
                                                 // Storage
                                                 // Storage
                                                 // Storage
-                                                SESSION: function(storage) {
-
+                                                SESSION: function(storage) { // simple LocalStorage  helper 
+                                                    // in lcoalstorage we savelast sync SQLite tables times and user info
                                                     return {
                                                         _get_sync_time: function(table) {
                                                             return storage.getItem(table);
@@ -2788,7 +2939,7 @@ function onDeviceReady() {
                                                         clear: function() {
                                                             storage.clear();
                                                         },
-                                                        _init_storage: function(clear) {
+                                                        _init_storage: function(clear) { //used to init storage  ---> the main idea for login new user
                                                             var _this = this,
 //                                    test_user_id = (this.get("user_id") ? this.get("user_id") : "dsadasdas1212312");
                                                                     test_user_id = "dsadasdas1212312";
@@ -2850,8 +3001,7 @@ function onDeviceReady() {
                                                         };
 
 
-                                                    }
-                                                    ;
+                                                    };
                                                     /* PARENT */
 
 
@@ -2862,23 +3012,39 @@ function onDeviceReady() {
                                                         this.file_path = null;
                                                         this.short_name = null;
                                                         
-                                                        this._create_file = function(after, callback) {
-//                                                            var _this = this;
-                                                            var _this = this, new_file_name = _random(5, after);
-                                                            new_file_name += (/\.[A-Za-z0-9]+$/.test(after) ? "" : "." + CONFIG.audio_format);
+//                                                        this.encode64_and_create = function(data, callback){
+//                                                            
+//                                                        };
+                                                        
+//                                                        this._create_file = function(after, callback) {
+                                                        this._create_file = function(file_obj, callback) {
+//                                                            var file_obj = {
+//                                                                name: "test or test.jpg",
+//                                                                type: "image/voice etc",
+//                                                                format: 'jpg or ""'
+//                                                            };
+                                                            
+//                                                            var _this = this, new_file_name = _random(5, after);
+                                                            var _this = this, new_file_name = _random(5, file_obj.name);
+//                                                            new_file_name += (/\.[A-Za-z0-9]+$/.test(after) ? "" : "." + CONFIG.audio_format);
+                                                            new_file_name = (function(){
+                                                                if((!"format" in file_obj) || file_obj.format === ""){
+                                                                    return new_file_name;
+                                                                }else{
+                                                                    return new_file_name+"."+file_obj.format;
+                                                                }
+                                                            }());
                                                             
                                                             if(this.fs === null){
                                                                 
                                                                 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
                                                                     fs.root.getDirectory(CONFIG.root_dir, {create: true, exclusive: false}, function(dir) {
-//                                                                        inited_fs = dir;
                                                                         _this.fs = dir;
                                                                         _this.fs.getFile(new_file_name, {create: true, exclusive: false}, function(fileEntry) {
                                                                             _this.file_path = fileEntry.fullPath;
                                                                             _this.short_name = fileEntry;
-                                                                            callback(fileEntry.fullPath);
+                                                                            callback(fileEntry.fullPath, fileEntry);
                                                                         }, _this.log_error);
-//                                                                        server_start(); // ---> FIRE-UP POINT
 
                                                                     }, function(err1) {
                                                                         console.log(err1);
@@ -2889,12 +3055,11 @@ function onDeviceReady() {
                                                                 
                                                             }else{
                                                                 
-//                                                                var _this = this, new_file_name = _random(5, after);
                                                                  // if file name dpn't have format we specify it
                                                                 this.fs.getFile(new_file_name, {create: true, exclusive: false}, function(fileEntry) {
                                                                     _this.file_path = fileEntry.fullPath;
                                                                     _this.short_name = fileEntry;
-                                                                    callback(fileEntry.fullPath);
+                                                                    callback(fileEntry.fullPath, fileEntry);
                                                                 }, _this.log_error);
                                                                 
                                                             }
@@ -2908,7 +3073,7 @@ function onDeviceReady() {
                                                             console.log("donwloading");
                                                             console.log(new_file_name);
                                                             console.log(uri);
-                                                            this._create_file(new_file_name, function(local_path) {
+                                                            this._create_file({name:new_file_name}, function(local_path) {
                                                                 fileTransfer.download(
                                                                         uri,
                                                                         local_path,
@@ -2933,7 +3098,112 @@ function onDeviceReady() {
                                                             });
 
                                                         };
+                                                        
+                                                        this.base64image_to_file = function(base64_str, fake_path, callback){
+                                                            console.log("base64image_to_file");
+//                                                            var image_format = base64_str.match(/data:[a-z]*\/([a-z]*);base64,/)[1];
+                                                            var image_format = base64_str.match(/data:[a-z]*\/([a-z]*);base64,/),
+                                                                _this = this;
+                                                            if(image_format === null){
+                                                                image_format = fake_path.match(/\.([a-zA-Z0-9]*)$/);
+//                                                                image_format = image_format[0];
+                                                            }
+                                                            console.log(image_format);
+                                                            image_format = image_format[1];
+                                                            
+//                                                                alert(image_format);
+//                                                             image_format = image_format[1];
+//                                                                var image_data = Base64.decode( replace("/data:[a-z]*\/[a-z]*;base64,/", "", base64_str) ),
+//                                                                var image_data = Base64.decode( base64_str.replace(/data:[a-z]*\/[a-z]*;base64,/, "") ),
+                                                            var image_data = Base64.decode( base64_str.replace(/data:[a-z]*\/?[a-z]*;?base64,/, "") ); 
+                                                                
+                                                            this._create_file({name:SERVER.SESSION.get("user_name"), format:image_format}, function(file_path, entry){
+                                                                _this._file_writer(entry, image_data, function(){
+                                                                    callback(file_path);
+                                                                });
+                                                            });
+                                                        };
+                                                        
+                                                        /*
+                                                        this.upload = function(local_path, type, callback) {
+                                                            // local_path --- is file path in phone local fs
+                                                            // type       --- is type of file we want to upload 
+                                                            //                              F.E. image or audio
+                                                            // mime types:
+                                                            // audio/mpeg
+                                                            // image/jpeg
+                                                            
+                                                            if (!local_path || !type || (type != "image" && type != "voice")) {
+                                                                return false;
+                                                            } // we use just image upload and audio
+                                                            var options = new FileUploadOptions(),
+                                                                    ft = new FileTransfer(),
+                                                                            _this = this;
+                                                            options.fileKey = "file";
+                                                            
+                                                            if(type === "image" && local_path.length >= 500){
+                                                                // if this is image we have base64 encode string with file data 
+                                                                // so that what we do is:
+                                                                // decode base64
+                                                                // write data to file 
+                                                                // finally we get image file
+                                                                var image_format = local_path.match(/data:[a-z]*\/([a-z]*);base64,/)[1];
+                                                                console.log("image_format");
+                                                                console.log(image_format);
+                                                                var image_data = Base64.decode( preg_replace("/data:[a-z]*\/[a-z]*;base64,/", "", local_path) );
+                                                                this._create_file({name:SERVER.SESSION.get("user_name"), format:image_format}, function(file_path, entry){
+                                                                    _this._file_writer(entry, image_data, function(){
+                                                                        options.fileName = file_path.substr(file_path.lastIndexOf('/') + 1);
+                                                                        options.mimeType = "image/jpeg";
+                                                                        options.params = {type: type};
+                                                                        
+                                                                        ft.upload(file_path, encodeURI(ROUTE("file_upload_url")), function(node_obj) {
+                                                                            callback(node_obj.response);
+                                                                        }, fail, options);
+                                                                    });
+                                                                });
+                                                                
+                                                            }else if(type === "voice"){
+                                                                // voice file is already created file with Phonegap so just upload file to server
+                                                                options.fileName = local_path.substr(local_path.lastIndexOf('/') + 1);
+                                                                options.mimeType = "audio/mpeg";
+                                                                options.params = {type: type};
+                                                                
+                                                                ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(node_obj) {
+                                                                    callback(node_obj.response);
+                                                                }, fail, options);
+                                                            }
+                                                            
+//                                                            console.log(local_path);
+//                                                            console.log(options.fileName);
 
+                                                            
+
+//                                                            switch (type) {
+//                                                                case "image":
+//                                                                    options.mimeType = "image/jpeg";
+//                                                                    break;
+//                                                                case "voice":
+//                                                                    options.mimeType = "audio/mpeg";
+//                                                                    break;
+//                                                            }
+//                                                            options.params = {type: type};
+//
+//                                                            ft.upload(local_path, encodeURI(ROUTE("file_upload_url")), function(node_obj) {
+//                                                                callback(node_obj.response);
+//                                                            }, fail, options);
+
+                                                            function fail(error) {
+                                                                //                                alert("An error has occurred: Code = " + error.code);
+                                                                console.log("upload error ");
+                                                                console.log(error);
+                                                                console.log("upload error source " + error.source);
+                                                                console.log("upload error target " + error.target);
+                                                                callback();
+                                                            }
+                                                        };
+                                                        */
+                                                        
                                                         this.upload = function(local_path, type, callback) {
                                                             // local_path --- is file path in phone local fs
                                                             // type       --- is type of file we want to upload 
@@ -2973,9 +3243,55 @@ function onDeviceReady() {
                                                                 callback();
                                                             }
                                                         };
+                                                        
+                                                        this._file_writer = function(entry, image_data, callback){
+//                                                            var _this = this;
+                                                            
+                                                            entry.createWriter(gotFileWriter, this.log_error);
+                                                            
+                                                            function gotFileWriter(writer) {
+//                                                                writer.onwrite = _this._log_success;
+                                                                writer.onwrite = callback;
+                                                                writer.write(image_data);
+//                                                                alert(entry);
+                                                            };
+                                                        };
                                                     }
                                                     extend(Files, Phone);
-
+                                                    
+                                                    /* Photos */
+                                                    
+                                                    function Photos(){
+//                                                        Photos.superclass.constructor.call(this);
+                                                        this.camera = function(callback){
+                                                            this._get_picture(Camera.PictureSourceType.CAMERA, callback);
+                                                        };
+                                                        this.album = function(callback){
+                                                            this._get_picture(Camera.PictureSourceType.PHOTOLIBRARY, callback);
+                                                        };
+                                                        this._get_picture = function(source, callback){
+                                                            navigator.camera.getPicture(
+                                                                function(imageURI){
+                                                                    console.log(imageURI);
+                                                                    callback(imageURI);
+                                                                },
+                                                                function(fail){
+                                                                    // fail or cancel
+                                                                    callback(false);
+                                                                    console.log(fail);
+                                                                }, 
+                                                                {
+                                                                    quality: 50,
+                                                                    sourceType: source,
+                                                                    destinationType: navigator.camera.DestinationType.FILE_URI
+                                                            });
+                                                        };
+                                                    }
+//                                                    extend(Photos, Phone);
+                                                    
+                                                    /* Photos */
+                                                    
+                                                    
                                                     /* Voice_message */
                                                     function VoiceMessage() {
                                                         VoiceMessage.superclass.constructor.call(this);
@@ -2986,37 +3302,29 @@ function onDeviceReady() {
 
                                                         this.record_start = function(callback) {
                                                             var _this = this;
-                                                            this._create_file(SERVER.SESSION.get("user_name"), function(file_path) { // callback
+                                                            this._create_file({name:SERVER.SESSION.get("user_name"), format:CONFIG.audio_format}, function(file_path) { // callback
                                                                 _this.audio = new Media(file_path, _this.log_success, _this.log_error);
                                                                 _this.audio.startRecord();
                                                                 _this.last_record_path = file_path;
                                                                 callback(file_path);
                                                             });
-//                                                            alert("record start")
                                                         };
 
                                                         this.record_stop = function() {
-//                                                            alert("before stop")
                                                             if (this.audio) {
-//                                                                alert("in stop")
                                                                 var _this = this;
                                                                 this.audio.stopRecord();
-
                                                                 _this.audio = null;
                                                                 _this.last_record_path = null;
-//                                                                alert("afetr stop")
-
                                                             }
-//                                                            alert("record stop")
                                                         };
 
                                                         this.record_play = function(file) {
                                                             this.audio = new Media(file, this.log_success, this.log_error);
                                                             this.audio.play();
-//                                                            alert("record play")
                                                         };
 
-                                                        this.play = function(file, callback) {
+                                                        this.play = function(file, callback) { //used to continue playing
 //                                                            alert(file);
 //                                                            this.audio = null;
 //                                                            this.audio = new Media(file, this.log_success, this.log_error);
@@ -3037,7 +3345,7 @@ function onDeviceReady() {
 //                                                            alert("play")
                                                         };
                                                         
-                                                        this.play_and_get_duration = function(file, callback){
+                                                        this.play_and_get_duration = function(file, callback){ //used to play new file
                                                             if(this.audio !== null){this.audio.stop();}
                                                             this.audio = null;
                                                             var _this = this, counter = 0;
@@ -3061,19 +3369,16 @@ function onDeviceReady() {
                                                                     }
                                                                 }, 100);
                                                             }
-//                                                            alert("play with dur")
                                                         };
 
                                                         this.pause = function() {
                                                             if (this.audio !== null)
                                                                 this.audio.pause();
-//                                                            alert("pause")
                                                         };
 
                                                         this.stop = function() {
                                                             if (this.audio !== null) 
                                                                 this.audio.stop();
-//                                                            alert("stop")
                                                         };
 
                                                         this.getPlayTime = function(callback) {
@@ -3084,7 +3389,6 @@ function onDeviceReady() {
                                                                     function(err) {
 
                                                                     });
-//                                                            alert("getPlayTime")
                                                         };
                                                         
 //                                                        this.getDuration = function(){
@@ -3092,31 +3396,19 @@ function onDeviceReady() {
 //                                                            return this.audio.getDuration();
 //                                                        };
                                                         
-                                                        this.seekTo = function(pos){
+                                                        this.seekTo = function(pos){ //seek to somewhere
                                                             if (this.audio !== null) 
                                                                 return this.audio.seekTo(pos);
-//                                                            alert("seekTo")
                                                         };
                                                         
                                                     }
-//                                                    extend(VoiceMessage, Phone);
                                                     extend(VoiceMessage, Files);
                                                     /* Voice_message */
 
-                                                    //                    function PhoneFiles(){
-                                                    //                        PhoneFiles.superclass.constructor.call(this);
-                                                    //                        
-                                                    //                        
-                                                    //                        
-                                                    //                        
-                                                    //                    }
-                                                    //                    
-                                                    //                    extend(PhoneFiles, Phone);
-
-                                                    function Contacts() {
+                                                    function Contacts() { //we don't need to store contacts in the DB as they are already saved in the phone!!!!
                                                         Contacts.superclass.constructor.call(this);
 
-                                                        this.filter = function(params, callback) {
+                                                        this.filter = function(params, callback) { //method to find contact
 
                                                             // ANY data format may be like this or not - the main point is that we need Object
 //                                                            var params = {
@@ -3137,11 +3429,11 @@ function onDeviceReady() {
                                                             });
                                                         };
 
-                                                        this.read = function(callback) {
+                                                        this.read = function(callback) { //get all
                                                             this._getContacts(callback);
                                                         };
 
-                                                        this._getContacts = function(filter, callback) {
+                                                        this._getContacts = function(filter, callback) { //get all
                                                             var options = new ContactFindOptions(), fields = ["name", "displayName", "nickname", "emails", "phoneNumbers"];
                                                             options.multiple = true;
                                                             //            var fields = ["*"];
@@ -3163,9 +3455,6 @@ function onDeviceReady() {
                                                                                     name += c.name[i] + " ";
 
                                                                             }
-                                                                            //                            if (trim(name) == "" && c.nickname != null) {
-                                                                            //                                name = c.nickname;
-                                                                            //                            }
                                                                         }
                                                                         //get name ends
 
@@ -3193,7 +3482,7 @@ function onDeviceReady() {
                                                                         }
                                                                         //get emails ends
                                                                         result.push({
-                                                                            name: trim(name),
+                                                                            name: name.trim(),
                                                                             phones: phones,
                                                                             emails: emails
                                                                         });
@@ -3203,13 +3492,13 @@ function onDeviceReady() {
                                                             }
                                                         };
 
-                                                    }
-                                                    ;
+                                                    };
                                                     extend(Contacts, Phone);
 
                                                     return {
                                                         VoiceMessage: new VoiceMessage(),
                                                         Files: new Files(),
+                                                        Photos: new Photos(),
                                                         Contacts: new Contacts()
                                                     };
 
@@ -3232,7 +3521,8 @@ function onDeviceReady() {
                                                 SOCKET: SERVER.SOCKET.init(),
                                                 API: SERVER.API,
                                                 SESSION: SERVER.SESSION,
-                                                DB: SERVER.DB._init_db(),
+                                                DB: SERVER.DB,
+//                                                DB: SERVER.DB._init_db(),
                                                 // if it is needed to RECREATE DB AND STORAGE 
                                                 // uncomment lines below
                                                 // than comment again after refresh

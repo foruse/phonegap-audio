@@ -155,6 +155,9 @@
 	overflow : hidden;
 	font-size : 9px;
 }
+#project dt > span {
+	line-height : 18px;
+}
 #project dt a {
 	float : right;
 	height : 24px;
@@ -174,6 +177,11 @@
 	background : #ffc000 url(../../../common/image/width24.png) 0px -375px no-repeat content-box content-box;
 	border : 7px solid #ffc000;
 }
+.confirm button[action="remove"] {
+	margin-right : 8px;
+	background-color : #ce312d;
+	color : #fff;
+}
 
 #partner > ul > li {
 	position : relative;
@@ -190,20 +198,22 @@
 #partner .navigator {
 	border-color : #00b0d6;
 }
+#partner .navigator > nav, #partner .navigator > nav > dl {
+	display : inline-block;
+}
 #partner .navigator > aside button.focused {
 	background-color : #00b0d6;
 }
 #partner .group {
 	padding : 5px 0;
 	height : 30px;
+	white-space : nowrap;
 }
 #partner .group > dt {
-	position : fixed;
 	padding : 0 5px;
 	background-color : #f7f7f7;
 }
 #partner .group > dd {
-	margin-left : 129px;
 	padding : 1px 0;
 }
 #partner .group button {
@@ -240,23 +250,23 @@
 #partner .userIndexList aside {
 	bottom : 70px;
 }
-#mask[action="添加组拍档"] header > span {
+#mask[action~="添加组拍档"] header > span {
 	text-align : center;
 	padding-left : 0;
 	background-image : none;
 }
-#mask[action="添加组拍档"] > article, #mask[action="添加组拍档"] footer > button,
-#mask[action="添加组拍档"] header > input, #mask[action="添加组拍档"] .userIndexList p.selected,
-#mask[action="添加组拍档"] .userIndexList p.selected > img {
+#mask[action~="添加组拍档"] > article, #mask[action~="添加组拍档"] footer > button,
+#mask[action~="添加组拍档"] header > input, #mask[action~="添加组拍档"] .userIndexList p.selected,
+#mask[action~="添加组拍档"] .userIndexList p.selected > img {
 	border-color : #00b0d6;
 }
-#mask[action="添加组拍档"] header > button, #mask[action="添加组拍档"] footer > button {
+#mask[action~="添加组拍档"] header > button, #mask[action~="添加组拍档"] footer > button {
 	background-color : #00b0d6;
 }
-#mask[action="添加组拍档"] header, #mask[action="添加组拍档"] .userIndexList aside {
+#mask[action~="添加组拍档"] header, #mask[action~="添加组拍档"] .userIndexList aside {
 	color : #00b0d6;
 }
-#mask[action="添加组拍档"] header > input {
+#mask[action~="添加组拍档"] header > input {
 	padding-left : 24px;
 	background : url(../../../common/image/width24.png) 5px -442px no-repeat;
 }

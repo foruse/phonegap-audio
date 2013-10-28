@@ -39,17 +39,20 @@
             // getSchedules : function(){ },
             getSingleProject: function(params, complete) {
 //                Mdls.Project.read(params, complete);
-                console.log("getSingleProject");
+                console.log("_______________________getSingleProject");
                 Mdls.Project.read(params, function(data) {
+                    console.log("getSingleProject");
                     console.log(data);
                     complete(data);
                 });
             },
             getMessages: function(params, complete) {
+                console.log("_______________________getMessages");
                 switch (params.type) {
                     case "project":
 //                        Mdls.ProjectChat.chat_init(params.id, complete);
                         Mdls.ProjectChat.chat_init(params.id, function(data) {
+                            console.log("getMessages");
                             console.log(data);
                             complete(data);
                         });
@@ -65,7 +68,7 @@
             },
             addComment: function(params, complete) {
 //                alert("project")
-                console.log(params)
+//                console.log(params)
                 var _params = {};
                 switch (params.type) {
                     case "text":
@@ -76,6 +79,15 @@
                         };
                         break;
                     case "voice":
+//                        console.log(params)
+                        _params = {
+                            project_id: params.projectId,
+                            content: params.text,
+                            type: params.type,
+                            local_path: params.attachment.src
+                        };
+                        break;
+                    case "image":
                         console.log(params)
                         _params = {
                             project_id: params.projectId,
@@ -83,6 +95,7 @@
                             type: params.type,
                             local_path: params.attachment.src
                         };
+//                        console.log(_params)
                         break;
                     default:
                         return;
@@ -93,7 +106,11 @@
 //                    content : params.text,
 //                    type : params.type
 //                };
-                Mdls.ProjectChat.send_message(_params, complete);
+//                Mdls.ProjectChat.send_message(_params, complete);
+                Mdls.ProjectChat.send_message(_params, function(data){
+                    console.log(data);
+                    complete(data);
+                });
             },
             addCommentForTodo: function(params, complete){
                 console.log(params)
@@ -107,8 +124,14 @@
                         };
                         break;
                     case "voice":
-                        console.log("TODO-VOICE")
-                        console.log(params)
+                        _params = {
+                            todo_id: params.todoId,
+                            content: params.text,
+                            type: params.type,
+                            local_path: params.attachment.src
+                        };
+                        break;
+                    case "image":
                         _params = {
                             todo_id: params.todoId,
                             content: params.text,
@@ -153,6 +176,14 @@
                     project_id  :   params.projectId
                 }, complete);
             },
+            archiveProject : function(params, complete){
+                console.log(params);
+                Mdls.Project.archive(params.projectId, complete);
+            },
+            removeProject: function(params, complete){
+                console.log(params);
+                Mdls.Project.remove(params.projectId, complete);
+            },
             myInformation: function(_params, complete) {
                 // Mdls.User.read(function(data){
                 // 	data['count'] = 123;
@@ -168,7 +199,7 @@
                 console.log(params);
                 Mdls.Partner_Groups.create(params, complete);
             },
-            // praise : function(){ },
+             praise : function(){ },
             register: function(params, complete) {
                 Mdls.User.create(params, complete);
             },
@@ -266,7 +297,7 @@
                 var LoadingBar = Wait.LoadingBar;
 
                 LoadingBar.show(_isUpload ? "正在上传数据.." : null);
-                console.log(name)
+//                console.log(name)
                 Models[name](params, function(data) {
                     if (name in allHandlers) {
                         data = allHandlers[name](data);

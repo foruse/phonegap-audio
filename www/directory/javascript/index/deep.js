@@ -121,29 +121,26 @@ this.GlobalSearch = (function(OverflowPanel, Panel, UserAnchorList, Global, forE
 	}
 ));
 
-this.Account = (function(LoadingBar, Global, ValidationList){
+this.Account = (function(LoadingBar, Global, ValidationList, ImageFile){
 	function Account(selector, contentHtml){
 		///	<summary>
 		///	我的账户。
 		///	</summary>
 		/// <param name="selector" type="string">对应的元素选择器</param>
 		/// <param name="contentHtml" type="jQun.HTML">内容的html模板</param>
-		var account = this, accountClassList = account.classList,
+		var footerEl,
+		
+			account = this, accountClassList = account.classList,
 
 			validationList = new ValidationList(),
 
 			titleBar = Global.titleBar;
 
 		// 渲染空数据
-		this.innerHTML = contentHtml.render({
-			name : "",
-			company : "",
-			email : "",
-			position : "",
-			phoneNum : "",
-			companyAdress : "",
-			password : ""
-		});
+		this.innerHTML = contentHtml.render(Global.loginUser);
+		footerEl = this.find(">footer");
+
+		new ImageFile(this.find(">header .largeAvatarPanel>input")[0]);
 
 		// 监听事件
 		this.attach({
@@ -151,8 +148,6 @@ this.Account = (function(LoadingBar, Global, ValidationList){
 				var editButtonEl = titleBar.find('button[action="editAccount"]');
 
 				editButtonEl.onuserclick = function(){
-					var footerEl = account.find(">footer");
-
 					// 如果点击了编辑按钮
 					if(editButtonEl.get("action", "attr") === "editAccount"){
 						// 所有input变为可以输入
@@ -168,12 +163,20 @@ this.Account = (function(LoadingBar, Global, ValidationList){
 					if(!validationList.validate())
 						return;
 
-					editButtonEl.set("action", "editAccount", "attr");
-					// 所有input变为只读
-					account.find("input").set("readonly", "", "attr");
-					// 修改标题栏的标题
-					titleBar.resetTitle("我的账户");
-					footerEl.hide();
+					CallServer.open("editAccount", {
+						position : account.find('dl[desc="position"] input').value,
+						avatar : "",
+						phoneNum : account.find('dl[desc="phoneNum"] input').value,
+						email : account.find('dl[desc="email"] input').value,
+						password : footerEl.classList.contains("editable") ? account.find('dl[desc="rePwd"] input').value : null
+					}, function(data){
+						editButtonEl.set("action", "editAccount", "attr");
+						// 所有input变为只读
+						account.find("input").set("readonly", "", "attr");
+						// 修改标题栏的标题
+						titleBar.resetTitle("我的账户");
+						footerEl.hide();
+					});
 				};
 			},
 			userclick : function(e){
@@ -191,30 +194,38 @@ this.Account = (function(LoadingBar, Global, ValidationList){
 					targetEl.innerHTML = "取消修改";
 					footerClassList.add("editable");
 				}
+			},
+			imageloaded : function(e){
+				account.find(">header .largeAvatarPanel>img").src = e.base64;
 			}
 		});
 
-		// 访问服务器
-		CallServer.open("myInformation", null, function(info){
-			account.innerHTML = contentHtml.render(info);
+		this.attach({
+			clickavatar : function(e){
+				e.stopPropagation();
+			}
+		}, true);
+		
+		// 验证信息
+		this.find(">*:not(header) dl").forEach(function(parent){
+			var parentEl = jQun(parent), inputEl = parentEl.find("input"), vtype = inputEl.get("vtype", "attr");
 
-			// 验证信息
-			account.find("dl").forEach(function(parent){
-				var parentEl = jQun(parent),
+			if(!vtype){
+				return;
+			}
 
-					inputEl = parentEl.find("input"), vtype = inputEl.get("vtype", "attr");
-
-				if(!vtype){
-					return;
+			validationList.addValidation(parentEl, function(el, Validation){
+				if(inputEl.between("input", footerEl[0]).length > 0){
+					if(!footerEl.classList.contains("editable")){
+						return true;
+					}
 				}
 
-				validationList.addValidation(parentEl, function(el, Validation){
-					if(vtype === "rePwd"){
-						return inputEl.value === account.find('dl[desc="editPwd"] input').value;
-					}
+				if(vtype === "rePwd"){
+					return inputEl.value === account.find('dl[desc="editPwd"] input').value;
+				}
 
-					return Validation.result(inputEl.value, vtype);
-				});
+				return Validation.result(inputEl.value, vtype);
 			});
 		});
 	};
@@ -231,7 +242,8 @@ this.Account = (function(LoadingBar, Global, ValidationList){
 }(
 	Bao.UI.Control.Wait.LoadingBar,
 	Bao.Global,
-	Bao.API.DOM.ValidationList
+	Bao.API.DOM.ValidationList,
+	Bao.UI.Control.File.ImageFile
 ));
 
 this.QRCode = (function(){
@@ -379,15 +391,42 @@ this.Todo = (function(ChatList, OverflowPanel, Global){
 	Bao.Global
 ));
 
-this.SendTodo = (function(UserManagementList, Validation, Global, validationHandle){
-	function SendTodo(selector){
+this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Global, validationHandle){
+	function AttamentArea(selector, attachmentHtml){
+		var all = [], ul = this.find(">ul")[0];
+
+		this.assign({
+			all : all
+		});
+
+		new Attachment().appendTo(this.find('>footer')[0]);
+
+		this.attach({
+			attachmentcompleted : function(e){
+				var attachment = { type : e.attachmentType, src : e.attachmentSrc };
+
+				attachmentHtml.create(attachment).appendTo(ul);
+				all.push(attachment);
+			}
+		});
+	};
+	AttamentArea = new NonstaticClass(AttamentArea, null, Panel.prototype);
+
+	AttamentArea.properties({
+		all : undefined
+	});
+
+
+	function SendTodo(selector, attachmentHtml){
 		var sendTodo = this, titleBar = Global.titleBar,
 		
 			titleValidation = new Validation(this.find('li[desc="title"]>input'), validationHandle),
 
 			dateValidation = new Validation(this.find('li[desc="endDate"]>input[type="text"]'), validationHandle),
 			
-			userManagementList = new UserManagementList("请选择该To Do的执行者");
+			userManagementList = new UserManagementList("请选择该To Do的执行者"),
+
+			attachmentArea = new AttamentArea.constructor(this.find('>section[desc="attachment"]')[0], attachmentHtml);
 
 		this.assign({
 			dateValidation : dateValidation,
@@ -416,7 +455,7 @@ this.SendTodo = (function(UserManagementList, Validation, Global, validationHand
 					}
 
 					CallServer.open("sendTodo", {
-						attachments : [],
+						attachments : attachmentArea.all,
 						title : titleValidation.validationEl.value,
 						date : sendTodo.endDate.getTime(),
 						remind : sendTodo.remind ? 1 : 0,
@@ -450,6 +489,8 @@ this.SendTodo = (function(UserManagementList, Validation, Global, validationHand
 				dateValidation.clearError();
 			}
 		});
+
+		new OverflowPanel(this);
 	};
 	SendTodo = new NonstaticClass(SendTodo, "Bao.Page.Index.Deep.SendTodo", PagePanel.prototype);
 
@@ -496,6 +537,8 @@ this.SendTodo = (function(UserManagementList, Validation, Global, validationHand
 }(
 	Bao.UI.Control.List.UserManagementList,
 	Bao.API.DOM.Validation,
+	Bao.API.DOM.Panel,
+	Bao.UI.Control.File.Attachment,
 	Bao.Global,
 	// validationHandle
 	function(inputEl){

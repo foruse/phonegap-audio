@@ -11,7 +11,9 @@ this.Voice = (function(IntervalTimer, Models){
 			Models.VoiceMessage.pause();
 		},
 		play : function(id, type, callback, _position){
-			if(!Models.VoiceMessage){
+			var VoiceMessage = Models.VoiceMessage;
+
+			if(!VoiceMessage){
 				new IntervalTimer(1000).start(function(i){
 					i = i + (_position || 0);
 
@@ -20,9 +22,9 @@ this.Voice = (function(IntervalTimer, Models){
 				return;
 			}
 
-			Models.VoiceMessage.play(id, type, function(len){
+			Models.VoiceMessage.play(id, type, function(len, position){
 				new IntervalTimer(1000).start(function(i){
-					callback.call(this, i, len);
+					callback.call(this, i + position, len);
 				}, len, true);
 			});
 		},

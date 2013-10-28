@@ -103,6 +103,38 @@ this.EventCollection = (function(Timer, IntervalTimer, isMobile, childGestureCon
 		continuousgesture : new Event("continuousgesture", childGestureConstructor),
 		// 快速的手势事件
 		fastgesture : new Event("fastgesture", childGestureConstructor),
+		longpress : new Event("longpress", function(){
+			var longPress = this, isKeepPress = false, timer = new Timer(1000);
+
+			windowEl.attach({
+				touchstart : function(e){
+					isKeepPress = true;
+
+					timer.start(function(){
+						if(!isKeepPress)
+							return;
+
+						timer.stop();
+						isKeepPress = false;
+						longPress.trigger(e.target);
+					});
+				},
+				touchend : function(){
+					if(timer.isEnabled){
+						timer.stop();
+					}
+
+					isKeepPress = false;
+				},
+				continuousgesture : function(e){
+					if(e.gestureOffsetX > 5 || e.gestureOffsetY > 5){
+						isKeepPress = false;
+					}
+				}
+			});
+
+			this.attachTo("*");
+		}),
 		// 点击事件：pc上防止滑动的时候触发click事件而产生的替代的、具有保护性质的事件
 		userclick : new Event("userclick", function(){
 			var userClick = this, abs = Math.abs;
@@ -117,8 +149,8 @@ this.EventCollection = (function(Timer, IntervalTimer, isMobile, childGestureCon
 				*/
 				{
 					fastgesture : function(e){
-						// 如果任何一方向上的偏移量大于10，就不算click
-						if(abs(e.gestureOffsetY) > 10 || abs(e.gestureOffsetX > 10))
+						// 如果任何一方向上的偏移量大于5，就不算click
+						if(abs(e.gestureOffsetY) > 5 || abs(e.gestureOffsetX > 5))
 							return;
 
 						userClick.trigger(e.target);
@@ -171,7 +203,7 @@ this.Panel = (function(HTMLElementList){
 	jQun.HTMLElementList
 ));
 
-this.PagePanel = (function(Panel, beforeShowEvent, beforeHideEvent){
+this.PagePanel = (function(Panel, beforeShowEvent, afterShowEvent, beforeHideEvent){
 	function PagePanel(selector){};
 	PagePanel = new NonstaticClass(PagePanel, "Bao.API.DOM.PagePanel", Panel.prototype);
 
@@ -215,6 +247,11 @@ this.PagePanel = (function(Panel, beforeShowEvent, beforeHideEvent){
 			beforeShowEvent.trigger(this[0]);
 
 			Panel.prototype.show.apply(this, arguments);
+
+			afterShowEvent.setEventAttrs({
+				currentPanel : this
+			});
+			afterShowEvent.trigger(this[0]);
 			return this;
 		}
 	});
@@ -224,6 +261,10 @@ this.PagePanel = (function(Panel, beforeShowEvent, beforeHideEvent){
 	this.Panel,
 	// beforeShowEvent
 	new Event("beforeshow", function(){
+		this.attachTo("*");
+	}),
+	// afterShowEvent
+	new Event("aftershow", function(){
 		this.attachTo("*");
 	}),
 	// beforeHideEvent

@@ -292,6 +292,16 @@
 	margin-top : -15px;
 	background : #f1af0f url(../image/width24.png) 3px -247px no-repeat;
 }
+#mask[action~="userSelectionList"] > article {
+	background-color : #fff;
+	border : 2px solid #f1af0f;
+	left : 15px;
+	right : 15px;
+	top : 30px;
+	bottom : 30px;
+	padding : 20px 15px;
+	box-sizing : content-box;
+}
 
 .inputSelectionList > header > input {
 	height : 35px;

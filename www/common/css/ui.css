@@ -74,14 +74,10 @@
 }
 #mask > article {
 	position : absolute;
-	left : 15px;
-	right : 15px;
-	top : 30px;
-	bottom : 30px;
-	padding : 20px 15px;
-	box-sizing : content-box;
-	background-color : #fff;
-	border : 2px solid #f1af0f;
+	left : 0;
+	top : 0;
+	right : 0;
+	bottom : 0;
 }
 
 .projectColor_orange, .projectColor_0 {
@@ -114,16 +110,16 @@
 }
 
 .largeAvatarPanel, .normalAvatarPanel {
-	width : 62px;
-	height : 62px;
-	border-radius : 62px;
+	width : 64px;
+	height : 64px;
+	border-radius : 64px;
 	overflow : hidden;
 	border : 1px solid #a1a1a1;
 }
 .largeAvatarPanel > img {
-	width : 60px;
-	height : 60px;
-	border-radius : 60px;
+	width : 62px;
+	height : 62px;
+	border-radius : 62px;
 	border : 2px solid #fff;
 }
 .normalAvatarPanel {

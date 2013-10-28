@@ -107,17 +107,19 @@ this.Scroll = (function(scrollPanel, body){
 	document.body
 ));
 
-this.Navigator = (function(Timer, panelHtml, tabItemsHtml){
+this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 	function Navigator(){
 		///	<summary>
 		///	导航。
 		///	</summary>
-		var navigator = this;
+		var contentEl, navigator = this;
 
 		this.combine(panelHtml.create());
 
+		contentEl = this.find(">nav");
+
 		this.assign({
-			contentEl : this.find(">nav"),
+			contentEl : contentEl,
 			tabEl : this.find(">aside>ol"),
 			timer : new IntervalTimer(70)
 		});
@@ -135,6 +137,40 @@ this.Navigator = (function(Timer, panelHtml, tabItemsHtml){
 					return;
 
 				navigator.focusTab(jQun(target).get("idx", "attr"));
+			},
+			continuousgesture : function(e){
+				var left = (contentEl.getCSSPropertyValue("left").split("px").join("") - 0 || 0) + e.gestureOffsetX;
+				
+				// 如果是起手势，即(touchend)
+				if(e.isLastOfGestureType){
+					var width = navigator.width();
+
+					left = Math.round(left / width);
+
+					// left小于0，则说明还可以继续滑动
+					if(left < 0){
+						// 内容宽度除以容器宽度，得到最大值
+						var max = Math.ceil(contentEl.width() / width);
+
+						left = left * -1;
+
+						// 超过最大值
+						if(left >= max){
+							// 内容本身要占1个长度单位，所以最大值要减去这个1
+							left = max - 1;
+						}
+					}
+					// left>=0，则说明，已经到了起始点
+					else {
+						left = 0;
+					}
+
+					//contentEl.setCSSPropertyValue("left", (left * -100) + "%");
+					navigator.focusTab(left);
+					return;
+				}
+
+				contentEl.setCSSPropertyValue("left", left + "px");
 			}
 		});
 	};
@@ -147,7 +183,12 @@ this.Navigator = (function(Timer, panelHtml, tabItemsHtml){
 			///	设置导航的主体内容。
 			///	</summary>
 			/// <param name="htmlStr" type="string">主体内容html字符串</param>
-			this.find(">nav").innerHTML = htmlStr;
+			var contentEl = this.contentEl;
+
+			contentEl.innerHTML = htmlStr;
+			contentEl.setCSSPropertyValue("left", 0);
+
+			this.resetTab();
 		},
 		contentEl : undefined,
 		focusTab : function(idx){
@@ -162,36 +203,21 @@ this.Navigator = (function(Timer, panelHtml, tabItemsHtml){
 
 			var classList = focusEl.classList;
 
+			this.contentEl.setCSSPropertyValue("left", (idx * -100) + "%");
+
 			if(classList.contains("focused"))
 				return;
-
-			var timer = this.timer, contentEl = this.contentEl,
-				
-				times = 20, round = Math.round,
-				
-				left = (contentEl.get("left", "css").split("px").join("") - 0) || 0,
-
-				w = (contentEl.width() * idx * -1 - left) / times;
-
-			if(timer.isEnabled){
-				timer.stop();
-			}
-			
-			timer.start(function(i){
-				contentEl.set("left", round(left + w * i) + "px", "css");
-			}, times);
 
 			tabEl.find('button.focused').classList.remove("focused");
 			classList.add("focused");
 		},
-		tab : function(len){
+		resetTab : function(){
 			///	<summary>
 			///	设置选项卡。
 			///	</summary>
-			/// <param name="len" type="number">选项卡的个数</param>
 			var tabEl = this.tabEl;
 			
-			tabEl.innerHTML = tabItemsHtml.render({ length : len });
+			tabEl.innerHTML = tabItemsHtml.render({ length : Math.ceil(this.contentEl.width() / this.width()) || 0 });
 			this.buttonEls = tabEl.find("button");
 		},
 		tabEl : undefined,
@@ -201,6 +227,7 @@ this.Navigator = (function(Timer, panelHtml, tabItemsHtml){
 	return Navigator.constructor;
 }(
 	Bao.API.Management.Timer,
+	Math,
 	// panelHtml
 	new HTML([
 		'<div class="navigator onlyBorderBottom lightBdColor">',

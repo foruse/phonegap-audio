@@ -216,7 +216,7 @@
 	background : transparent url(../image/width24.png) no-repeat content-box content-box;
 }
 .chatList_footer > button {
-	padding : 3px 2px 5px 6px;
+	padding : 4px 8px;
 	background-position : 0 -675px;
 }
 .chatList_footer.voice > button {

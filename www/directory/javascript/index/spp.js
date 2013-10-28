@@ -206,7 +206,7 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 	].join(""))				
 ));
 
-this.Project = (function(){
+this.Project = (function(CallServer, Confirm){
 	function Project(selector, html){
 		///	<summary>
 		///	项目。
@@ -260,6 +260,55 @@ this.Project = (function(){
 					Global.history.go("discussion").fill(el.parent().getAttribute("projectid"));
 					return;
 				}
+			},
+			longpress : function(e, targetEl){
+				var singleProjectEl = targetEl.between(">ul>li", this);
+
+				if(singleProjectEl.length === 0)
+					return;
+
+				if(singleProjectEl.find(">figure").getAttribute("status") !== "1")
+					return;
+
+				//if(singleProjectEl.getAttribute("creatorid") !== Global.loginUser.id)
+					//return;
+
+				var confirm = new Confirm(
+					"你想要存档和删除<br/>“ " + singleProjectEl.find("figcaption>span").innerHTML + " ”?",
+					[
+						{ text : "永久删除", action : "remove", autoClose : true },
+						{ text : "存入归档", action : "archving", autoClose : true }
+					]
+				);
+				
+				confirm.attach({ clickbutton : function(e){
+					var maskButton = e.maskButton;
+
+					if(maskButton.action === "close")
+						return;
+
+					if(maskButton.action === "remove"){
+						CallServer.open("removeProject", {
+							projectId : singleProjectEl.getAttribute("projectid")
+						}, function(){
+							singleProjectEl.remove();
+						});
+
+						console.log(singleProjectEl.getAttribute("projectid"));
+						return;
+					}
+
+					if(maskButton.action === "archving"){
+						CallServer.open("archiveProject", {
+							projectId : singleProjectEl.getAttribute("projectid")
+						}, function(){
+							singleProjectEl.remove();
+						});
+						return;
+					}
+				} });
+
+				confirm.show();
 			}
 		});
 	};
@@ -288,10 +337,14 @@ this.Project = (function(){
 				importantLevel : 0,
 				title : "新建项目",
 				users : [],
-				lastMessage : "",
+				lastMessage : {
+					content : "",
+					type : "text"
+				},
 				unread : 0,
 				status : _isUnopened ? -1 : 0,
-				color : -1
+				color : -1,
+				creator : {}
 			};
 
 			jQun.forEach(_len == undefined ? this.batchLoad.getParam("pageSize") : _len, function(){
@@ -327,7 +380,10 @@ this.Project = (function(){
 	});
 
 	return Project.constructor;
-}());
+}(
+	Bao.CallServer,
+	Bao.UI.Control.Mask.Confirm
+));
 
 this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validation, CallServer, createGroupEvent){
 	function SelectorList(text, _placeholder){
@@ -411,7 +467,7 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 					partner.focus(el.get("groupId", "attr"), el);
 				}
 			},
-			beforeshow : function(){
+			aftershow : function(){
 				partner.load();
 
 				Global.titleBar.find('button[action="addPartner"]').onuserclick = function(){
@@ -482,14 +538,13 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 
 			// 获取分组数据
 			CallServer.open("getPartnerGroups", null, function(data){
-				var groups = data.groups, len = groups.length;
+				var groups = data.groups;
 				
 				// 添加分组区域
 				navigator.content(partner.groupingHtml.render(data));
-				navigator.tab(Math.ceil(len / 3));
 				navigator.focusTab(0);
 
-				if(len === 0)
+				if(groups.length === 0)
 					return;
 
 				partner.focus(groups[0].id);

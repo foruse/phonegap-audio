@@ -349,7 +349,7 @@ this.UserSelectionList = (function(UserIndexList, CallServer, Global, selectUser
 			// 填充遮罩内容
 			mask.fillBody(userSelectionList[0]);
 			// 显示遮罩
-			mask.show(text);
+			mask.show("userSelectionList " + text);
 		});
 	};
 	UserSelectionList = new NonstaticClass(UserSelectionList, null, Panel.prototype);

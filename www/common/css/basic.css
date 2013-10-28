@@ -85,6 +85,12 @@ h6 {
 	font-size : 0.67em;
 }
 
+input[type="file"] {
+	width : 100%;
+	height : 100%;
+	opacity : 0;
+}
+
 .themeColor, .themeBgColor {
 	background-color : #433b37;
 }

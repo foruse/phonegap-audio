@@ -60,8 +60,8 @@
 	background : url(../../image/businessCard_background.png) #fff 0 55px no-repeat;
 }
 #businessCard dl[desc="userinfo"] > dt {
-	height : 62px;
-	line-height : 62px;
+	height : 64px;
+	line-height : 64px;
 }
 #businessCard dl[desc="userinfo"] strong {
 	font-size : 20px;
@@ -74,7 +74,7 @@
 #businessCard dl[desc="userinfo"] > dd {
 	height : 90px;
 	position : relative;
-	margin-top : 8px;
+	margin-top : 6px;
 }
 #businessCard dl[desc="userinfo"] ul {
 	padding : 12px 0 6px 0;
