@@ -411,8 +411,8 @@ this.OverflowPanel = (function(Panel, IntervalTimer, setTopEvent, leaveborder){
 	}.bind(new Event("leaveborder"))
 ));
 
-this.Validation = (function(ValidationBase){
-	function Validation(validationEl, handler){
+this.Validation = (function(ValidationBase, Mask){
+	function Validation(validationEl, handler, errorText){
 		///	<summary>
 		///	验证元素。
 		///	</summary>
@@ -422,32 +422,23 @@ this.Validation = (function(ValidationBase){
 
 		this.assign({
 			validationEl : validationEl,
-			handler : handler
+			handler : handler,
+			errorText : errorText
 		});
-
-		validationEl.onuserclick = function(){
-			validation.clearError();
-		};
 	};
 	Validation = new NonstaticClass(Validation, "Bao.API.DOM.Validation");
 
 	Validation.properties({
-		clearError : function(){
-			///	<summary>
-			///	清除错误。
-			///	</summary>
-			this.validationEl.classList.remove("validationError");
-		},
+		errorText : "",
 		handler : undefined,
 		showError : function(){
-			this.validationEl.classList.add("validationError");
+			new Mask.Alert(this.errorText).show();
 		},
 		validate : function(){
 			///	<summary>
 			///	进行验证。
 			///	</summary>
 			if(this.handler(this.validationEl, ValidationBase)){
-				this.clearError();
 				return true;
 			}
 
@@ -459,7 +450,8 @@ this.Validation = (function(ValidationBase){
 
 	return Validation.constructor;
 }(
-	jQun.Validation
+	jQun.Validation,
+	Bao.UI.Control.Mask
 ));
 
 this.ValidationList = (function(List, Validation){
@@ -467,11 +459,11 @@ this.ValidationList = (function(List, Validation){
 	ValidationList = new NonstaticClass(ValidationList, "Bao.API.DOM.ValidationList", List.prototype);
 
 	ValidationList.properties({
-		addValidation : function(validationEl, handler){
+		addValidation : function(validationEl, handler, errorText){
 			///	<summary>
 			///	添加验证。
 			///	</summary>
-			this.push(new Validation(validationEl, handler));
+			this.push(new Validation(validationEl, handler, errorText));
 		},
 		validate : function(){
 			///	<summary>

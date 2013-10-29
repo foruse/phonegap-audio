@@ -152,6 +152,6 @@
 }
 
 #titleBar button[action="projectManagement"] {
-	border : 8px solid #f1af0f;
-	background : #f1af0f url(../../../common/image/width12.png) no-repeat 0 -175px content-box content-box;
+	border : 11px solid #f1af0f;
+	background : #f1af0f url(../../../common/image/width24.png) no-repeat 0 -1075px content-box content-box;
 }

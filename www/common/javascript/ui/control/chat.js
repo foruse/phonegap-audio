@@ -547,15 +547,32 @@ this.ChatListContent = (function(MessageGroup){
 	this.MessageGroup
 ));
 
-this.ChatInput = (function(Global, ImageFile, VoiceRecorder, messageCompletedEvent, reader){
+this.SelectImageFile = (function(Confirm, ImageFile){
+	function SelectImageFile(){
+		var selectImageFile = this, imageFile = new ImageFile();
+		
+		this.classList.add("selectImageFile");
+		this.addButton("image", "添加图片", false);
+		this.addButton("map", "添加地图", false);
+
+		imageFile.appendTo(this.find('button[action="image"]')[0]);
+	};
+	SelectImageFile = new NonstaticClass(SelectImageFile, "Bao.UI.Control.Chat.SelectImageFile", Confirm.prototype);
+
+	return SelectImageFile.constructor;
+}(
+	Bao.UI.Control.Mask.Confirm,
+	Bao.UI.Control.File.ImageFile
+));
+
+this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageCompletedEvent, reader){
 	function ChatInput(selector){
 		///	<summary>
 		///	聊天输入。
 		///	</summary>
 		/// <param name="selector" type="string">对应元素选择器</param>
-		var chatInput = this, inputClassList = chatInput.classList;
+		var chatInput = this, inputClassList = chatInput.classList, selectImageFile = new SelectImageFile();
 		
-		new ImageFile().appendTo(this.find(">aside>button:last-child")[0]);
 		new VoiceRecorder(this.find(">p>button:first-child")[0]);
 
 		// 点击事件
@@ -571,16 +588,11 @@ this.ChatInput = (function(Global, ImageFile, VoiceRecorder, messageCompletedEve
 					targetEl.focus();
 					return;
 				}
-			},
-			imageloaded : function(e){
-				chatInput.messageCompleted(
-					"image", 
-					"",
-					{
-						base64 : e.base64,
-						src : ""
-					}
-				);
+
+				if(targetEl.between(">aside>button:last-child", this).length > 0){
+					selectImageFile.show();
+					return;
+				}
 			},
 			stoprecord : function(e){
 				chatInput.messageCompleted("voice", "", { src : e.voiceSrc });
@@ -599,6 +611,19 @@ this.ChatInput = (function(Global, ImageFile, VoiceRecorder, messageCompletedEve
 					this.value = "";
 					return;
 				}
+			}
+		});
+
+		selectImageFile.attach({
+			imageloaded : function(e){
+				chatInput.messageCompleted(
+					"image", 
+					"",
+					{
+						base64 : e.base64,
+						src : ""
+					}
+				);
 			}
 		});
 	};
@@ -621,8 +646,8 @@ this.ChatInput = (function(Global, ImageFile, VoiceRecorder, messageCompletedEve
 
 	return ChatInput.constructor;
 }(
+	this.SelectImageFile,
 	Bao.Global,
-	Bao.UI.Control.File.ImageFile,
 	Bao.UI.Control.File.VoiceRecorder,
 	// messageCompletedEvent
 	new jQun.Event("messagecompleted"),

@@ -3,9 +3,8 @@
 	padding : 8px 18px 5px 18px;
 }
 .anchorList[descriptstatus="hide"] li {
-	padding-top : 12px;
-	height : 45px;
-	padding-bottom : 0;
+	padding : 13px 18px;
+	height : 46px;
 }
 .anchorList li:last-child {
 	border : none;

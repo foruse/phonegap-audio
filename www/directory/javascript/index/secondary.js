@@ -69,9 +69,6 @@ this.AddProject = (function(Global, Validation, UserManagementList){
 			this.userManagementList.clearUsers();
 			// 还原颜色
 			this.find('>section[desc="color"] dd .selected').classList.remove("selected");
-			// 清空错误
-			this.colorValidation.clearError();
-			this.titleValidation.clearError();
 			// 清空文本框
 			this.find(">footer textarea").value = "";
 		},

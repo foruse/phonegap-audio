@@ -93,7 +93,8 @@
                             project_id: params.projectId,
                             content: params.text,
                             type: params.type,
-                            local_path: params.attachment.src
+                            local_path: params.attachment.base64
+//                            local_path: params.attachment.src
                         };
 //                        console.log(_params)
                         break;
@@ -136,7 +137,8 @@
                             todo_id: params.todoId,
                             content: params.text,
                             type: params.type,
-                            local_path: params.attachment.src
+                            local_path: params.attachment.base64
+//                            local_path: params.attachment.src
                         };
                         break;
                     default:
@@ -199,7 +201,18 @@
                 console.log(params);
                 Mdls.Partner_Groups.create(params, complete);
             },
-             praise : function(){ },
+            praise : function(params, complete){
+                switch(params.type){
+                    case "project":
+                        Mdls.ProjectChat.like(params.messageId,complete);
+                        break;
+                    case "todo":
+                        Mdls.TodoChat.like(params.messageId,complete);
+                        break;
+                    default:
+                        return;
+                }
+            },
             register: function(params, complete) {
                 Mdls.User.create(params, complete);
             },

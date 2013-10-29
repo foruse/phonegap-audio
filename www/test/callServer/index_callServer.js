@@ -239,8 +239,12 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 			return data;
 		},
 		login : function(data){
+			var user = Index.Common.getUser();
+
+			user.isLeader = true;
+
 			data = {
-				user : Index.Common.getUser(),
+				user : user,
 				status : 0
 			};
 

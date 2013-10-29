@@ -278,7 +278,8 @@ this.Project = (function(CallServer, Confirm){
 					[
 						{ text : "永久删除", action : "remove", autoClose : true },
 						{ text : "存入归档", action : "archving", autoClose : true }
-					]
+					],
+					"projectConfirm"
 				);
 				
 				confirm.attach({ clickbutton : function(e){

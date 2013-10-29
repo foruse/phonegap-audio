@@ -4,6 +4,12 @@ this.Mask = (function(){
 	Mask = new NonstaticClass(Mask, "Bao.UI.Fixed.Mask", Panel.prototype);
 
 	Mask.override({
+		clearHtml : function(){
+			// 清空所有内容
+			this.find(">header").innerHTML = "";
+			this.find(">article").innerHTML = "";
+			this.find(">footer").innerHTML = "";
+		},
 		fill : function(position, content, _isHtml){
 			///	<summary>
 			///	填充区域元素。
@@ -11,6 +17,8 @@ this.Mask = (function(){
 			///	<param name="position" type="string">填充的区域。</param>
 			///	<param name="content" type="element">区域内容元素。</param>
 			///	<param name="_isHtml" type="boolean">是否是html。</param>
+			this.clearHtml();
+
 			(
 				_isHtml ? new jQun.HTML(content).create() : jQun(content)
 			).appendTo(
@@ -42,10 +50,7 @@ this.Mask = (function(){
 			this.fill("footer", content, _isHtml);
 		},
 		hide : function(){
-			// 清空所有内容
-			this.find(">header").innerHTML = "";
-			this.find(">article").innerHTML = "";
-			this.find(">footer").innerHTML = "";
+			this.clearHtml();
 
 			return Panel.prototype.hide.call(this);
 		},

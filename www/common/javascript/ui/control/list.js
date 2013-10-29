@@ -418,7 +418,7 @@ this.InputSelectionList = (function(UserSelectionList, Global, inputHtml){
 	new HTML('<input class="normalRadius" type="text" placeholder="请输入名称" />')
 ));
 
-this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, selecetUsersEvent, listHtml){
+this.UserManagementList = (function(UserList, UserSelectionList, Alert, OverflowPanel, selecetUsersEvent, listHtml){
 	function UserManagementList(text, _userData){
 		///	<summary>
 		///	用户管理列表。
@@ -476,7 +476,7 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 
 								if(users.length > maxLength){
 									e.stopPropagation();
-									alert("只能至多选择" + maxLength + "位用户！");
+									new Alert("只能至多选择" + maxLength + "位用户！").show();
 									return;
 								}
 
@@ -522,6 +522,7 @@ this.UserManagementList = (function(UserList, UserSelectionList, OverflowPanel, 
 }(
 	this.UserList,
 	this.UserSelectionList,
+	Bao.UI.Control.Mask.Alert,
 	Bao.API.DOM.OverflowPanel,
 	// selecetUsersEvent
 	new jQun.Event("selectusers"),

@@ -226,7 +226,7 @@ this.Account = (function(LoadingBar, Global, ValidationList, ImageFile){
 				}
 
 				return Validation.result(inputEl.value, vtype);
-			});
+			}, inputEl.getAttribute("errortext"));
 		});
 	};
 	Account = new NonstaticClass(Account, "Bao.Page.Index.Deep.Account", PagePanel.prototype);
@@ -391,7 +391,7 @@ this.Todo = (function(ChatList, OverflowPanel, Global){
 	Bao.Global
 ));
 
-this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Global, validationHandle){
+this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Alert, Global, validationHandle){
 	function AttamentArea(selector, attachmentHtml){
 		var all = [], ul = this.find(">ul")[0];
 
@@ -420,9 +420,9 @@ this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Glo
 	function SendTodo(selector, attachmentHtml){
 		var sendTodo = this, titleBar = Global.titleBar,
 		
-			titleValidation = new Validation(this.find('li[desc="title"]>input'), validationHandle),
+			titleValidation = new Validation(this.find('li[desc="title"]>input'), validationHandle, "标题不能为空！"),
 
-			dateValidation = new Validation(this.find('li[desc="endDate"]>input[type="text"]'), validationHandle),
+			dateValidation = new Validation(this.find('li[desc="endDate"]>input[type="text"]'), validationHandle, "日期不能为空！"),
 			
 			userManagementList = new UserManagementList("请选择该To Do的执行者"),
 
@@ -450,7 +450,7 @@ this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Glo
 					var users = userManagementList.getAllUsers();
 
 					if(users.length === 0){
-						alert("请至少选择一位用户才能发送To Do！");
+						new Alert("请至少选择一位用户才能发送To Do！").show();
 						return;
 					}
 
@@ -484,9 +484,6 @@ this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Glo
 				var endDate = this.valueAsDate;
 
 				this.previousElementSibling.value = endDate.toLocaleDateString();
-			},
-			userclick : function(){
-				dateValidation.clearError();
 			}
 		});
 
@@ -501,8 +498,6 @@ this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Glo
 
 			this.userManagementList.clearUsers();
 			this.find('li[desc="title"]>input').value = "";
-			this.titleValidation.clearError();
-			dateValidation.clearError();
 			// 设置初始时间
 			dateValidation.validationEl.value = this.endDate.toLocaleDateString();
 			this.find('section[desc="remind"] button>span').classList.remove("reminded");
@@ -539,6 +534,7 @@ this.SendTodo = (function(UserManagementList, Validation, Panel, Attachment, Glo
 	Bao.API.DOM.Validation,
 	Bao.API.DOM.Panel,
 	Bao.UI.Control.File.Attachment,
+	Bao.UI.Control.Mask.Alert,
 	Bao.Global,
 	// validationHandle
 	function(inputEl){

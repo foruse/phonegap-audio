@@ -11,6 +11,13 @@ this.onerror = function(){
 };
 }(0));
 
+(function(){
+	if(window.Models)
+		return;
+	
+	window.Models = {};
+}());
+
 (function(Object){
 	if(window.Window)
 		return;

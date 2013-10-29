@@ -15,7 +15,9 @@ this.LoginInfoManagement = (function(loginEvent, registerEvent){
 
 		// 验证
 		this.find("input").forEach(function(input, i){
-			validationList.addValidation(jQun(input), function(el, Validation){
+			var inputEl = jQun(input);
+
+			validationList.addValidation(inputEl, function(el, Validation){
 				var desc = el.get("desc", "attr");
 
 				if(desc === "repwd"){
@@ -24,7 +26,7 @@ this.LoginInfoManagement = (function(loginEvent, registerEvent){
 				}
 
 				return Validation.result(el.value, el.get("vtype", "attr"));
-			});
+			}, inputEl.getAttribute("errortext"));
 		});
 
 		// 登录和注册按钮的事件
@@ -37,8 +39,12 @@ this.LoginInfoManagement = (function(loginEvent, registerEvent){
 
 					// 如果点击的是 登录 按钮
 					if(htmlStr === "登录"){
-						validationList[1].validate();
-						validationList[2].validate();
+						if(!validationList[1].validate())
+							return;
+
+						if(!validationList[2].validate())
+							return;
+
 						loginEvent.setEventAttrs({
 							email : infoManagement.find('input[desc="email"]').value,
 							password : infoManagement.find('input[desc="pwd"]').value
@@ -203,7 +209,7 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, localStorage, loginEv
 			/// <param name="email" type="string">用户邮箱</param>
 			/// <param name="name" type="string">用户姓名</param>
 			/// <param name="pwd" type="string">用户密码</param>
-			var loginInfoManagement = this.loginInfoManagement;
+			var login = this, loginInfoManagement = this.loginInfoManagement;
 			
 			CallServer.open("register", {
 				name : name,
@@ -216,7 +222,7 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, localStorage, loginEv
 					return;
 				}
 
-				loginInfoManagement.showLogin();
+				login.login(email, pwd);
 			}, true);
 		},
 		tryLogin : function(){

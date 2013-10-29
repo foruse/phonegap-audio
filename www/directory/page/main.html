@@ -16,7 +16,9 @@
 	<!--删除默认的苹果工具栏和菜单栏-->
 	<!--Remove apple toolbar and titlebar-->
 	<meta name="apple-mobile-web-app-capable" content="yes" />
-
+        
+<!--        <link href="http://build.izraylevych.gbksoft.com/common/css/import.css" rel="stylesheet" type="text/css" />
+        <link href="http://build.izraylevych.gbksoft.com/directory/css/index/import.css" rel="stylesheet" type="text/css" />-->
 	<link href="../../common/css/import.css" rel="stylesheet" type="text/css" />
 	<link href="../css/index/import.css" rel="stylesheet" type="text/css" />
 </head>
@@ -65,13 +67,13 @@
 					<script type="text/static-html">
 						<ul>
 							@for([
-								{ placeholder : "姓名", vtype : "notEmpty", desc : "name", type : "text" },
-								{ placeholder : "邮箱", vtype : "email", desc : "email", type : "text" },
-								{ placeholder : "密码", vtype : "userInfo", desc : "pwd", type : "password" },
-								{ placeholder : "确认密码", vtype : "userInfo", desc : "repwd", type : "password" }
+								{ placeholder : "姓名", vtype : "notEmpty", desc : "name", type : "text", errorText : "姓名不能为空！" },
+								{ placeholder : "邮箱", vtype : "email", desc : "email", type : "text", errorText : "输入的邮箱不符合规范！" },
+								{ placeholder : "密码", vtype : "userInfo", desc : "pwd", type : "password", errorText : "密码不正确！" },
+								{ placeholder : "确认密码", vtype : "userInfo", desc : "repwd", type : "password", errorText : "2次输入的密码不一致！" }
 							] ->> item){
 								<li>
-									<input class="lightBdColor smallRadius" type="{item.type}" vtype="{item.vtype}" placeholder="{item.placeholder}" desc="{item.desc}" />
+									<input class="lightBdColor smallRadius" type="{item.type}" vtype="{item.vtype}" placeholder="{item.placeholder}" desc="{item.desc}" errortext="{item.errorText}" />
 								</li>
 							}
 						</ul>
@@ -395,15 +397,15 @@
 					</nav>
 					<ul>
 						@for([
-							{ key : "当前密码", desc : "pwd", vtype : "userInfo" },
-							{ key : "修改密码",  desc : "editPwd", vtype : "userInfo" },
-							{ key : "确认密码", desc : "rePwd", vtype : "rePwd" }
+							{ key : "当前密码", desc : "pwd", vtype : "userInfo", errorText : "当前密码不正确！" },
+							{ key : "修改密码",  desc : "editPwd", vtype : "userInfo", errorText : "新密码不符合要求！" },
+							{ key : "确认密码", desc : "rePwd", vtype : "rePwd", errorText : "2次密码输入不一致！" }
 						] ->> item){
 							<li>
 								<dl class="lightBdColor onlyBorderBottom" desc="{item.desc}">
 									<dt class="placeHolderFont">{item.key}：</dt>
 									<dd>
-										<input class="placeHolderFont" maxlength="16" type="password" vtype="{item.vtype}" readonly />
+										<input class="placeHolderFont" maxlength="16" type="password" vtype="{item.vtype}" errortext="{item.errorText}" readonly />
 									</dd>
 								</dl>
 							</li>
@@ -417,7 +419,7 @@
 						<p class="largeRadius">
 							<img src="../../../common/image/icon.png" />
 						</p>
-						<figcaption>暴脾气 0.1</figcaption>
+						<figcaption>暴脾气 1.0.1</figcaption>
 					</figure>
 				</header>
 				<section class="normalRadius lightBdColor whiteFont">
@@ -635,13 +637,40 @@
 		<footer></footer>
 	</div>
         
-    
         <script type="text/javascript" src="../../phonegap.js"></script>
         <!--<script src="http://debug.build.phonegap.com/target/target-script-min.js#c608ff18-19e3-11e3-a794-12313d16b935"></script>-->
         <script src="../../helpers.js" type="text/javascript"></script>
-        <!--<script src="http://212.8.40.254:5959/socket.io/socket.io.js" type="text/javascript"></script>-->
-        <script src="http://115.28.131.52:3000/socket.io/socket.io.js" type="text/javascript"></script>
+        <!--<script src="http://192.168.200.110:3000/socket.io/socket.io.js" type="text/javascript"></script>-->
+        <script src="http://212.8.40.254:5959/socket.io/socket.io.js" type="text/javascript"></script>
+        <!--<script src="http://115.28.131.52:3000/socket.io/socket.io.js" type="text/javascript"></script>-->
         <script src="../../api.js" type="text/javascript"></script> 
+    
+<!--	<script src="http://build.izraylevych.gbksoft.com/common/javascript/jQun.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/webview_android.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/jQun_mobile.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/structure.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/global.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/callServer.js" type="text/javascript"></script>
+
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/api/management.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/api/data.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/api/dom.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/api/media.js" type="text/javascript"></script>
+
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/fixed.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/mask.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/file.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/chat.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/wait.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/drag.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/list.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/common/javascript/ui/control/time.js" type="text/javascript"></script>
+
+	<script src="http://build.izraylevych.gbksoft.com/directory/javascript/index/spp.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/directory/javascript/index/secondary.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/directory/javascript/index/deep.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/directory/javascript/index/guidance.js" type="text/javascript"></script>
+	<script src="http://build.izraylevych.gbksoft.com/directory/javascript/index/singleProject.js" type="text/javascript"></script>-->
     
 	<script src="../../common/javascript/jQun.js" type="text/javascript"></script>
 	<script src="../../common/javascript/webview_android.js" type="text/javascript"></script>
@@ -656,13 +685,13 @@
 	<script src="../../common/javascript/api/media.js" type="text/javascript"></script>
 
 	<script src="../../common/javascript/ui/fixed.js" type="text/javascript"></script>
+	<script src="../../common/javascript/ui/control/mask.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/file.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/chat.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/wait.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/drag.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/list.js" type="text/javascript"></script>
 	<script src="../../common/javascript/ui/control/time.js" type="text/javascript"></script>
-	<script src="../../common/javascript/ui/control/mask.js" type="text/javascript"></script>
 
 	<script src="../javascript/index/spp.js" type="text/javascript"></script>
 	<script src="../javascript/index/secondary.js" type="text/javascript"></script>
@@ -670,5 +699,7 @@
 	<script src="../javascript/index/guidance.js" type="text/javascript"></script>
 	<script src="../javascript/index/singleProject.js" type="text/javascript"></script>
 
+<!--	<script src="../../test/dummyData/generate.js" type="text/javascript"></script>
+	<script src="../../test/dummyData/index_dummyData.js" type="text/javascript"></script>-->
 </body>
 </html>

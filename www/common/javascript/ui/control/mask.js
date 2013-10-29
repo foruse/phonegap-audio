@@ -35,21 +35,22 @@ this.MaskButton = (function(buttonHtml, clickButtonEvent){
 ));
 
 this.Confirm = (function(MaskButton, bodyHtml){
-	function Confirm(text, _buttons){
+	function Confirm(text, _buttons, _action){
 		var confirm = this;
 
 		this.assign({
+			action : _action,
 			text : text
 		});
 
-		this.combine(bodyHtml.create({ text : text }));
+		this.combine(bodyHtml.create(this));
 		new MaskButton("close", "", true).appendTo(this.find(">header")[0]);
 
 		if(_buttons){
 			var footerEl = this.find(">footer");
 
 			_buttons.forEach(function(button){
-				new MaskButton(button.action, button.text, button.autoClose).appendTo(footerEl[0]);
+				confirm.addButton(button.action, button.text, button.autoClose);
 			});
 		}
 
@@ -73,10 +74,15 @@ this.Confirm = (function(MaskButton, bodyHtml){
 
 			mask.fillBody(this[0]);
 			mask.show("confirm");
+			Panel.prototype.show.call(this);
 		}
 	});
 
 	Confirm.properties({
+		action : "",
+		addButton : function(_action, _text, _autoClose){
+			return new MaskButton(_action, _text, _autoClose).appendTo(this.find(">footer")[0]);
+		},
 		text : ""
 	});
 
@@ -85,12 +91,25 @@ this.Confirm = (function(MaskButton, bodyHtml){
 	this.MaskButton,
 	// bodyHtml
 	new HTML([
-		'<div class="confirm">',
+		'<div class="confirm" action="{action}">',
 			'<header></header>',
 			'<article class="whiteFont">{text}</article>',
 			'<footer></footer>',
 		'</div>'
 	].join(""))
+));
+
+this.Alert = (function(Confirm, MaskButton){
+	function Alert(text){
+		this.classList.add("alert");
+		new MaskButton("ok", "确定", true).appendTo(this.find(">footer")[0]);
+	};
+	Alert = new NonstaticClass(Alert, "Bao.UI.Control.Mask.Alert", Confirm.prototype);
+
+	return Alert.constructor;
+}(
+	this.Confirm,
+	this.MaskButton
 ));
 
 Mask.members(this);

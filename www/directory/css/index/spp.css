@@ -174,8 +174,11 @@
 	display : none;
 }
 #titleBar button[action="set"] {
-	background : #ffc000 url(../../../common/image/width24.png) 0px -375px no-repeat content-box content-box;
-	border : 7px solid #ffc000;
+	background : #ffc000 url(../../../common/image/width24.png) 3px -372px no-repeat content-box content-box;
+	border-color : #ffc000;
+}
+.confirm[action="projectConfirm"] > article {
+	line-height : 25px;
 }
 .confirm button[action="remove"] {
 	margin-right : 8px;

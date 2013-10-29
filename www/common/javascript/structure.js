@@ -86,7 +86,8 @@ this.Bao = (function(Bao){
 					ImageBox : null,
 					Message : null,
 					MessageGroup : null,
-					MessageList : null
+					MessageList : null,
+					SelectImageFile : null
 				}),
 				Drag : new Namespace().members({ // ui/control/drag.js
 					Navigator : null,
@@ -106,6 +107,7 @@ this.Bao = (function(Bao){
 					UserSelectionList : null
 				}),
 				Mask : new Namespace().members({ // ui/control/mask.js
+					Alert : null,
 					Confirm : null
 				}),
 				Time : new Namespace().members({ // ui/control/time.js

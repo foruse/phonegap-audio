@@ -63,7 +63,7 @@ this.Voice = (function(IntervalTimer, Models){
 	return Voice;
 }(
 	Bao.API.Management.IntervalTimer,
-	window.Models || {}
+	window.Models
 ));
 
 Media.members(this);
