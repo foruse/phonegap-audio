@@ -196,6 +196,55 @@ this.Attachment = (function(ImageFile, VoiceRecorder, attachmentHtml, attchmentC
 	new Event("attachmentcompleted")
 ));
 
+this.SelectImage = (function(Confirm, ImageFile){
+	function SelectImage(){
+		var selectImageFile = this, imageFile = new ImageFile();
+		
+		this.classList.add("selectImageFile");
+		this.addButton("image", "添加图片", false);
+		this.addButton("map", "添加地图", false);
+
+		imageFile.appendTo(this.find('button[action="image"]')[0]);
+
+		this.attach({
+			imageloaded : function(){
+				selectImageFile.hide();
+			}
+		});
+	};
+	SelectImage = new NonstaticClass(SelectImage, fullName("SelectImage"), Confirm.prototype);
+
+	SelectImage.override({
+		hide : function(){
+			if(this.disabled)
+				return;
+
+			Confirm.prototype.hide.apply(this, arguments);
+		},
+		show : function(){
+			if(this.disabled)
+				return;
+
+			Confirm.prototype.show.apply(this, arguments);
+		}
+	});
+
+	SelectImage.properties({
+		disable : function(){
+			this.disabled = true;
+		},
+		disabled : false,
+		enable : function(){
+			this.disabled = false;
+		}
+	});
+
+	return SelectImage.constructor;
+}(
+	Bao.UI.Control.Mask.Confirm,
+	this.ImageFile
+));
+
 File.members(this);
 }.call(
 	{},

@@ -121,7 +121,135 @@ this.GlobalSearch = (function(OverflowPanel, Panel, UserAnchorList, Global, forE
 	}
 ));
 
-this.Account = (function(LoadingBar, Global, ValidationList, ImageFile){
+this.Account = (function(Panel, Global, ValidationList, SelectImage){
+	function InputPanel(){};
+	InputPanel = new NonstaticClass(InputPanel, null, Panel.prototype);
+
+	InputPanel.properties({
+		readonly : function(){
+			this.find("input").addAttribute();
+		},
+		writable : function(){
+			this.find("input").removeAttribute("readonly");
+		}
+	});
+
+
+	function Header(selector){
+		var header = this, selectImage = new SelectImage();
+
+		this.assign({
+			selectImage : selectImage
+		});
+
+		selectImage.disable();
+
+		selectImage.attach({
+			imageloaded : function(e){
+				header.find(".largeAvatarPanel>img").src = e.base64;
+			}
+		});
+
+		this.attach({
+			clickavatar : function(e){
+				e.stopPropagation();
+
+				selectImage.show();
+			}
+		}, true);
+	};
+	Header = new NonstaticClass(Header, null, Panel.prototype);
+
+	Header.properties({
+		getAvatar : function(){
+			return this.find(".largeAvatarPanel>img").src;
+		},
+		selectImage : undefined
+	});
+
+
+	function Section(selector){
+	
+	};
+	Section = new NonstaticClass(Section, null, InputPanel);
+
+	Section.properties({
+		getEmail : function(){
+			return this.find('dl[desc="email"] input').value;
+		},
+		getPhoneNumber : function(){
+			return this.find('dl[desc="phoneNum"] input').value;
+		},
+		getPosition : function(){
+			return this.find('dl[desc="position"] input').value;
+		}
+	});
+
+
+	function Footer(selector){
+		var footer = this, validationList = new ValidationList();
+
+		this.assign({
+			validationList : validationList
+		});
+
+		this.attach({
+			userclick : function(e, targetEl){
+				var classList = this.classList;
+
+				if(targetEl.between("button", this).length > 0){
+					if(classList.contains("editable")){
+						targetEl.innerHTML = "修改密码";
+						classList.remove("editable");
+						return;
+					}
+
+					targetEl.innerHTML = "取消修改";
+					classList.add("editable");
+				}
+			}
+		});
+
+		// 验证信息
+		this.find("dl").forEach(function(parent){
+			var parentEl = jQun(parent), inputEl = parentEl.find("input"), vtype = inputEl.get("vtype", "attr");
+
+			validationList.addValidation(parentEl, function(el, Validation){
+				if(inputEl.between("input", footer[0]).length > 0){
+					if(!footer.classList.contains("editable")){
+						return true;
+					}
+				}
+
+				if(vtype === "rePwd"){
+					return inputEl.value === footer.find('dl[desc="editPwd"] input').value;
+				}
+
+				return Validation.result(inputEl.value, vtype);
+			}, inputEl.getAttribute("errortext"));
+		});
+	};
+	Footer = new NonstaticClass(Footer, null, InputPanel);
+
+	Footer.override({
+		readonly : function(){
+			InputPanel.readonly.apply(this, arguments);
+			this.hide();
+		},
+		writable : function(){
+			InputPanel.writable.apply(this, arguments);
+			this.show();
+		}
+	});
+
+	Footer.properties({
+		getPassword : function(){
+			return this.classList.contains("editable") ? this.find('dl[desc="rePwd"] input').value : null
+		},
+		validationList : undefined
+	});
+
+
 	function Account(selector, contentHtml){
 		///	<summary>
 		///	我的账户。
@@ -130,28 +258,33 @@ this.Account = (function(LoadingBar, Global, ValidationList, ImageFile){
 		/// <param name="contentHtml" type="jQun.HTML">内容的html模板</param>
 		var footerEl,
 		
-			account = this, accountClassList = account.classList,
+			account = this, accountClassList = account.classList;
 
-			validationList = new ValidationList(),
-
-			titleBar = Global.titleBar;
+		this.assign({
+			contentHtml : contentHtml
+		});
 
 		// 渲染空数据
-		this.innerHTML = contentHtml.render(Global.loginUser);
 		footerEl = this.find(">footer");
-
-		new ImageFile(this.find(">header .largeAvatarPanel>input")[0]);
 
 		// 监听事件
 		this.attach({
 			beforeshow : function(){
-				var editButtonEl = titleBar.find('button[action="editAccount"]');
+				var titleBar = Global.titleBar, editButtonEl = titleBar.find('button[action="editAccount"]');
 
 				editButtonEl.onuserclick = function(){
+					var contentHeader = account.contentHeader,
+
+						contentSection = account.contentSection,
+					
+						contentFooter = account.contentFooter;
+
 					// 如果点击了编辑按钮
 					if(editButtonEl.get("action", "attr") === "editAccount"){
 						// 所有input变为可以输入
-						account.find("input").del("readonly", "attr");
+						contentHeader.selectImage.enable();
+						contentSection.writable();
+						contentFooter.writable();
 						// 编辑按钮变成提交按钮
 						editButtonEl.set("action", "submit account", "attr");
 						// 修改标题栏的标题
@@ -160,90 +293,60 @@ this.Account = (function(LoadingBar, Global, ValidationList, ImageFile){
 						return;
 					}
 
-					if(!validationList.validate())
+					if(!contentFooter.validationList.validate())
 						return;
 
 					CallServer.open("editAccount", {
-						position : account.find('dl[desc="position"] input').value,
-						avatar : "",
-						phoneNum : account.find('dl[desc="phoneNum"] input').value,
-						email : account.find('dl[desc="email"] input').value,
-						password : footerEl.classList.contains("editable") ? account.find('dl[desc="rePwd"] input').value : null
+						position : contentSection.getPosition(),
+						avatar : contentHeader.getAvatar(),
+						phoneNum : contentSection.getPhoneNumber(),
+						email : contentSection.getEmail(),
+						password : contentFooter.getPassword()
 					}, function(data){
-						editButtonEl.set("action", "editAccount", "attr");
-						// 所有input变为只读
-						account.find("input").set("readonly", "", "attr");
-						// 修改标题栏的标题
-						titleBar.resetTitle("我的账户");
-						footerEl.hide();
+						Global.loginUser = data;
+
+						account.restore();
 					});
 				};
-			},
-			userclick : function(e){
-				var targetEl = jQun(e.target);
-
-				if(targetEl.between(">footer button", this).length > 0){
-					var footerClassList = account.find(">footer").classList;
-
-					if(footerClassList.contains("editable")){
-						targetEl.innerHTML = "修改密码";
-						footerClassList.remove("editable");
-						return;
-					}
-
-					targetEl.innerHTML = "取消修改";
-					footerClassList.add("editable");
-				}
-			},
-			imageloaded : function(e){
-				account.find(">header .largeAvatarPanel>img").src = e.base64;
 			}
-		});
-
-		this.attach({
-			clickavatar : function(e){
-				e.stopPropagation();
-			}
-		}, true);
-		
-		// 验证信息
-		this.find(">*:not(header) dl").forEach(function(parent){
-			var parentEl = jQun(parent), inputEl = parentEl.find("input"), vtype = inputEl.get("vtype", "attr");
-
-			if(!vtype){
-				return;
-			}
-
-			validationList.addValidation(parentEl, function(el, Validation){
-				if(inputEl.between("input", footerEl[0]).length > 0){
-					if(!footerEl.classList.contains("editable")){
-						return true;
-					}
-				}
-
-				if(vtype === "rePwd"){
-					return inputEl.value === account.find('dl[desc="editPwd"] input').value;
-				}
-
-				return Validation.result(inputEl.value, vtype);
-			}, inputEl.getAttribute("errortext"));
 		});
 	};
 	Account = new NonstaticClass(Account, "Bao.Page.Index.Deep.Account", PagePanel.prototype);
 
 	Account.override({
+		isNoTraces : true,
+		restore : function(){
+			var titleBar = Global.titleBar;
+
+			this.innerHTML = this.contentHtml.render(Global.loginUser);
+
+			this.contentHeader = new Header.constructor(this.header[0]);
+			this.contentSection = new Section.constructor(this.section[0]);
+			this.contentFooter = new Footer.constructor(this.footer[0]);
+
+			titleBar.find('button[action="submit account"]').set("action", "editAccount", "attr");
+			// 修改标题栏的标题
+			titleBar.resetTitle("我的账户");
+		},
 		title : "我的账户",
 		tools : [
 			{ urlname : "javascript:void(0);", action : "editAccount" }
 		]
 	});
 
+	Account.properties({
+		contentHeader : undefined,
+		contentHtml : undefined,
+		contentFooter : undefined,
+		contentSection : undefined
+	});
+
 	return Account.constructor;
 }(
-	Bao.UI.Control.Wait.LoadingBar,
+	Bao.API.DOM.Panel,
 	Bao.Global,
 	Bao.API.DOM.ValidationList,
-	Bao.UI.Control.File.ImageFile
+	Bao.UI.Control.File.SelectImage
 ));
 
 this.QRCode = (function(){

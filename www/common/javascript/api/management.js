@@ -176,8 +176,10 @@ this.History = (function(List, Loader, redirectEvent){
 			else {
 				// 加载、初始化新panel信息
 				panel = Loader.load(name);
-				panel.show();
+
 				this.push(name);
+
+				panel.show();
 			}
 			
 			return panel;

@@ -140,10 +140,10 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, localStorage, loginEv
 		});
 
 		this.attach({
-			beforeshow : function(){
+			beforehide : function(){
 				Global.history.clear();
 			}
-		});
+		})
 
 		loginInfoManagement.attach({
 			login : function(e){
@@ -188,10 +188,9 @@ this.Login = (function(OverflowPanel, LoginInfoManagement, localStorage, loginEv
 					return;
 				}
 
-				var user = data.user, history = Global.history;
-
-				history.go(user.isNewUser ? "createFirstProject" : "project");
-				history.clear("login");
+				var user = data.user;
+				
+				Global.history.go(user.isNewUser ? "createFirstProject" : "project");
 
 				loginEvent.setEventAttrs({ loginUser : user });
 				loginEvent.trigger(window);

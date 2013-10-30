@@ -287,7 +287,16 @@ this.Self = (function(Header){
 				if(id === undefined)
 					return;
 
-				Global.history.go(e.pageName).fill(id);
+				var history = Global.history, pageName = e.pageName;
+
+				history.go(e.pageName).fill(id);
+
+				["discussion", "todoList", "workStream"].forEach(function(name){
+					if(name === pageName)
+						return;
+						
+					history.clear(name);
+				});
 			},
 			loadproject : function(e){
 				id = e.project.id;

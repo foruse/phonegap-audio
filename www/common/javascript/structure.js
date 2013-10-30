@@ -3,15 +3,16 @@ this.Bao = (function(Bao){
 	// 以下路径是相对于本文件的路径
 	Bao.members({
 		API : new Namespace().members({
-			Data : new Namespace().members({ // api/data.js
-				BatchLoad : null
-			}),
 			DOM : new Namespace().members({ // api/dom.js
 				EventCollection : null,
+				OverflowPanel : null,
 				PagePanel : null,
 				Panel : null,
 				Validation : null,
 				ValidationList : null
+			}),
+			Data : new Namespace().members({ // api/data.js
+				BatchLoad : null
 			}),
 			Management : new Namespace().members({ // api/management.js
 				History : null,
@@ -86,19 +87,21 @@ this.Bao = (function(Bao){
 					ImageBox : null,
 					Message : null,
 					MessageGroup : null,
-					MessageList : null,
-					SelectImageFile : null
+					MessageList : null
 				}),
 				Drag : new Namespace().members({ // ui/control/drag.js
 					Navigator : null,
 					Scroll : null
 				}),
 				File : new Namespace().members({ // ui/control/file.js
-					Attachment : null
+					Attachment : null,
+					ImageFile : null,
+					SelectImage : null,
+					VoiceRecorder : null
 				}),
 				List : new Namespace().members({ // ui/control/list.js
 					AnchorList : null,
-					ChatList : null,
+					InputSelectionList : null,
 					LevelAnchorList : null,
 					UserAnchorList : null,
 					UserIndexList : null,
@@ -108,7 +111,8 @@ this.Bao = (function(Bao){
 				}),
 				Mask : new Namespace().members({ // ui/control/mask.js
 					Alert : null,
-					Confirm : null
+					Confirm : null,
+					MaskButton : null
 				}),
 				Time : new Namespace().members({ // ui/control/time.js
 					Calendar : null,

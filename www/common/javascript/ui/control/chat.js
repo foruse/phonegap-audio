@@ -547,31 +547,13 @@ this.ChatListContent = (function(MessageGroup){
 	this.MessageGroup
 ));
 
-this.SelectImageFile = (function(Confirm, ImageFile){
-	function SelectImageFile(){
-		var selectImageFile = this, imageFile = new ImageFile();
-		
-		this.classList.add("selectImageFile");
-		this.addButton("image", "添加图片", false);
-		this.addButton("map", "添加地图", false);
-
-		imageFile.appendTo(this.find('button[action="image"]')[0]);
-	};
-	SelectImageFile = new NonstaticClass(SelectImageFile, "Bao.UI.Control.Chat.SelectImageFile", Confirm.prototype);
-
-	return SelectImageFile.constructor;
-}(
-	Bao.UI.Control.Mask.Confirm,
-	Bao.UI.Control.File.ImageFile
-));
-
-this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageCompletedEvent, reader){
+this.ChatInput = (function(SelectImage, Global, VoiceRecorder, messageCompletedEvent, reader){
 	function ChatInput(selector){
 		///	<summary>
 		///	聊天输入。
 		///	</summary>
 		/// <param name="selector" type="string">对应元素选择器</param>
-		var chatInput = this, inputClassList = chatInput.classList, selectImageFile = new SelectImageFile();
+		var chatInput = this, inputClassList = chatInput.classList, selectImage = new SelectImage();
 		
 		new VoiceRecorder(this.find(">p>button:first-child")[0]);
 
@@ -590,7 +572,7 @@ this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageComple
 				}
 
 				if(targetEl.between(">aside>button:last-child", this).length > 0){
-					selectImageFile.show();
+					selectImage.show();
 					return;
 				}
 			},
@@ -614,7 +596,7 @@ this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageComple
 			}
 		});
 
-		selectImageFile.attach({
+		selectImage.attach({
 			imageloaded : function(e){
 				chatInput.messageCompleted(
 					"image", 
@@ -646,7 +628,7 @@ this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageComple
 
 	return ChatInput.constructor;
 }(
-	this.SelectImageFile,
+	Bao.UI.Control.File.SelectImage,
 	Bao.Global,
 	Bao.UI.Control.File.VoiceRecorder,
 	// messageCompletedEvent

@@ -30,7 +30,7 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 					if(typeof _complete === "function"){
 						_complete(data);
 					}
-				}, 500);
+				}, 0);
 			});
 		}
 	});
@@ -323,6 +323,11 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 		},
 		addCommentForTodo : function(data){
 			data = { id : Bao.Test.DummyData.Generate.Number.random(99999) };
+
+			return data;
+		},
+		editAccount : function(data){
+			data = Index.Common.getUser();
 
 			return data;
 		}

@@ -149,7 +149,7 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 				x += gestureOffsetX;
 
 				// 如果是起手势，即(touchend)
-				if(e.isLastOfGestureType){
+				if(e.isLastOfGestureType && Math.abs(x) > 10){
 					navigator["focus" + (x > 0 ? "Prev" : "Next") + "Tab"]();
 
 
