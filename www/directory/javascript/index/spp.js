@@ -395,7 +395,7 @@ this.Partner = (function(Navigator, UserIndexList, InputSelectionList, Validatio
 		/// <param name="_placeholder" type="string">输入框默认文字</param>
 		var validation = new Validation(this.find(">header>input"), function(textEl, Validation){
 			return Validation.result(textEl.value, "notEmpty");
-		});
+		}, "组名称不能为空！");
 
 		this.attach({
 			clickbutton : function(e){

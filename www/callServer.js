@@ -147,6 +147,7 @@
                 Mdls.TodoChat.send_message(_params, complete);
             },
             getUser: function(params, complete) {
+                console.log(params)
                 Mdls.Partner.read(params.id, complete);
             },
             // globalSearch : function(){ },
@@ -310,7 +311,7 @@
                 var LoadingBar = Wait.LoadingBar;
 
                 LoadingBar.show(_isUpload ? "正在上传数据.." : null);
-//                console.log(name)
+                console.log(name)
                 Models[name](params, function(data) {
                     if (name in allHandlers) {
                         data = allHandlers[name](data);

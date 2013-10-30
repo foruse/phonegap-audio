@@ -112,7 +112,7 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 		///	<summary>
 		///	导航。
 		///	</summary>
-		var contentEl, navigator = this;
+		var contentEl, navigator = this, x = 0;
 
 		this.combine(panelHtml.create());
 
@@ -138,11 +138,23 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 
 				navigator.focusTab(jQun(target).get("idx", "attr"));
 			},
+			touchstart : function(){
+				x = 0;
+			},
 			continuousgesture : function(e){
-				var left = (contentEl.getCSSPropertyValue("left").split("px").join("") - 0 || 0) + e.gestureOffsetX;
+				var gestureOffsetX = e.gestureOffsetX,
 				
+					left = (contentEl.getCSSPropertyValue("left").split("px").join("") - 0 || 0) + gestureOffsetX;
+
+				x += gestureOffsetX;
+
 				// 如果是起手势，即(touchend)
 				if(e.isLastOfGestureType){
+					navigator["focus" + (x > 0 ? "Prev" : "Next") + "Tab"]();
+
+
+					/* 以下是根据滑动幅度来调整focustab
+					
 					var width = navigator.width();
 
 					left = Math.round(left / width);
@@ -167,6 +179,9 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 
 					//contentEl.setCSSPropertyValue("left", (left * -100) + "%");
 					navigator.focusTab(left);
+					
+					*/
+
 					return;
 				}
 
@@ -191,6 +206,13 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 			this.resetTab();
 		},
 		contentEl : undefined,
+		currentTabIndex : 0,
+		focusNextTab : function(){
+			this.focusTab(this.currentTabIndex + 1);
+		},
+		focusPrevTab : function(){
+			this.focusTab(this.currentTabIndex - 1);
+		},
 		focusTab : function(idx){
 			///	<summary>
 			///	切换tab。
@@ -198,18 +220,21 @@ this.Navigator = (function(Timer, Math, panelHtml, tabItemsHtml){
 			/// <param name="idx" type="number">tab的索引</param>
 			var tabEl = this.tabEl, focusEl = tabEl.find('button[idx="' + idx + '"]');
 
-			if(focusEl.length === 0)
-				return;
+			if(focusEl.length === 0){
+				idx = this.currentTabIndex;
+				focusEl = tabEl.find('button[idx="' + idx + '"]');
+			}
 
 			var classList = focusEl.classList;
 
-			this.contentEl.setCSSPropertyValue("left", (idx * -100) + "%");
+			this.contentEl.setCSSPropertyValue("left", (idx * this.contentEl.parent().width() * -1) + "px");
 
 			if(classList.contains("focused"))
 				return;
 
 			tabEl.find('button.focused').classList.remove("focused");
 			classList.add("focused");
+			this.currentTabIndex = idx;
 		},
 		resetTab : function(){
 			///	<summary>

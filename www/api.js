@@ -42,7 +42,7 @@
 //              this file is used to trigger Models methods ---> to get some data ;)
 //
 // PLEASE MENTION THAT SOCKET no interten method should be improved with .on("error"  ...etc   ---> in production
-
+alert("hi");
 var CURRENT_DEVICE;
 BROWSER_TEST_VERSION = function check_dev() {
     var ua = navigator.userAgent.toLowerCase();
@@ -96,7 +96,8 @@ function onDeviceReady() {
         },
 //        server_url: "http://115.28.131.52:3000",
 //        server_url: "http://192.168.200.110:3000",
-        server_url: "http://212.8.40.254:5959",
+//        server_url: "http://212.8.40.254:5959",
+        server_url: "http://gbksoft.com:5959",
 //        audio_format: "wav",
         audio_format: CURRENT_DEVICE === "ios" ? "wav" : "amr",
         root_dir: "BAO",

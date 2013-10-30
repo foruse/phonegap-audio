@@ -192,7 +192,7 @@ this.Message = (function(Attachment, ImageBox, ActiveVoice, clickDoEvent, clickP
 			userclick : function(e, targetEl){
 				// 查看图片
 				if(targetEl.between(">img", this).length > 0){
-					new ImageBox(targetEl.src)[0];
+					// new ImageBox(targetEl.src);
 					return;
 				}
 
@@ -621,7 +621,7 @@ this.ChatInput = (function(SelectImageFile, Global, VoiceRecorder, messageComple
 					"",
 					{
 						base64 : e.base64,
-						src : ""
+						src : e.src
 					}
 				);
 			}

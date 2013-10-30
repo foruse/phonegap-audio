@@ -6,7 +6,8 @@ this.ImageFile = (function(Models, Mask, inputHtml, fileReader, imageLoadedEvent
 		fileReader.onload = function(){
 			imageLoadedEvent.setEventAttrs({
 				file : FileReader.file,
-				base64 : this.result
+				base64 : this.result,
+				src : ""
 			});
 
 			imageLoadedEvent.trigger(FileReader.fileElement);
@@ -42,6 +43,7 @@ this.ImageFile = (function(Models, Mask, inputHtml, fileReader, imageLoadedEvent
 					Picture.album(function(src){
 						imageLoadedEvent.setEventAttrs({
 							file : null,
+							src : src,
 							base64 : src
 						});
 

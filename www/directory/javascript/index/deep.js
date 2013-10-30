@@ -335,6 +335,12 @@ this.Todo = (function(ChatList, OverflowPanel, Global){
 				}, function(){
 					message.addPraise(loginUser);
 				})
+			},
+			clickdo : function(e){
+				var sendTodo = Global.history.go("sendTodo");
+
+				sendTodo.selectUser(e.message.poster);
+				sendTodo.resetProjectId(todo.id);
 			}
 		});
 
