@@ -42,7 +42,7 @@
 //              this file is used to trigger Models methods ---> to get some data ;)
 //
 // PLEASE MENTION THAT SOCKET no interten method should be improved with .on("error"  ...etc   ---> in production
-alert("hi");
+//alert("hi");
 var CURRENT_DEVICE;
 BROWSER_TEST_VERSION = function check_dev() {
     var ua = navigator.userAgent.toLowerCase();
