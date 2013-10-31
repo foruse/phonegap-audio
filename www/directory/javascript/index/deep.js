@@ -659,22 +659,24 @@ this.Archive = (function(AnchorList, Global){
 			clickanchor : function(e){
 				e.stopPropagation();
 				Global.history.go("archivedProjectView").fill(e.anchor);
+			},
+			beforeshow : function(){
+				CallServer.open("getAllArchives", null, function(archives){
+					archives.forEach(function(archive){
+						archive.key = archive.id;
+						archive.desc = new Date(archive.completeDate).toLocaleDateString();
+					});
+			
+					overflowPanel.innerHTML = "";
+					overflowPanel.setTop(0);
+					new AnchorList(archives, true).appendTo(overflowPanel[0]);
+
+					archives.forEach(function(archive){
+						overflowPanel.find('li[key="' + archive.id + '"]').classList.add("projectColor_" + archive.color);
+					});
+				});
 			}
 		}, true);
-
-		CallServer.open("getAllArchives", null, function(archives){
-			archives.forEach(function(archive){
-				archive.key = archive.id;
-				archive.desc = new Date(archive.completeDate).toLocaleDateString();
-			});
-			
-			overflowPanel.innerHTML = "";
-			new AnchorList(archives, true).appendTo(overflowPanel[0]);
-
-			archives.forEach(function(archive){
-				overflowPanel.find('li[key="' + archive.id + '"]').classList.add("projectColor_" + archive.color);
-			});
-		});
 	};
 	Archive = new NonstaticClass(Archive, "Bao.Page.Index.Deep.Archive", PagePanel.prototype);
 
@@ -803,7 +805,7 @@ this.ArchivedProjectView = (function(AnchorList, Panel){
 	Bao.API.DOM.Panel
 ));
 
-this.ProjectManagement = (function(UserManagementList, AnchorList, Global, anchorListData){
+this.ProjectManagement = (function(UserManagementList, AnchorList, Global, Confirm, anchorListData){
 	function ProjectManagement(selector){
 		var projectManagement = this,
 		
@@ -828,14 +830,27 @@ this.ProjectManagement = (function(UserManagementList, AnchorList, Global, ancho
 			},
 			userclick : function(e, targetEl){
 				if(targetEl.between(">footer>button:first-child", this).length > 0){
-					if(confirm("确定将此项目归档吗？")){
-						CallServer.open("archiveProject", {
-							id : projectManagement.id
-						}, function(){
-							Global.history.go("archive");
-						});
-					}
+					new Confirm("确定将此项目归档吗？", [
+						{ action : "ok", text : "是", autoClose : true },
+						{ action : "cancle", text : "否", autoClose : true }
+					]).attach({
+						clickbutton : function(e){
+							if(e.maskButton.action !== "ok")
+								return;
 
+							var projectId = projectManagement.id;
+
+							CallServer.open("archiveProject", {
+								id : projectId
+							}, function(){
+								var history = Global.history;
+
+								history.go("archivedProjectView").fill(projectId);
+								history.clear("projectManagement");
+								history.clear("discussion");
+							});
+						}
+					}).show();
 					return;
 				}
 
@@ -901,6 +916,7 @@ this.ProjectManagement = (function(UserManagementList, AnchorList, Global, ancho
 	Bao.UI.Control.List.UserManagementList,
 	Bao.UI.Control.List.AnchorList,
 	Bao.Global,
+	Bao.UI.Control.Mask.Confirm,
 	// anchorListData
 	[
 		{ title : "发送 To Do", key : "sendTodo" } //,

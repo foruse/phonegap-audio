@@ -67,6 +67,7 @@
 	background : url(../image/width12.png) 0 -29px;
 	width : 33px;
 	height : 9px;
+	display : none;
 }
 .anchorList_level > li {
 	height : 9px;

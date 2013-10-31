@@ -159,7 +159,7 @@ this.Attachment = (function(ImageFile, VoiceRecorder, attachmentHtml, attchmentC
 
 		this.attach({
 			imageloaded : function(e){
-				attachment.completed("image", e.file);
+				attachment.completed("image", e.src);
 			},
 			stoprecord : function(e){
 				attachment.completed("voice", e.voiceSrc);

@@ -23,6 +23,7 @@
 }
 .attachment li:last-child {
 	border : 0 none;
+	display : none;
 }
 .attachment li[atype="voice"] {
 	background-position : 18px -974px;

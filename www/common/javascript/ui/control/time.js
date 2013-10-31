@@ -53,10 +53,10 @@ this.DateTable = (function(OverflowPanel, Date, tablePanelHtml, dateTableHtml, f
 			
 			var lastDate = new Date(time),
 
-				monthData = [], month = firstDate.getMonth();
+				monthData = [], month = firstDate.getMonth() + 1;
 
 			// 设置本月最后一天
-			lastDate.setMonth(month + 1, 0);
+			lastDate.setMonth(month, 0);
 
 			// 数据
 			for(
@@ -75,7 +75,8 @@ this.DateTable = (function(OverflowPanel, Date, tablePanelHtml, dateTableHtml, f
 					date : d,
 					day : k.getDay(),
 					// 0 : 表示本月日期，-1表示上个月日期
-					dateStatus : i < 0 ? "-1" : "0"
+					dateStatus : i < 0 ? "-1" : "0",
+					month : i < 0 ? month - 1 : month
 				});
 
 				k.setDate(d + 1);
@@ -84,7 +85,7 @@ this.DateTable = (function(OverflowPanel, Date, tablePanelHtml, dateTableHtml, f
 			// 渲染数据
 			dateTableHtml.create({
 				monthData : monthData,
-				month : month + 1,
+				month : month,
 				year : firstDate.getFullYear(),
 				time : firstDate.getTime(),
 				weeks : Math.ceil(monthData.length / 7)
@@ -139,7 +140,7 @@ this.DateTable = (function(OverflowPanel, Date, tablePanelHtml, dateTableHtml, f
 			// 如果聚焦元素找不到
 			if(focusedDateEl.length === 0){
 				focusedDateEl = this.find('ol > li[time="' + time + '"]');
-				monthEl = focusedDateEl.parent().parent();
+				monthEl = this.find('li[time="' + (new Date(time).setDate(1)) + '"]');
 			}
 			
 			monthEl.classList.add("focused");
@@ -233,7 +234,7 @@ this.DateTable = (function(OverflowPanel, Date, tablePanelHtml, dateTableHtml, f
 					'<li datestatus="{dt.dateStatus}" day="{dt.day}" time="{dt.time}">',
 						'<aside purpose="用户自定义内容"></aside>',
 						'<p>',
-							'<small>{month}月</small>',
+							'<small>{dt.month}月</small>',
 							'<span>{dt.date}</span>',
 						'</p>',
 					'</li>',

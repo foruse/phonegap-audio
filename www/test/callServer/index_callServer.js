@@ -66,7 +66,8 @@ this.CallServer = (function(CallServer, Wait, open, allHandlers){
 		["logout",				"",											""],
 		["editProjectInfo",		new Text("url?users={users}"),		""],
 		["removeProject",		new Text("url?projectId={projectId}"),		""],
-		["editAccount",			new Text("url?positon={positon}&avatar={avatar}&phoneNum={phoneNum}&email={email}&password={password}"), ""]
+		["editAccount",			new Text("url?positon={positon}&avatar={avatar}&phoneNum={phoneNum}&email={email}&password={password}"), ""],
+		["archiveProject",		new Text("url?porjectId={projectId}"),		""]
 	], allHandlers);
 
 	return CallServer;

@@ -170,7 +170,12 @@ this.Schedule = (function(Calendar, LevelAnchorList, groupingHtml){
 				contentEl.setCSSPropertyValue("top", 0);
 			}
 		});
-		calendar.dateTable.focus(new Date());
+
+		this.attach({
+			aftershow : function(){
+				calendar.dateTable.focus(new Date());
+			}
+		});
 	
 		new ScheduleContent.constructor(contentEl[0], calendar);
 	};

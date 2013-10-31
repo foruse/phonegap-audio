@@ -120,6 +120,7 @@
 	width : 33px;
 	text-indent : 0;
 	background : url(../../../common/image/width12.png) 0 -29px content-box content-box;
+	display : none;
 }
 #project strong > span {
 	height : 9px;

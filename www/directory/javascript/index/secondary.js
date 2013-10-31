@@ -103,8 +103,13 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 				if(avatarPanel.length === 0)
 					return;
 
+				var userId = avatarPanel.getAttribute("userid");
+
+				if(userId === null)
+					return;
+
 				clickAvatarEvent.setEventAttrs({
-					userId : avatarPanel.get("userid", "attr")
+					userId : userId
 				});
 				clickAvatarEvent.trigger(e.target);
 				
