@@ -43,3 +43,28 @@
 	border : 0 none;
 	background-color : transparent;
 }
+
+.selectImage > article {
+	display : none;
+}
+.selectImage > footer > button {
+	display : block;
+	width : 100% !important;
+	margin-bottom : 15px;
+}
+.selectImage > footer > button[action="image"] {
+	position : relative;
+	background-color : #ce312d;
+	color : #fff;
+}
+.selectImage > footer > button[action="map"], .selectImage > footer > button[action="camera"] {
+	opacity : 0.4;
+}
+.selectImage[action="localPicture"] button[action="map"] {
+	display : none;
+}
+.selectImage button > input {
+	position : absolute;
+	left : 0;
+	top : 0;
+}

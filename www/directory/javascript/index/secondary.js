@@ -89,7 +89,7 @@ this.AddProject = (function(Global, Validation, UserManagementList){
 	Bao.UI.Control.List.UserManagementList
 ));
 
-this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
+this.BusinessCard = (function(Global, Confirm, clickAvatarEvent){
 	function ClickUserAvatar(){
 		///	<summary>
 		///	点击用户头像。
@@ -104,7 +104,7 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 					return;
 
 				var userId = avatarPanel.getAttribute("userid");
-
+//                                 alert(userId);
 				if(userId === null)
 					return;
 
@@ -141,8 +141,8 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 				e.stopPropagation();
 			},
 			userclick : function(e, targetEl){
-				if(targetEl.between(">footer", this).length > 0){
-					// Global.history.go("sendTodo").fill(1);
+				if(targetEl.between('>footer li', this).length > 0){
+					console.log("你点击了一个按钮：" + targetEl.getAttribute("action"));
 					return;
 				}
 			}
@@ -169,14 +169,17 @@ this.BusinessCard = (function(Global, LoadingBar, clickAvatarEvent){
 			CallServer.open("getUser", { id : id }, function(data){
 				businessCard.find(">section>dl").innerHTML = businessCard.userInfoHtml.render(data);	
 			});
+
+			this.userId = id;
 		},
+		userId : -1,
 		userInfoHtml : undefined
 	});
 
 	return BusinessCard.constructor;
 }(
 	Bao.Global,
-	Bao.UI.Control.Wait.LoadingBar,
+	Bao.UI.Control.Mask.Confirm,
 	// clickAvatarEvent
 	new jQun.Event("clickavatar", function(){
 		this.attachTo("*");

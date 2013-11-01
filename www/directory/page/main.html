@@ -282,16 +282,22 @@
 							</aside>
 						</dd>
 					</script>
-					<p desc="authority">
-						<span>设置权限</span>
-						<button>
-							<small></small>
-						</button>
-					</p>
 				</section>
-				<footer class="lightBdColor normalRadius">
-					<span>发送 To Do</span>
-					<button class="whiteFont">do</button>
+				<footer>
+					<ul>
+						<li class="lightBdColor normalRadius" action="sendTodo">
+							<span>发送 To Do</span>
+							<button class="whiteFont">do</button>
+						</li>
+						<li class="lightBdColor normalRadius" action="authority">
+							<span>授予权限</span>
+							<button>
+								<small></small>
+							</button>
+						</li>
+						<li class="lightBdColor normalRadius" action="removeFromTeam">移除Team</li>
+						<li class="lightBdColor normalRadius whiteFont" action="removePartner">删除拍档</li>
+					</ul>	
 				</footer>
 			</article>
 			<article id="systemOption">
@@ -350,7 +356,7 @@
 				<header class="themeBdColor normalRadius">
 					<figure class="inlineBlock">
 						<aside class="lightBdColor">
-							<p class="largeAvatarPanel">
+							<p class="largeAvatarPanel" userid="{id}">
 								<img src="{?~avatar}" />
 							</p>
 						</aside>
@@ -633,8 +639,8 @@
 		<article class="normalRadius"></article>
 		<footer></footer>
 	</div>
-        
-        <script type="text/javascript" src="../../phonegap.js"></script>
+
+	<script type="text/javascript" src="../../phonegap.js"></script>
         <!--<script src="http://debug.build.phonegap.com/target/target-script-min.js#c608ff18-19e3-11e3-a794-12313d16b935"></script>-->
         <script src="../../helpers.js" type="text/javascript"></script>
         <!--<script src="http://gbksoft.com:5959/socket.io/socket.io.js" type="text/javascript"></script>-->
@@ -667,8 +673,5 @@
 	<script src="../javascript/index/deep.js" type="text/javascript"></script>
 	<script src="../javascript/index/guidance.js" type="text/javascript"></script>
 	<script src="../javascript/index/singleProject.js" type="text/javascript"></script>
-
-<!--	<script src="../../test/dummyData/generate.js" type="text/javascript"></script>
-	<script src="../../test/dummyData/index_dummyData.js" type="text/javascript"></script>-->
 </body>
 </html>

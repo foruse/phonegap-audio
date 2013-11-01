@@ -45,7 +45,7 @@
 
 var CURRENT_DEVICE;
 BROWSER_TEST_VERSION = function check_dev() {
-    var ua = navigator.userAgent.toLowerCase();
+    var ua = navigator.userAgent.toLowerCase(), device;
     if (ua.match(/(iphone|ipod|ipad)/i)) {
         device = "ios";
         CURRENT_DEVICE = "ios";
@@ -59,6 +59,7 @@ BROWSER_TEST_VERSION = function check_dev() {
     } else {
         device = "desktop";
     }
+    console.log(device);
     return device === "desktop" ? true : false;
 //    return true;
 }();
@@ -292,27 +293,33 @@ function onDeviceReady() {
 //                        alert(i);
 //                        alert(data[i]);
 //                    }
-                    if("avatar" in data && data.avatar == ""){
+                    if("avatar" in data && data.avatar == "" && data.avatar === null){
 //                        alert("avatar empty")
                         delete data.avatar;
                     }
-                    if("avatar" in data && data.avatar != ""){
+                    if("avatar" in data && data.avatar != "" && data.avatar !== null){
 //                        alert("avatar not emt")
                         data.local_path = data.avatar;
                         delete data.avatar;
-                        data.server_path = ""; //  ----->>   HOOK TO KNOW in sync THAT avatar was updated
+//                        data.server_path = ""; //  ----->>   HOOK TO KNOW in sync THAT avatar was updated
+                        data.avatar_update = "1"; //  ----->>   HOOK TO KNOW in sync THAT avatar was updated
                     }
                     if("password" in data){
                         data.pwd = data.password;
                         delete data.password;
                     }
+                    console.log("update_user_data")
+                    console.log(data)
                     callback ?
                             API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"', function(){
                                 DB.select("u.id, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress");
                                 DB.from("xiao_users AS u");
                                 DB.left_join("xiao_companies AS c", "u.company_id = c.id");
                                 DB.where('u.id ="' + SESSION.get("user_id") + '"');
-                                DB.row(callback);
+                                DB.row(function(new_user_data){
+                                    new_user_data.avatar = (new_user_data.local_path != "" && new_user_data.local_path != CONFIG.default_user_avatar) ? new_user_data.local_path : new_user_data.server_path;
+                                    callback(new_user_data);
+                                });
                             }) :
                             API.update('xiao_users', data, 'id="' + SESSION.get("user_id") + '"');
                 },
@@ -455,7 +462,7 @@ function onDeviceReady() {
                         
                 logout: function(callback){
                     //session
-                    SESSION.clear();
+//                    SESSION.clear();
                     callback();
                 },
                         
@@ -1129,7 +1136,8 @@ function onDeviceReady() {
                     var login_user = SESSION.get("user_id");
                     API._sync(["xiao_project_comments", "xiao_users", "xiao_companies", "xiao_project_comments_likes"], function() {
                         
-                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, pc.read, u.id as uid, u.name, u.pinyin, u.local_path as av_local_path, u.server_path as av_server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+//                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, pc.read, u.id as uid, u.name, u.pinyin, u.local_path as av_local_path, u.server_path as av_server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+                        DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, strftime('%d %m %Y %H:%M:%S', pc.time) as time, pc.read, u.id as uid, u.name, u.pinyin, u.local_path as av_local_path, u.server_path as av_server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
                         DB.from("xiao_project_comments AS pc");
                         DB.left_join("xiao_users AS u", "u.id = pc.user_id");
                         DB.left_join("xiao_companies AS c", "u.company_id = c.id");
@@ -1177,7 +1185,7 @@ function onDeviceReady() {
                                                 from: "project"
                                             },
                                             praise: [],
-                                            time: new Date(mess.time).getTime(),
+                                            time: new Date(websql_date_to_number(mess.time)).getTime(),
                                             type: mess.type
                                         });
                                         
@@ -1234,7 +1242,8 @@ function onDeviceReady() {
                                 in_m += (i != 0 ? "," : "");
                                 in_m += '"' + m.id + '"';
                             });
-                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+//                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, pc.time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+                            DB.select("pc.id, pc.content, pc.type, pc.server_path, pc.local_path, pc.project_id, pc.user_id, strftime('%d %m %Y %H:%M:%S', pc.time) as time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
                             DB.from("xiao_project_comments AS pc");
                             DB.join("xiao_users AS u", "u.id = pc.user_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -1279,7 +1288,7 @@ function onDeviceReady() {
                                                 from: "project"
                                             },
                                             praise: [],
-                                            time: new Date(mess.time).getTime(),
+                                            time: new Date(websql_date_to_number(mess.time)).getTime(),
                                             type: mess.type
                                         });
                                         if(mess.cl_uid != null && typeof(mess.cl_uid) !== "undefined")
@@ -1529,7 +1538,8 @@ function onDeviceReady() {
                     API._sync(['xiao_todo_comments','xiao_users','xiao_companies','xiao_project_comments_likes'],function(){
                         
                         // existing messages
-                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, tc.read, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+//                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, tc.read, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+                        DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, strftime('%d %m %Y %H:%M:%S', tc.time) as time, tc.read, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
                         DB.from("xiao_todo_comments AS tc");
                         DB.left_join("xiao_users AS u", "u.id = tc.user_id");
                         DB.left_join("xiao_companies AS c", "u.company_id = c.id");
@@ -1579,7 +1589,7 @@ function onDeviceReady() {
                                                 from: "todo"
                                             },
                                             praise: [],
-                                            time: new Date(mess.time).getTime(),
+                                            time: new Date(websql_date_to_number(mess.time)).getTime(),
                                             type: mess.type
                                         });
                                         if(mess.cl_uid != null && typeof(mess.cl_uid) !== "undefined")
@@ -1632,7 +1642,8 @@ function onDeviceReady() {
                                 in_m += (i != 0 ? "," : "");
                                 in_m += '"' + m.id + '"';
                             });
-                            DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+//                            DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, tc.time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
+                            DB.select("tc.id, tc.content, tc.type, tc.server_path, tc.local_path, tc.todo_id, tc.user_id, strftime('%d %m %Y %H:%M:%S', tc.time) as time, u.id as uid, u.name, u.pinyin, u.local_path, u.server_path, u.company_id, u.position, u.phoneNum, u.email, u.adress, u.isNewUser, u.QRCode, c.title as company, c.companyAdress, c.creator_id as company_creator_id, clu.id as cl_uid, clu.name as cl_name, clu.pinyin as cl_pinyin, clu.local_path as cl_local_path, clu.server_path as cl_server_path, clu.position as cl_position, clu.phoneNum as cl_phoneNum, clu.email as cl_email, clu.adress as cl_adress, clu.isNewUser as cl_isNewUser, clu.QRCode as cl_QRCode");
                             DB.from("xiao_todo_comments AS tc");
                             DB.join("xiao_users AS u", "u.id = tc.user_id");
                             DB.join("xiao_companies AS c", "u.company_id = c.id");
@@ -1679,7 +1690,7 @@ function onDeviceReady() {
                                             from: "todo"
                                         },
                                         praise: [],
-                                        time: new Date(mess.time).getTime(),
+                                        time: new Date(websql_date_to_number(mess.time)).getTime(),
                                         type: mess.type
                                     });
                                     if(mess.cl_uid != null && typeof(mess.cl_uid) !== "undefined")
@@ -1979,11 +1990,12 @@ function onDeviceReady() {
                         // PRIVATE
                                 // PRIVATE
                                         function() {
-                                            //            var SERVER = {
-                                            SERVER = {
+                                            var SERVER = {
+//                                            SERVER = {
                                                 SOCKET: {
                                                     socket: null,  // current socket Object is stores here after init
                                                     init: function() { // function is used to init io object (socket.io lib)
+                                                        if(typeof(io) === "undefined")return this;
                                                         this.socket = io.connect(ROUTE("sockets"));
                                                         this.socket.on('connect_failed', function() {
                                                             console.log("fail");
@@ -2005,15 +2017,17 @@ function onDeviceReady() {
                                                     },
                                                             
                                                     request: function(url, data, callback) {  // the MAIN Routing method
+                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets'));
+                                                        
+                                                        if(typeof(io) === "undefined")return callback(false);
+                                                        io.sockets[sockets_route].open === false ? callback(false) : this.socket.on(url + data.connection_code, callback);
+                                                        
                                                         var connection_code = this.connection_code();
                                                         this.socket.emit(url, {
                                                             body: data,
                                                             connection_code: connection_code
                                                         });
-                                                        var sockets_route = (ROUTE('sockets').match(/\/$/) ? ROUTE('sockets').substring(0, ROUTE('sockets').length - 1) : ROUTE('sockets'));
                                                         this.socket.on(url + "_result" + connection_code, callback);
-                                                        if(typeof(io) === "undefined")return callback(false);
-                                                        io.sockets[sockets_route].open === false ? callback(false) : this.socket.on(url + data.connection_code, callback);
                                                         // need more exeptions here
                                                         // need more exeptions here
                                                         // need more exeptions here
@@ -2028,6 +2042,10 @@ function onDeviceReady() {
                                                     updatechat: function(connect_data, callback) { // another method used to update chat
                                                         // in data we specify id and type
                                                         console.log("_____________updatechat")
+                                                        
+                                                        if(typeof(io) === "undefined")return callback([]);
+//                                                        if(io.sockets[sockets_route].open === false)return callback([]);
+                                                        
                                                         if (connect_data.id && this._inited_chats[connect_data['type']].lastIndexOf(connect_data.id) === -1) {
 //                                                            console.log("update chat INITED");
                                                             this._inited_chats[connect_data['type']].push(connect_data.id);
@@ -2143,8 +2161,8 @@ function onDeviceReady() {
 //                                                                    console.log(results.rows.item(i))
                                                                     db_result[i] = results.rows.item(i);
                                                                 }
-                                                                console.log(db_result);
-//                                                                if (db_result.length == 0 && !(sql.match(/sync/)))
+//                                                                console.log(db_result);
+                                                                if (db_result.length == 0 && !(sql.match(/sync/)))
                                                                     console.log(sql);
 
                                                                 return (callback ? callback(db_result) : true);
@@ -2567,6 +2585,7 @@ function onDeviceReady() {
                                                                     phoneNum varchar(255) NULL,\n\
                                                                     position varchar(255) NULL,\n\
                                                                     create_projects INTEGER NULL DEFAULT 10,\n\
+                                                                    avatar_update INTEGER NULL DEFAULT 0,\n\
                                                                     update_time VARCHAR(255) NULL,\n\
                                                                     deleted INTEGER DEFAULT 0,\n\
                                                                     company_id INTEGER NOT NULL DEFAULT ' + SERVER.SESSION.get("company_id") + ',\n\
@@ -2875,7 +2894,8 @@ function onDeviceReady() {
 //                                                                    alert("11")
                                                                 }else if(table_name === "xiao_users"){
 //                                                                    alert("xiao_users")
-                                                                    if (el.local_path !== CONFIG.default_user_avatar && el.server_path == "") {
+//                                                                    if (el.local_path !== CONFIG.default_user_avatar && el.server_path == "") {
+                                                                    if (el.avatar_update == "1") {
                                                                         // if the file is not default avatar and we have a "" as server_path then we need to upload
 //                                                                        alert("server_path == ")
                                                                         SERVER.PHONE.Files.upload(el.local_path, "image", function(server_path) {
@@ -3005,6 +3025,9 @@ function onDeviceReady() {
                                                                                 SERVER.DB.insert_batch_on_duplicate_update(ij.table, ij.updated, function() {
                                                                                     make_callback();
                                                                                 });
+                                                                                if(ij.table === "xiao_users"){
+                                                                                    SERVER.DB._executeSQL('UPDATE xiao_users SET avatar_update = "0"');
+                                                                                }
                                                                             } else {
                                                                                 SERVER.DB.batch_replace(ij.table, ij.updated, function() {
                                                                                     make_callback();

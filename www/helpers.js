@@ -58,6 +58,54 @@ function date_to_string(date){
     return result;
 }
 
+function websql_date_to_number(str){
+    var month_ar = str.split(" "),
+        month = month_ar[1],
+        word, result = "";
+    switch(month){
+        case '1':
+            word = "January";
+            break
+        case "2":
+            word = "February";
+            break
+        case "3":
+            word = "March";
+            break
+        case "4":
+            word = "April";
+            break
+        case "5":
+            word = "May";
+            break
+        case "6":
+            word = "June";
+            break
+        case "7":
+            word = "July";
+            break
+        case "8":
+            word = "August";
+            break
+        case "9":
+            word = "September";
+            break
+        case "10":
+            word = "October";
+            break
+        case "11":
+            word = "November";
+            break
+        case "12":
+            word = "December";
+            break
+    }
+    for(var i in month_ar){
+        result+= (i == 1 ? word : month_ar[i])+" ";
+    }
+    return result.trim();
+}
+
 function extend(Child, Parent) {
     var F = function() { };
     F.prototype = Parent.prototype;

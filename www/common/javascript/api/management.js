@@ -161,13 +161,14 @@ this.History = (function(List, Loader, redirectEvent){
 			redirectEvent.trigger(window);
 
 			if(idx > -1){
-				panel = Loader.pageStorage[this[idx]];
+				panel = Loader.pageStorage[name];
 
 				if(_isBack){
 					this.splice(idx + 1);
 				}
 				else {
-					this.push(this.splice(idx, 1)[0]);
+					this.splice(idx, 1);
+					this.push(name);
 				}
 
 				// 显示当前的panel

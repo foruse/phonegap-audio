@@ -291,25 +291,3 @@
 	position : static;
 	display : block !important;
 }
-
-.selectImageFile > article {
-	display : none;
-}
-.selectImageFile > footer > button {
-	display : block;
-	width : 100% !important;
-	margin-bottom : 15px;
-}
-.selectImageFile > footer > button[action="image"] {
-	position : relative;
-	background-color : #ce312d;
-	color : #fff;
-}
-.selectImageFile > footer > button[action="map"] {
-	opacity : 0.4;
-}
-.selectImageFile button > input {
-	position : absolute;
-	left : 0;
-	top : 0;
-}

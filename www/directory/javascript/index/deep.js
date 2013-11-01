@@ -136,7 +136,7 @@ this.Account = (function(Panel, Global, ValidationList, SelectImage){
 
 
 	function Header(selector){
-		var header = this, selectImage = new SelectImage();
+		var header = this, selectImage = new SelectImage("localPicture");
 
 		this.assign({
 			selectImage : selectImage
@@ -147,13 +147,15 @@ this.Account = (function(Panel, Global, ValidationList, SelectImage){
 		selectImage.attach({
 			imageloaded : function(e){
 				header.find(".largeAvatarPanel>img").src = e.base64;
+				header.newSrc = e.src;
 			}
 		});
 
 		this.attach({
 			clickavatar : function(e){
+//                                alert("click")
 				e.stopPropagation();
-
+                                
 				selectImage.show();
 			}
 		}, true);
@@ -162,8 +164,9 @@ this.Account = (function(Panel, Global, ValidationList, SelectImage){
 
 	Header.properties({
 		getAvatar : function(){
-			return this.find(".largeAvatarPanel>img").src;
+			return this.newSrc;
 		},
+		newSrc : null,
 		selectImage : undefined
 	});
 

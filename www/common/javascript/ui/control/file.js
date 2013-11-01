@@ -197,11 +197,12 @@ this.Attachment = (function(ImageFile, VoiceRecorder, attachmentHtml, attchmentC
 ));
 
 this.SelectImage = (function(Confirm, ImageFile){
-	function SelectImage(){
+	function SelectImage(_action){
 		var selectImageFile = this, imageFile = new ImageFile();
 		
-		this.classList.add("selectImageFile");
+		this.classList.add("selectImage");
 		this.addButton("image", "添加图片", false);
+		this.addButton("camera", "相机拍照", false);
 		this.addButton("map", "添加地图", false);
 
 		imageFile.appendTo(this.find('button[action="image"]')[0]);
@@ -209,12 +210,18 @@ this.SelectImage = (function(Confirm, ImageFile){
 		this.attach({
 			imageloaded : function(){
 				selectImageFile.hide();
+			},
+			clickbutton : function(e){
+				var action = e.maskButton.action;
+
+				console.log(action);
 			}
 		});
 	};
 	SelectImage = new NonstaticClass(SelectImage, fullName("SelectImage"), Confirm.prototype);
 
 	SelectImage.override({
+		action : "all",
 		hide : function(){
 			if(this.disabled)
 				return;

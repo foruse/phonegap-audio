@@ -50,13 +50,12 @@
 	background-color : #00b0d6;
 	padding : 8px;
 }
-#businessCard > section > *, #businessCard > footer {
+#businessCard > section > * {
 	background-color : #fff;
 	padding : 10px 15px;
 }
 #businessCard dl[desc="userinfo"] {
 	height : 180px;
-	margin-bottom : 8px;
 	background : url(../../image/businessCard_background.png) #fff 0 55px no-repeat;
 }
 #businessCard dl[desc="userinfo"] > dt {
@@ -104,13 +103,6 @@
 	width : 100%;
 	height : 100%;
 }
-#businessCard p[desc="authority"] {
-	display : none;
-}
-#businessCard p[desc="authority"], #businessCard > footer {
-	height : 45px;
-	line-height : 25px;
-}
 #businessCard p[desc="authority"] button {
 	float : right;
 	background-color : #00b0d6;
@@ -129,15 +121,31 @@
 	background-color : #fff;
 }
 #businessCard > footer {
-	display : none;
 	margin : 8px 10px;
 }
-#businessCard > footer > button {
+#businessCard > footer li {
+	height : 46px;
+	line-height : 24px;
+	margin-bottom : 5px;
+	background-color : #fff;
+	padding : 10px 15px;
+	display : none;
+}
+#businessCard li[action="removePartner"] {
+	text-align : center;
+	background-color : #00b0d7;
+}
+#businessCard > footer span {
+	display : inline-block;
+}
+#businessCard > footer button {
 	float : right;
-	width : 26px;
-	height : 26px;
-	line-height : 26px;
-	border-radius : 26px;
+}
+#businessCard li[action="sendTodo"] > button {
+	width : 24px;
+	height : 24px;
+	line-height : 24px;
+	border-radius : 24px;
 	border : 0 none;
 	background-color : #ce312d;
 }

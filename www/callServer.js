@@ -149,6 +149,10 @@
             getUser: function(params, complete) {
                 console.log(params)
                 Mdls.Partner.read(params.id, complete);
+//                Mdls.Partner.read(params.id, function(data){
+//                    console.log(data);
+//                    complete(data);
+//                });
             },
             // globalSearch : function(){ },
             // invitation : function(){ },
@@ -309,6 +313,10 @@
                 }
                 console.log(_params)
                 Mdls.User.update(_params, complete);
+//                Mdls.User.update(_params, function(data){
+//                    console.log(data)
+//                    complete(data)
+//                });
             }
             
         });
@@ -323,7 +331,7 @@
             open: function(name, params, _complete, _isUpload) {
                 var LoadingBar = Wait.LoadingBar;
 
-                LoadingBar.show(_isUpload ? "正在上传数据.." : null);
+//                LoadingBar.show(_isUpload ? "正在上传数据.." : null);
                 console.log(name)
                 Models[name](params, function(data) {
                     if (name in allHandlers) {

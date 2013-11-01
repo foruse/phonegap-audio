@@ -282,16 +282,22 @@
 							</aside>
 						</dd>
 					</script>
-					<p desc="authority">
-						<span>设置权限</span>
-						<button>
-							<small></small>
-						</button>
-					</p>
 				</section>
-				<footer class="lightBdColor normalRadius">
-					<span>发送 To Do</span>
-					<button class="whiteFont">do</button>
+				<footer>
+					<ul>
+						<li class="lightBdColor normalRadius" action="sendTodo">
+							<span>发送 To Do</span>
+							<button class="whiteFont">do</button>
+						</li>
+						<li class="lightBdColor normalRadius" action="authority">
+							<span>授予权限</span>
+							<button>
+								<small></small>
+							</button>
+						</li>
+						<li class="lightBdColor normalRadius" action="removeFromTeam">移除Team</li>
+						<li class="lightBdColor normalRadius whiteFont" action="removePartner">删除拍档</li>
+					</ul>	
 				</footer>
 			</article>
 			<article id="systemOption">
@@ -350,7 +356,7 @@
 				<header class="themeBdColor normalRadius">
 					<figure class="inlineBlock">
 						<aside class="lightBdColor">
-							<p class="largeAvatarPanel">
+							<p class="largeAvatarPanel" userid="{id}">
 								<img src="{?~avatar}" />
 							</p>
 						</aside>
