@@ -124,6 +124,10 @@ this.ActiveVoice = (function(Attachment, round, lastActiveVoice){
 					this.stop();
 					return;
 				}
+				
+				console.log('I: ' + i);
+				console.log('Max: ' + max);
+				console.log('Resul: ' + round(i * 100 / max));
 
 				buttonStyle.left = round(i * 100 / max) + "%";
 				activeVoice.position = i;
